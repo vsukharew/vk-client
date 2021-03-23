@@ -51,6 +51,8 @@ dependencies {
     implementation androidx.material
     implementation androidx.swiperefreshlayout
     implementation androidx.lifecycle
+    implementation androidx.navigation.fragmentKtx
+    implementation androidx.navigation.uiKtx
     androidTestImplementation androidx.testRunner
     androidTestImplementation androidx.espresso
     testImplementation junit

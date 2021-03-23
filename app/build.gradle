@@ -50,7 +50,8 @@ dependencies {
     implementation androidx.constraintLayout
     implementation androidx.material
     implementation androidx.swiperefreshlayout
-    implementation androidx.lifecycle
+    implementation androidx.viewmodel
+    implementation androidx.livedata
     implementation androidx.navigation.fragmentKtx
     implementation androidx.navigation.uiKtx
     androidTestImplementation androidx.testRunner

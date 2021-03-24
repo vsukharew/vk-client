@@ -1,11 +1,9 @@
 package vsukharew.vkclient
 
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
+import vsukharew.vkclient.common.extension.activityViewBinding
+import vsukharew.vkclient.common.presentation.BaseActivity
+import vsukharew.vkclient.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-    }
+class MainActivity : BaseActivity() {
+    override val binding by activityViewBinding(ActivityMainBinding::inflate)
 }

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">vkclient</string>
+
+    <string name="auth_login_btn">Log in</string>
 </resources>

@@ -1,6 +1,6 @@
 package vsukharew.vkclient
 
-import vsukharew.vkclient.common.extension.activityViewBinding
+import vsukharew.vkclient.common.delegation.activityViewBinding
 import vsukharew.vkclient.common.presentation.BaseActivity
 import vsukharew.vkclient.databinding.ActivityMainBinding
 

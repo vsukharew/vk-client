@@ -1,20 +1,17 @@
 package vsukharew.vkclient.auth.presentation
 
 import android.os.Bundle
-import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import androidx.viewbinding.ViewBinding
-import vsukharew.vkclient.common.extension.fragmentViewBinding
+import vsukharew.vkclient.R
+import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.databinding.FragmentAuthBinding
 
-class AuthFragment : BaseFragment() {
+class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
 
     private lateinit var viewModel: AuthViewModel
 
-    override fun getViewBinding(container: ViewGroup?): ViewBinding = fragmentViewBinding {
-        FragmentAuthBinding.inflate(layoutInflater, container, false)
-    }
+    override val binding by fragmentViewBinding(FragmentAuthBinding::bind)
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)

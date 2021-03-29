@@ -9,5 +9,18 @@
         android:id="@+id/authFragment"
         android:name="vsukharew.vkclient.auth.presentation.AuthFragment"
         android:label="AuthFragment"
-        tools:layout="@layout/fragment_auth" />
+        tools:layout="@layout/fragment_auth" >
+        <action
+            android:id="@+id/action_authFragment_to_functional_graph"
+            app:destination="@id/features_graph" />
+    </fragment>
+
+    <navigation android:id="@+id/features_graph"
+        app:startDestination="@id/features_fragment">
+        <fragment
+            android:id="@+id/features_fragment"
+            android:name="vsukharew.vkclient.features.presentation.FeaturesFlowFragment"
+            android:label="FeaturesFlowFragment"
+            tools:layout="@layout/fragment_features" />
+    </navigation>
 </navigation>

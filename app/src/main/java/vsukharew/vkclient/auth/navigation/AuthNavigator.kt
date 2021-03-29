@@ -6,11 +6,16 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.navigation.NavController
+import androidx.navigation.NavOptions
+import vsukharew.vkclient.R
 import vsukharew.vkclient.auth.data.model.AuthParams
+import vsukharew.vkclient.auth.presentation.AuthFragmentDirections
 import vsukharew.vkclient.common.navigation.BaseNavigator
 
 class AuthNavigator : BaseNavigator() {
     var vkActivityLauncher: ActivityResultLauncher<Intent>? = null
+    var navController: NavController? = null
 
     fun onLoginClick(context: Context, authParams: AuthParams) {
         if (isIntentAvailable(context, VK_APP_PACKAGE_NAME, VK_APP_AUTH_ACTION, null)) {
@@ -18,6 +23,15 @@ class AuthNavigator : BaseNavigator() {
         } else {
             openChromeTabs(context, authParams.completeUrl)
         }
+    }
+
+    fun openFeaturesScreen() {
+        navController?.navigate(
+            AuthFragmentDirections.actionAuthFragmentToFunctionalGraph(),
+            NavOptions.Builder()
+                .setPopUpTo(R.id.authFragment, true)
+                .build()
+        )
     }
 
     private fun openVkActivity(authParams: AuthParams) {

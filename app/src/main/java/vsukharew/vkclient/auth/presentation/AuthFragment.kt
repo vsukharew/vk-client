@@ -79,9 +79,9 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
     private fun handleVkActivityResult(result: ActivityResult) {
         when {
             result.data?.extras != null -> {
-                val params = fetchAuthParams(result.data!!.extras!!)
+                val params = fetchAuthResponse(result.data!!.extras!!)
                 if (params.isNotEmpty() && params[VK_AUTH_ERROR] == null) {
-                    viewModel.onLoginSuccess()
+                    viewModel.onLoginSuccess(params)
                 } else {
                     toast(R.string.auth_failed_text)
                 }
@@ -92,7 +92,7 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
         }
     }
 
-    private fun fetchAuthParams(bundle: Bundle): Map<String, String> {
+    private fun fetchAuthResponse(bundle: Bundle): Map<String, String> {
         val tokenParams = mutableMapOf<String, String>()
         for (key in bundle.keySet()) {
             tokenParams[key] = bundle.get(key).toString()

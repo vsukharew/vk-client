@@ -16,13 +16,13 @@ class SharedPrefsAuthStorage(context: Context) : AuthStorage {
     private val aead = KeysetHandle.generateNew(AesGcmKeyManager.aes128GcmTemplate())
         .getPrimitive(Aead::class.java)
 
-    override suspend fun getToken(): Token {
+    override suspend fun getToken(): Token? {
         val accessToken = prefs.getString(ACCESS_TOKEN_KEY, null)
             ?.let { Base64.decode(it, Base64.DEFAULT) }
             ?.let { aead.decrypt(it, null) }
-            ?.let { String(it, Charsets.UTF_8) } ?: INVALID_TOKEN
+            ?.let { String(it, Charsets.UTF_8) }
         val expiredIn = prefs.getLong(EXPIRES_IN_KEY, Token.INVALID_EXPIRES_IN)
-        return Token(accessToken, expiredIn)
+        return accessToken?.let { Token(it, expiredIn) }
     }
 
     override suspend fun putToken(token: Token) {

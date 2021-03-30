@@ -4,7 +4,7 @@ import vsukharew.vkclient.auth.domain.model.Token
 
 class AuthRepository(private val authStorage: AuthStorage) : AuthRepo {
 
-    override suspend fun getToken(): Token {
+    override suspend fun getToken(): Token? {
         return authStorage.getToken()
     }
 

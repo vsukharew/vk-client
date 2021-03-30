@@ -2,6 +2,7 @@ package vsukharew.vkclient.auth.presentation
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.ActivityResult
@@ -13,13 +14,17 @@ import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
 import vsukharew.vkclient.R
 import vsukharew.vkclient.auth.di.AUTH_SCREEN_SCOPE
+import vsukharew.vkclient.auth.domain.model.Token.Companion.ACCESS_TOKEN_KEY
+import vsukharew.vkclient.auth.domain.model.Token.Companion.EXPIRES_IN_KEY
 import vsukharew.vkclient.auth.navigation.AuthCoordinator
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
+import vsukharew.vkclient.common.extension.EMPTY
 import vsukharew.vkclient.common.extension.toast
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.databinding.FragmentAuthBinding
 
-class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
+class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth),
+    ChromeTabsResponseListener {
     private lateinit var scope: Scope
     private lateinit var vkActivityLauncher: ActivityResultLauncher<Intent>
     private val viewModel: AuthViewModel by sharedViewModel()
@@ -56,6 +61,17 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
         }
     }
 
+    override fun onResponse(intent: Intent) {
+        val uri = Uri.parse(intent.dataString)
+        val tokenParams = mapOf(
+            uri.getQueryParameter(ACCESS_TOKEN_KEY)?.let { ACCESS_TOKEN_KEY to it }
+                ?: String.EMPTY to String.EMPTY,
+            uri.getQueryParameter(EXPIRES_IN_KEY)?.let { ACCESS_TOKEN_KEY to it }
+                ?: String.EMPTY to String.EMPTY
+        )
+        viewModel.onLoginSuccess(tokenParams)
+    }
+
     private fun setListeners() {
         binding.authLoginBtn.setOnClickListener { viewModel.onLoginClick() }
     }
@@ -68,10 +84,10 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
                 }
             })
             openFunctionScreenEvent.observe(viewLifecycleOwner, { event ->
-                    event?.getContentIfNotHandled()?.let {
-                        coordinator.openFeaturesScreen()
-                    }
+                event?.getContentIfNotHandled()?.let {
+                    coordinator.openFeaturesScreen()
                 }
+            }
             )
         }
     }
@@ -79,9 +95,9 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
     private fun handleVkActivityResult(result: ActivityResult) {
         when {
             result.data?.extras != null -> {
-                val params = fetchAuthResponse(result.data!!.extras!!)
-                if (params.isNotEmpty() && params[VK_AUTH_ERROR] == null) {
-                    viewModel.onLoginSuccess(params)
+                val response = fetchAuthResponse(result.data!!.extras!!)
+                if (response.isNotEmpty() && response[VK_AUTH_ERROR] == null) {
+                    viewModel.onLoginSuccess(response)
                 } else {
                     toast(R.string.auth_failed_text)
                 }
@@ -93,11 +109,11 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
     }
 
     private fun fetchAuthResponse(bundle: Bundle): Map<String, String> {
-        val tokenParams = mutableMapOf<String, String>()
+        val authResponse = mutableMapOf<String, String>()
         for (key in bundle.keySet()) {
-            tokenParams[key] = bundle.get(key).toString()
+            authResponse[key] = bundle.get(key).toString()
         }
-        return tokenParams
+        return authResponse
     }
 
     private companion object {

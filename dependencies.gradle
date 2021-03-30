@@ -32,6 +32,7 @@ ext {
             retrofit  : '2.8.1',
             leakcanary: '2.2',
             junit     : '4.12',
+            tink      : '1.5.0'
     ]
     androidx = [
             appCompat         : "androidx.appcompat:appcompat:${versions.androidx.appCompat}",
@@ -65,4 +66,5 @@ ext {
     ]
     retrofit = "com.squareup.retrofit2:retrofit:${versions.retrofit}"
     junit = "junit:junit:${versions.junit}"
+    tink = "com.google.crypto.tink:tink-android:${versions.tink}"
 }

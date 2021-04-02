@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import vsukharew.vkclient.R
@@ -21,7 +20,7 @@ class AuthNavigator : BaseNavigator() {
         if (isIntentAvailable(context, VK_APP_PACKAGE_NAME, VK_APP_AUTH_ACTION, null)) {
             openVkActivity(authParams)
         } else {
-            openChromeTabs(context, authParams.completeUrl)
+            openBrowser(context, authParams.completeUrl)
         }
     }
 
@@ -50,10 +49,8 @@ class AuthNavigator : BaseNavigator() {
         )
     }
 
-    private fun openChromeTabs(context: Context, url: String) {
-        CustomTabsIntent.Builder()
-            .build()
-            .launchUrl(context, Uri.parse(url))
+    private fun openBrowser(context: Context, url: String) {
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     }
 
     companion object {

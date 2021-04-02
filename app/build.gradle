@@ -55,7 +55,6 @@ dependencies {
     implementation androidx.livedata
     implementation androidx.navigation.fragmentKtx
     implementation androidx.navigation.uiKtx
-    implementation androidx.browser
     androidTestImplementation androidx.testRunner
     androidTestImplementation androidx.espresso
     testImplementation junit

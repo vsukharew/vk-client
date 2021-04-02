@@ -2,7 +2,6 @@ package vsukharew.vkclient.auth.presentation
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.ActivityResult
@@ -14,11 +13,8 @@ import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
 import vsukharew.vkclient.R
 import vsukharew.vkclient.auth.di.AUTH_SCREEN_SCOPE
-import vsukharew.vkclient.auth.domain.model.Token.Companion.ACCESS_TOKEN_KEY
-import vsukharew.vkclient.auth.domain.model.Token.Companion.EXPIRES_IN_KEY
 import vsukharew.vkclient.auth.navigation.AuthCoordinator
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
-import vsukharew.vkclient.common.extension.EMPTY
 import vsukharew.vkclient.common.extension.toast
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.databinding.FragmentAuthBinding
@@ -62,14 +58,12 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth),
     }
 
     override fun onResponse(intent: Intent) {
-        val uri = Uri.parse(intent.dataString)
-        val tokenParams = mapOf(
-            uri.getQueryParameter(ACCESS_TOKEN_KEY)?.let { ACCESS_TOKEN_KEY to it }
-                ?: String.EMPTY to String.EMPTY,
-            uri.getQueryParameter(EXPIRES_IN_KEY)?.let { ACCESS_TOKEN_KEY to it }
-                ?: String.EMPTY to String.EMPTY
-        )
-        viewModel.onLoginSuccess(tokenParams)
+        intent.dataString
+            ?.split((Regex("[#&]"))) // break url into the host and query parts
+            ?.drop(1) // get rid of the host part
+            ?.map { it.split("=") /* break each query parameter into the key and value*/ }
+            ?.associate { it[0] to it[1] }
+            ?.let(viewModel::onLoginSuccess)
     }
 
     private fun setListeners() {
@@ -86,8 +80,7 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth),
             openFunctionScreenEvent.observe(viewLifecycleOwner, { event ->
                 event?.getContentIfNotHandled()?.let {
                     coordinator.openFeaturesScreen()
-                }
-            }
+                } }
             )
         }
     }

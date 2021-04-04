@@ -6,8 +6,6 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.navigation.NavController
-import androidx.navigation.NavOptions
-import vsukharew.vkclient.R
 import vsukharew.vkclient.auth.data.model.AuthParams
 import vsukharew.vkclient.auth.presentation.AuthFragmentDirections
 import vsukharew.vkclient.common.navigation.BaseNavigator
@@ -25,12 +23,7 @@ class AuthNavigator : BaseNavigator() {
     }
 
     fun openFeaturesScreen() {
-        navController?.navigate(
-            AuthFragmentDirections.actionAuthFragmentToFunctionalGraph(),
-            NavOptions.Builder()
-                .setPopUpTo(R.id.authFragment, true)
-                .build()
-        )
+        navController?.navigate(AuthFragmentDirections.actionAuthFragmentToFunctionalGraph())
     }
 
     private fun openVkActivity(authParams: AuthParams) {

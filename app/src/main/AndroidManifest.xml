@@ -13,26 +13,12 @@
         android:name=".VkClientApp"
         android:theme="@style/Theme.Vkclient">
         <activity
-            android:name=".MainActivity"
-            android:launchMode="singleTop">
+            android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
-
             </intent-filter>
-
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data
-                    android:host="oauth.vk.com"
-                    android:pathPrefix="/blank.html"
-                    android:scheme="https" />
-            </intent-filter>
+            <nav-graph android:value="@navigation/navigation_graph"/>
         </activity>
     </application>
 

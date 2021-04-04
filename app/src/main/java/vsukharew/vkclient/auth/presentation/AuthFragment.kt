@@ -16,11 +16,11 @@ import vsukharew.vkclient.auth.di.AUTH_SCREEN_SCOPE
 import vsukharew.vkclient.auth.navigation.AuthCoordinator
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.extension.toast
+import vsukharew.vkclient.common.network.ServerUrls
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.databinding.FragmentAuthBinding
 
-class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth),
-    ChromeTabsResponseListener {
+class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
     private lateinit var scope: Scope
     private lateinit var vkActivityLauncher: ActivityResultLauncher<Intent>
     private val viewModel: AuthViewModel by sharedViewModel()
@@ -46,6 +46,7 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth),
         super.onViewCreated(view, savedInstanceState)
         setListeners()
         observeData()
+        activity?.intent?.let(::handleBrowserRedirect)
     }
 
     override fun onDestroy() {
@@ -57,8 +58,9 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth),
         }
     }
 
-    override fun onResponse(intent: Intent) {
+    private fun handleBrowserRedirect(intent: Intent) {
         intent.dataString
+            ?.takeIf { it.startsWith(ServerUrls.Auth.REDIRECT_URL) }
             ?.split((Regex("[#&]"))) // break url into the host and query parts
             ?.drop(1) // get rid of the host part
             ?.map { it.split("=") /* break each query parameter into the key and value*/ }

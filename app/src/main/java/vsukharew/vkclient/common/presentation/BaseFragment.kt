@@ -14,7 +14,7 @@ abstract class BaseFragment<V : ViewBinding>(@LayoutRes private val layoutResId:
 
     protected abstract val binding: ViewBinding
 
-    protected val navController by lazy {
+    val navController by lazy {
         (requireActivity().supportFragmentManager
                 .findFragmentById(R.id.fragment_container_view) as NavHostFragment).navController
     }

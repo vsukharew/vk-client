@@ -83,10 +83,18 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
         when {
             result.data?.extras != null -> {
                 val response = fetchAuthResponse(result.data!!.extras!!)
-                if (response.isNotEmpty() && response[VK_AUTH_ERROR] == null) {
-                    viewModel.onLoginSuccess(response)
-                } else {
-                    toast(R.string.auth_failed_text)
+                when {
+                    response.isNotEmpty() -> {
+                        val error = response[VK_AUTH_ERROR]
+                        if (error != null) {
+                            toast(error)
+                        } else {
+                            viewModel.onLoginSuccess(response)
+                        }
+                    }
+                    else -> {
+                        toast(R.string.auth_failed_text)
+                    }
                 }
             }
             result.resultCode != Activity.RESULT_CANCELED -> {

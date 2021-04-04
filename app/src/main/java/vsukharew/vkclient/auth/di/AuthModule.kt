@@ -14,8 +14,7 @@ import vsukharew.vkclient.auth.domain.interactor.AuthInteractorImpl
 import vsukharew.vkclient.auth.navigation.AuthCoordinator
 import vsukharew.vkclient.auth.navigation.AuthNavigator
 import vsukharew.vkclient.auth.presentation.AuthViewModel
-
-const val AUTH_SCREEN_SCOPE = "auth_screen_scope"
+import vsukharew.vkclient.common.di.SURVIVE_CONFIG_CHANGES_SCOPE
 
 val authDataModule = module {
     single<AuthStorage> { SharedPrefsAuthStorage(androidContext()) }
@@ -24,7 +23,7 @@ val authDataModule = module {
 }
 
 val authScreenModule = module {
-    scope(named(AUTH_SCREEN_SCOPE)) {
+    scope(named(SURVIVE_CONFIG_CHANGES_SCOPE)) {
         scoped { AuthNavigator() }
         scoped { AuthCoordinator(get()) }
     }

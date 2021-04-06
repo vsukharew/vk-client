@@ -4,9 +4,11 @@ import android.app.Application
 import com.google.crypto.tink.aead.AeadConfig
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
+import vsukharew.vkclient.account.di.accountDataModule
 import vsukharew.vkclient.auth.di.authDataModule
 import vsukharew.vkclient.auth.di.authScreenModule
 import vsukharew.vkclient.common.di.appModule
+import vsukharew.vkclient.common.network.networkModule
 import vsukharew.vkclient.splash.di.splashModule
 
 class VkClientApp : Application() {
@@ -17,9 +19,11 @@ class VkClientApp : Application() {
             modules(
                 listOf(
                     appModule,
+                    networkModule,
                     authScreenModule,
                     authDataModule,
-                    splashModule
+                    splashModule,
+                    accountDataModule
                 )
             )
         }

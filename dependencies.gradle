@@ -62,7 +62,11 @@ ext {
             android   : "io.insert-koin:koin-android:${versions.koin}",
             extensions: "io.insert-koin:koin-android-ext:${versions.koin}",
     ]
-    retrofit = "com.squareup.retrofit2:retrofit:${versions.retrofit}"
+    retrofit = [
+            retrofit : "com.squareup.retrofit2:retrofit:${versions.retrofit}",
+            converter: "com.squareup.retrofit2:converter-gson:${versions.retrofit}"
+    ]
+    gson = "com.google.code.gson:gson:${versions.gson}"
     junit = "junit:junit:${versions.junit}"
     tink = "com.google.crypto.tink:tink-android:${versions.tink}"
 }

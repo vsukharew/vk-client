@@ -65,7 +65,9 @@ dependencies {
     implementation koin.android
     implementation koin.extensions
 
-    implementation retrofit
+    implementation retrofit.retrofit
+    implementation retrofit.converter
+    implementation gson
     implementation tink
 
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'

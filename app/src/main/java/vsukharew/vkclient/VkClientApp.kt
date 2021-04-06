@@ -6,6 +6,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import vsukharew.vkclient.auth.di.authDataModule
 import vsukharew.vkclient.auth.di.authScreenModule
+import vsukharew.vkclient.common.di.appModule
 import vsukharew.vkclient.splash.di.splashModule
 
 class VkClientApp : Application() {
@@ -13,7 +14,14 @@ class VkClientApp : Application() {
         super.onCreate()
         startKoin {
             androidContext(this@VkClientApp)
-            modules(listOf(authScreenModule, authDataModule, splashModule))
+            modules(
+                listOf(
+                    appModule,
+                    authScreenModule,
+                    authDataModule,
+                    splashModule
+                )
+            )
         }
         AeadConfig.register()
     }

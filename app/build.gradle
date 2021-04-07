@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-kapt'
+    id 'androidx.navigation.safeargs.kotlin'
 }
 
 apply from: '../dependencies.gradle'
@@ -50,7 +51,10 @@ dependencies {
     implementation androidx.constraintLayout
     implementation androidx.material
     implementation androidx.swiperefreshlayout
-    implementation androidx.lifecycle
+    implementation androidx.viewmodel
+    implementation androidx.livedata
+    implementation androidx.navigation.fragmentKtx
+    implementation androidx.navigation.uiKtx
     androidTestImplementation androidx.testRunner
     androidTestImplementation androidx.espresso
     testImplementation junit
@@ -61,7 +65,10 @@ dependencies {
     implementation koin.android
     implementation koin.extensions
 
-    implementation retrofit
+    implementation retrofit.retrofit
+    implementation retrofit.converter
+    implementation gson
+    implementation tink
 
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'
 }

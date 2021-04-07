@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">vkclient</string>
+
+    <string name="auth_login_btn">Log in</string>
+    <string name="auth_failed_text">Failed to sign in</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

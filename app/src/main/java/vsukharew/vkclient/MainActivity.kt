@@ -1,11 +1,19 @@
 package vsukharew.vkclient
 
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
+import android.content.Intent
+import org.koin.android.scope.AndroidScopeComponent
+import org.koin.androidx.scope.activityRetainedScope
+import org.koin.core.scope.Scope
+import vsukharew.vkclient.common.delegation.activityViewBinding
+import vsukharew.vkclient.common.presentation.BaseActivity
+import vsukharew.vkclient.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+class MainActivity : BaseActivity(), AndroidScopeComponent {
+    override val binding by activityViewBinding(ActivityMainBinding::inflate)
+    override val scope: Scope by activityRetainedScope()
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        navController.handleDeepLink(intent)
     }
 }

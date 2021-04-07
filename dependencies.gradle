@@ -3,8 +3,8 @@ ext {
             compileSdkVersion: 30,
             buildToolsVersion: "30.0.2",
             minSdkVersion    : 21,
-            versionName: "1.0",
-            versionCode: 1
+            versionName      : "1.0",
+            versionCode      : 1
     ]
     versions = [
             kotlin    : [
@@ -20,7 +20,8 @@ ext {
                     'testRunner'        : '1.2.0',
                     'espresso'          : '3.2.0',
                     'swiperefreshlayout': '1.1.0',
-                    'lifecycle'         : '2.2.0'
+                    'lifecycle'         : '2.2.0',
+                    'navigation'        : '2.3.4'
             ],
             gradle    : '4.1.2',
             koin      : '3.0.1-beta-1',
@@ -30,6 +31,7 @@ ext {
             retrofit  : '2.8.1',
             leakcanary: '2.2',
             junit     : '4.12',
+            tink      : '1.5.0'
     ]
     androidx = [
             appCompat         : "androidx.appcompat:appcompat:${versions.androidx.appCompat}",
@@ -40,7 +42,12 @@ ext {
             espresso          : "androidx.test.espresso:espresso-core:${versions.androidx.espresso}",
             material          : "com.google.android.material:material:${versions.androidx.material}",
             swiperefreshlayout: "androidx.swiperefreshlayout:swiperefreshlayout:${versions.androidx.swiperefreshlayout}",
-            lifecycle         : "androidx.lifecycle:lifecycle-runtime-ktx:${versions.androidx.lifecycle}"
+            viewmodel         : "androidx.lifecycle:lifecycle-viewmodel-ktx:${versions.androidx.lifecycle}",
+            livedata          : "androidx.lifecycle:lifecycle-livedata-ktx:${versions.androidx.lifecycle}",
+            navigation        : [
+                    fragmentKtx: "androidx.navigation:navigation-fragment-ktx:${versions.androidx.navigation}",
+                    uiKtx      : "androidx.navigation:navigation-fragment-ktx:${versions.androidx.navigation}"
+            ]
     ]
     kotlin = [
             language         : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${versions.kotlin.language}",
@@ -55,6 +62,11 @@ ext {
             android   : "io.insert-koin:koin-android:${versions.koin}",
             extensions: "io.insert-koin:koin-android-ext:${versions.koin}",
     ]
-    retrofit = "com.squareup.retrofit2:retrofit:${versions.retrofit}"
+    retrofit = [
+            retrofit : "com.squareup.retrofit2:retrofit:${versions.retrofit}",
+            converter: "com.squareup.retrofit2:converter-gson:${versions.retrofit}"
+    ]
+    gson = "com.google.code.gson:gson:${versions.gson}"
     junit = "junit:junit:${versions.junit}"
+    tink = "com.google.crypto.tink:tink-android:${versions.tink}"
 }

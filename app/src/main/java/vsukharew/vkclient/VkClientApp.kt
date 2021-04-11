@@ -9,6 +9,7 @@ import vsukharew.vkclient.auth.di.authDataModule
 import vsukharew.vkclient.auth.di.authScreenModule
 import vsukharew.vkclient.common.di.appModule
 import vsukharew.vkclient.common.network.networkModule
+import vsukharew.vkclient.features.di.featuresScreenModule
 import vsukharew.vkclient.splash.di.splashModule
 
 class VkClientApp : Application() {
@@ -20,10 +21,11 @@ class VkClientApp : Application() {
                 listOf(
                     appModule,
                     networkModule,
-                    authScreenModule,
                     authDataModule,
+                    authScreenModule,
                     splashModule,
-                    accountDataModule
+                    accountDataModule,
+                    featuresScreenModule
                 )
             )
         }

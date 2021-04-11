@@ -8,19 +8,18 @@ import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
 import androidx.viewbinding.ViewBinding
-import org.koin.android.ext.android.getKoin
-import org.koin.core.qualifier.named
+import org.koin.android.scope.AndroidScopeComponent
 import org.koin.core.scope.Scope
 import vsukharew.vkclient.R
-import vsukharew.vkclient.common.di.SURVIVE_CONFIG_CHANGES_SCOPE
+import vsukharew.vkclient.common.di.ScopeCreator
 
-abstract class BaseFragment<V : ViewBinding>(@LayoutRes private val layoutResId: Int) : Fragment() {
+abstract class BaseFragment<V : ViewBinding>(
+    @LayoutRes private val layoutResId: Int
+) : Fragment(), AndroidScopeComponent {
 
+    protected abstract val scopeCreator: ScopeCreator
     protected abstract val binding: ViewBinding
-    protected val scope: Scope = getKoin().getOrCreateScope(
-        this::class.java.name,
-        named(SURVIVE_CONFIG_CHANGES_SCOPE)
-    )
+    override val scope: Scope by lazy { scopeCreator.getScope().value }
 
     val navController by lazy {
         (requireActivity().supportFragmentManager
@@ -32,13 +31,4 @@ abstract class BaseFragment<V : ViewBinding>(@LayoutRes private val layoutResId:
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View = inflater.inflate(layoutResId, container, false)
-
-    override fun onDestroy() {
-        super.onDestroy()
-        activity?.apply {
-            if (isFinishing && !isChangingConfigurations) {
-                scope.close()
-            }
-        } ?: scope.close()
-    }
 }

@@ -7,10 +7,16 @@ import android.view.View
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import androidx.fragment.app.Fragment
+import org.koin.android.ext.android.getKoin
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.Koin
 import vsukharew.vkclient.R
 import vsukharew.vkclient.auth.navigation.AuthCoordinator
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
+import vsukharew.vkclient.common.di.ScopeCreator
+import vsukharew.vkclient.common.di.DIScopes
 import vsukharew.vkclient.common.extension.toast
 import vsukharew.vkclient.common.network.ServerUrls
 import vsukharew.vkclient.common.presentation.BaseFragment
@@ -18,11 +24,10 @@ import vsukharew.vkclient.databinding.FragmentAuthBinding
 
 class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
     private lateinit var vkActivityLauncher: ActivityResultLauncher<Intent>
-    private val viewModel: AuthViewModel by sharedViewModel()
-    private val coordinator: AuthCoordinator by lazy {
-        scope.get<AuthCoordinator>().also { it.navController = navController }
-    }
+    private val viewModel: AuthViewModel by viewModel()
+    private val coordinator: AuthCoordinator by inject()
 
+    override val scopeCreator: ScopeCreator = AuthScopeCreator(this, getKoin())
     override val binding by fragmentViewBinding(FragmentAuthBinding::bind)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +36,10 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
             StartActivityForResult(),
             ::handleVkActivityResult
         )
-        coordinator.vkActivityLauncher = vkActivityLauncher
+        coordinator.let {
+            it.navController = navController
+            it.vkActivityLauncher = vkActivityLauncher
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -109,6 +117,19 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
             authResponse[key] = bundle.get(key).toString()
         }
         return authResponse
+    }
+
+    private class AuthScopeCreator(
+        fragment: Fragment,
+        koin: Koin
+    ) : ScopeCreator(fragment, koin) {
+        override val parentScopes: List<ScopeData> = listOf(
+            ScopeData(
+                DIScopes.AUTH_DATA,
+                shouldCloseOnBackNavigation = true,
+                shouldCloseOnForwardNavigation = true
+            )
+        )
     }
 
     private companion object {

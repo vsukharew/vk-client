@@ -67,6 +67,8 @@ dependencies {
 
     implementation retrofit.retrofit
     implementation retrofit.converter
+    implementation implementation(platform(okhttp.client))
+    implementation okhttp.logger
     implementation gson
     implementation tink
 

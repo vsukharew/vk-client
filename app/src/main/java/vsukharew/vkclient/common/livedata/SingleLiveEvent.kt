@@ -5,17 +5,16 @@ package vsukharew.vkclient.common.livedata
  */
 open class SingleLiveEvent<out T>(private val content: T) {
 
-    var hasBeenHandled = false
-        private set // Allow external read but not write
+    var isHandled = false
 
     /**
      * Returns the content and prevents its use again.
      */
     fun getContentIfNotHandled(): T? {
-        return if (hasBeenHandled) {
+        return if (isHandled) {
             null
         } else {
-            hasBeenHandled = true
+            isHandled = true
             content
         }
     }
@@ -23,5 +22,5 @@ open class SingleLiveEvent<out T>(private val content: T) {
     /**
      * Returns the content, even if it's already been handled.
      */
-    fun peekContent(): T = content
+    val peekContent: T = content
 }

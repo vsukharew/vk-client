@@ -3,6 +3,7 @@ package vsukharew.vkclient.auth.data
 import android.content.Context
 import android.util.Base64
 import com.google.crypto.tink.integration.android.AndroidKeystoreKmsClient
+import vsukharew.vkclient.auth.domain.model.AuthType
 import vsukharew.vkclient.auth.domain.model.Token
 import vsukharew.vkclient.auth.domain.model.Token.Companion.ACCESS_TOKEN_KEY
 import vsukharew.vkclient.auth.domain.model.Token.Companion.EXPIRES_IN_KEY
@@ -37,8 +38,33 @@ class SharedPrefsAuthStorage(context: Context) : AuthStorage {
             .apply()
     }
 
+    override suspend fun getAuthType(): AuthType {
+        return prefs.getString(KEY_AUTH_TYPE, AuthType.UNKNOWN.name)?.let {
+            AuthType.getByName(it)
+        } ?: AuthType.UNKNOWN
+    }
+
+    override suspend fun putAuthType(authType: AuthType) {
+        prefs.edit()
+            .putString(KEY_AUTH_TYPE, authType.name)
+            .apply()
+    }
+
+    override suspend fun deleteAuthType() {
+        prefs.edit()
+            .remove(KEY_AUTH_TYPE)
+            .apply()
+    }
+
+
+    override suspend fun clearAll() {
+        deleteToken()
+        deleteAuthType()
+    }
+
     private companion object {
         private const val AUTH_PREFS = "auth_prefs"
         private const val KEY_URI = "android-keystore://auth_storage_key"
+        private const val KEY_AUTH_TYPE = "auth_type"
     }
 }

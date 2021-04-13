@@ -1,7 +1,9 @@
 package vsukharew.vkclient.features.presentation
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -34,6 +36,7 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
             profileInfo.observe(viewLifecycleOwner, ::observeProfileInfo)
             signOutButtonVisible.observe(viewLifecycleOwner, ::observeSignOutEvent)
             signOutEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
+            signOutDialogEvent.observe(viewLifecycleOwner, ::observeSignOutDialogEvent)
         }
     }
 
@@ -89,6 +92,18 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
     private fun observeSignOutEvent(event: SingleLiveEvent<Unit>) {
         event.getContentIfNotHandled()?.let {
             featuresCoordinator.onSignOutClick()
+        }
+    }
+
+    private fun observeSignOutDialogEvent(event: SingleLiveEvent<Unit>) {
+        event.getContentIfNotHandled()?.let {
+            AlertDialog.Builder(requireContext())
+                .setMessage(R.string.features_fragment_sign_out_dialog_text)
+                .setPositiveButton(R.string.ok_text) { _, _ ->
+                    featuresCoordinator.onSignOutClick()
+                }
+                .create()
+                .show()
         }
     }
 

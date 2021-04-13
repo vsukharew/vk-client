@@ -4,9 +4,7 @@ import androidx.navigation.NavController
 
 class FeaturesCoordinator(
     private val featuresNavigator: FeaturesNavigator
-
 ) {
-
     var navController: NavController? = null
         set(value) {
             field = value

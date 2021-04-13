@@ -13,6 +13,7 @@ import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.Koin
 import vsukharew.vkclient.R
+import vsukharew.vkclient.auth.domain.model.AuthType
 import vsukharew.vkclient.auth.navigation.AuthCoordinator
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.di.ScopeCreator
@@ -64,7 +65,7 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
             ?.drop(1) // get rid of the host part
             ?.map { it.split("=") /* break each query parameter into the key and value*/ }
             ?.associate { it[0] to it[1] }
-            ?.let(viewModel::onLoginSuccess)
+            ?.let { viewModel.onLoginSuccess(it, AuthType.BROWSER) }
             ?.also { intent.data = null }
     }
 
@@ -98,7 +99,7 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
                         if (error != null) {
                             toast(error)
                         } else {
-                            viewModel.onLoginSuccess(response)
+                            viewModel.onLoginSuccess(response, AuthType.APP)
                         }
                     }
                     else -> {
@@ -128,7 +129,7 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
             ScopeData(
                 DIScopes.AUTH_DATA,
                 shouldCloseOnBackNavigation = true,
-                shouldCloseOnForwardNavigation = true
+                shouldCloseOnForwardNavigation = false
             )
         )
     }

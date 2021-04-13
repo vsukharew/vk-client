@@ -11,6 +11,6 @@ val featuresScreenModule = module {
     scope<FeaturesFlowFragment> {
         scoped { FeaturesNavigator() }
         scoped { FeaturesCoordinator(get()) }
-        viewModel { FeaturesViewModel(get()) }
+        viewModel { FeaturesViewModel(get(), get(), get()) }
     }
 }

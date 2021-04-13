@@ -31,6 +31,12 @@ class SharedPrefsAuthStorage(context: Context) : AuthStorage {
             .apply()
     }
 
+    override suspend fun deleteToken() {
+        prefs.edit()
+            .remove(ACCESS_TOKEN_KEY)
+            .apply()
+    }
+
     private companion object {
         private const val AUTH_PREFS = "auth_prefs"
         private const val KEY_URI = "android-keystore://auth_storage_key"

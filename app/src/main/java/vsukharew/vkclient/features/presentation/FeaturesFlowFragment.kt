@@ -2,6 +2,8 @@ package vsukharew.vkclient.features.presentation
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.java.KoinJavaComponent.getKoin
 import vsukharew.vkclient.R
@@ -14,19 +16,37 @@ import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.databinding.FragmentFeaturesBinding
 import vsukharew.vkclient.features.di.FeaturesScopeCreator
+import vsukharew.vkclient.features.navigation.FeaturesCoordinator
 
 class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment_features) {
     private val viewModel: FeaturesViewModel by viewModel()
+    private val featuresCoordinator: FeaturesCoordinator by inject()
 
     override val binding by fragmentViewBinding(FragmentFeaturesBinding::bind)
     override val scopeCreator: ScopeCreator = FeaturesScopeCreator(this, getKoin())
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setListeners()
+        setProperties()
         viewModel.apply {
             isLoading.observe(viewLifecycleOwner, ::observeLoading)
             profileInfo.observe(viewLifecycleOwner, ::observeProfileInfo)
+            signOutButtonVisible.observe(viewLifecycleOwner, ::observeSignOutEvent)
+            signOutEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
         }
+    }
+
+    private fun setListeners() {
+        binding.signOut.setOnClickListener { viewModel.onSignOutClick() }
+    }
+
+    private fun setProperties() {
+        featuresCoordinator.navController = navController
+    }
+
+    private fun nullifyProperties() {
+        featuresCoordinator.navController = null
     }
 
     private fun observeProfileInfo(event: SingleLiveEvent<Result<ProfileInfo>>) {
@@ -60,5 +80,20 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
                 String.EMPTY
             }
         }
+    }
+
+    private fun observeSignOutEvent(isVisible: Boolean) {
+        binding.signOut.isVisible = isVisible
+    }
+
+    private fun observeSignOutEvent(event: SingleLiveEvent<Unit>) {
+        event.getContentIfNotHandled()?.let {
+            featuresCoordinator.onSignOutClick()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        nullifyProperties()
     }
 }

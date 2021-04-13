@@ -9,4 +9,5 @@
 
     <string name="features_fragment_user_name_text">Signed in as %s</string>
     <string name="features_fragment_user_name_loading_text">Profile loading…</string>
+    <string name="features_fragment_sign_out_btn">Sign out</string>
 </resources>

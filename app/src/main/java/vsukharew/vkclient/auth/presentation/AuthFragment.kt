@@ -65,6 +65,7 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
             ?.map { it.split("=") /* break each query parameter into the key and value*/ }
             ?.associate { it[0] to it[1] }
             ?.let(viewModel::onLoginSuccess)
+            ?.also { intent.data = null }
     }
 
     private fun setListeners() {

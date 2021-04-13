@@ -45,4 +45,9 @@
             app:popUpTo="@id/splashFragment"
             app:popUpToInclusive="true"/>
     </fragment>
+    <action
+        android:id="@+id/global_action_to_authFragment"
+        app:destination="@id/authFragment"
+        app:enterAnim="@android:anim/fade_in"
+        app:popUpTo="@id/navigation_graph" />
 </navigation>

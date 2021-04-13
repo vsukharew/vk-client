@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">vkclient</string>
+    <string name="network_error_text">Check your connection</string>
+    <string name="unknown_server_error_text">Server error occurred</string>
+    <string name="unknown_error_text">Unknown error</string>
 
     <string name="auth_login_btn">Log in</string>
     <string name="auth_failed_text">Failed to sign in</string>

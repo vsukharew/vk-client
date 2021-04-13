@@ -1,16 +1,28 @@
 package vsukharew.vkclient.common.network
 
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import vsukharew.vkclient.BuildConfig
 import vsukharew.vkclient.auth.data.AuthStorage
 import vsukharew.vkclient.common.network.calladapter.ResultAdapterFactory
 import vsukharew.vkclient.common.network.interceptor.AddTokenInterceptor
+import java.util.concurrent.TimeUnit
 
 private fun provideOkHttpClient(authStorage: AuthStorage): OkHttpClient {
     return OkHttpClient.Builder()
-        .addInterceptor(AddTokenInterceptor(authStorage))
+        .apply {
+            addInterceptor(AddTokenInterceptor(authStorage))
+            if (BuildConfig.DEBUG) {
+                addInterceptor(
+                    HttpLoggingInterceptor()
+                        .setLevel(HttpLoggingInterceptor.Level.BODY)
+                )
+            }
+            callTimeout(2, TimeUnit.MINUTES)
+        }
         .build()
 }
 

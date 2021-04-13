@@ -10,7 +10,7 @@ class AddTokenInterceptor(private val authStorage: AuthStorage) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         return runBlocking {
             val newUrl = chain.request()
-                .url()
+                .url
                 .newBuilder()
                 .apply {
                     authStorage.getToken()

@@ -3,11 +3,13 @@ package vsukharew.vkclient.auth.presentation
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import vsukharew.vkclient.auth.data.model.AuthParams
 import vsukharew.vkclient.auth.domain.interactor.AuthInteractor
+import vsukharew.vkclient.auth.domain.model.AuthType
 import vsukharew.vkclient.auth.domain.model.Token
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
+import kotlin.coroutines.CoroutineContext
 
 class AuthViewModel(
     private val authInteractor: AuthInteractor
@@ -19,9 +21,13 @@ class AuthViewModel(
         openBrowserForAuthEvent.value = SingleLiveEvent(AuthParams())
     }
 
-    fun onLoginSuccess(authResponse: Map<String, String>) {
+    fun onLoginSuccess(authResponse: Map<String, String>, authType: AuthType) {
         viewModelScope.launch {
-            authInteractor.saveToken(Token(authResponse))
+            val context = Dispatchers.IO
+            awaitAll(
+                async(context = context) { authInteractor.saveAuthType(authType) },
+                async(context = context) { authInteractor.saveToken(Token(authResponse)) }
+            )
             openFunctionScreenEvent.value = SingleLiveEvent(Unit)
         }
     }

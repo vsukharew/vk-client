@@ -51,10 +51,13 @@ class ResultCall<T>(
      * What had occurred, success or error, can be determined by type checking the [Result] instance
      *
      * Example:
-     * ErrorResponse(errorCode = [ServerErrorCodes.AUTHORIZATION_FAILED],
-     * errorMsg = "authorization failed",
-     * requestParams = [ ... ]
-     * )
+     * ```
+     *      ErrorResponse(
+     *              errorCode = [ServerErrorCodes.AUTHORIZATION_FAILED],
+     *              errorMsg = "authorization failed",
+     *              requestParams = [ ... ]
+     *          )
+     * ```
      * will be converted to [Result.Error.HttpError.ClientError.UnauthorizedError]
      */
     private class ResponseConverter<T>(
@@ -103,7 +106,7 @@ class ResultCall<T>(
                         HttpError.ServerError(HTTP_INTERNAL_ERROR, errorBody)
                     } else {
                         when (responseCode) {
-                            in clientErrorCodesRange -> ClientError(responseCode)
+                            in clientErrorCodesRange -> ClientError.OtherClientError(responseCode)
                             in serverErrorCodesRange -> HttpError.ServerError(responseCode, errorBody)
                             else -> HttpError.OtherHttpError(responseCode)
                         }

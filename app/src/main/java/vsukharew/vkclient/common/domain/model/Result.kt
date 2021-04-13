@@ -14,9 +14,10 @@ sealed class Result<out T> {
 
     sealed class Error : Result<Nothing>() {
 
-        sealed class HttpError(val httpCode: Int) : Error() {
-            open class ClientError(httpCode: Int) : HttpError(httpCode) {
+        sealed class HttpError(open val httpCode: Int) : Error() {
+            sealed class ClientError(httpCode: Int) : HttpError(httpCode) {
                 object UnauthorizedError : ClientError(HttpURLConnection.HTTP_UNAUTHORIZED)
+                data class OtherClientError(override val httpCode: Int) : ClientError(httpCode)
             }
 
             class ServerError(httpCode: Int, val errorBody: ErrorResponse?) : HttpError(httpCode)

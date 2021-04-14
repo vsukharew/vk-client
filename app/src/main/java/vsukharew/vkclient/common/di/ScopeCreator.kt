@@ -2,9 +2,9 @@ package vsukharew.vkclient.common.di
 
 import androidx.fragment.app.Fragment
 import org.koin.core.Koin
+import org.koin.core.qualifier.Qualifier
 import org.koin.core.scope.Scope
 import vsukharew.vkclient.common.extension.fragmentRetainedScope
-import vsukharew.vkclient.common.extension.getOrCreateParentScope
 import vsukharew.vkclient.common.extension.linkParentScopes
 
 /**
@@ -21,7 +21,7 @@ abstract class ScopeCreator(
 
     fun getScope(): Lazy<Scope> = with(koin) {
         parentScopes.onEach {
-            it.scope = getOrCreateParentScope(it.scopeName)
+            it.scope = getOrCreateScope(it.scopeId, it.qualifier)
         }.let {
             fragment.fragmentRetainedScope()
                 .linkParentScopes(fragment, it)
@@ -29,7 +29,8 @@ abstract class ScopeCreator(
     }
 
     data class ScopeData(
-        val scopeName: DIScopes,
+        val scopeId: String,
+        val qualifier: Qualifier,
         val shouldCloseOnBackNavigation: Boolean,
         val shouldCloseOnForwardNavigation: Boolean
     ) {

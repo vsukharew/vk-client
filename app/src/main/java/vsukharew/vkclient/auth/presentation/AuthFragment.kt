@@ -7,17 +7,15 @@ import android.view.View
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
-import androidx.fragment.app.Fragment
 import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.Koin
 import vsukharew.vkclient.R
+import vsukharew.vkclient.auth.di.AuthScopeCreator
 import vsukharew.vkclient.auth.domain.model.AuthType
 import vsukharew.vkclient.auth.navigation.AuthCoordinator
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.di.ScopeCreator
-import vsukharew.vkclient.common.di.DIScopes
 import vsukharew.vkclient.common.extension.toast
 import vsukharew.vkclient.common.network.ServerUrls
 import vsukharew.vkclient.common.presentation.BaseFragment
@@ -119,19 +117,6 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
             authResponse[key] = bundle.get(key).toString()
         }
         return authResponse
-    }
-
-    private class AuthScopeCreator(
-        fragment: Fragment,
-        koin: Koin
-    ) : ScopeCreator(fragment, koin) {
-        override val parentScopes: List<ScopeData> = listOf(
-            ScopeData(
-                DIScopes.AUTH_DATA,
-                shouldCloseOnBackNavigation = true,
-                shouldCloseOnForwardNavigation = false
-            )
-        )
     }
 
     private companion object {

@@ -7,11 +7,7 @@ import org.koin.core.scope.Scope
 import vsukharew.vkclient.common.di.DIScopes
 import vsukharew.vkclient.common.di.LifecycleScopeManager
 import vsukharew.vkclient.common.di.ScopeCreator
-
-fun Koin.getOrCreateParentScope(scopeName: DIScopes): Scope {
-    val parentScopeId = "parent_scope"
-    return getOrCreateScope(parentScopeId, named(scopeName))
-}
+import java.util.*
 
 /**
  * Links [parentScopes] to the current screen scope

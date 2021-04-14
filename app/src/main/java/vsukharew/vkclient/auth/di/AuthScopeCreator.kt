@@ -1,14 +1,14 @@
-package vsukharew.vkclient.features.di
+package vsukharew.vkclient.auth.di
 
+import androidx.fragment.app.Fragment
 import org.koin.core.Koin
 import org.koin.core.qualifier.named
 import vsukharew.vkclient.common.di.DIScopes
 import vsukharew.vkclient.common.di.ScopeCreator
 import vsukharew.vkclient.common.di.ScopesIds
-import vsukharew.vkclient.features.presentation.FeaturesFlowFragment
 
-class FeaturesScopeCreator(
-    fragment: FeaturesFlowFragment,
+class AuthScopeCreator(
+    fragment: Fragment,
     koin: Koin
 ) : ScopeCreator(fragment, koin) {
     override val parentScopes: List<ScopeData> = listOf(
@@ -16,13 +16,7 @@ class FeaturesScopeCreator(
             ScopesIds.AUTH_DATA_SCOPE_ID,
             named(DIScopes.AUTH_DATA),
             shouldCloseOnBackNavigation = true,
-            shouldCloseOnForwardNavigation = true
-        ),
-        ScopeData(
-            ScopesIds.ACCOUNT_SCOPE_ID,
-            named(DIScopes.ACCOUNT),
-            shouldCloseOnBackNavigation = true,
-            shouldCloseOnForwardNavigation = true
+            shouldCloseOnForwardNavigation = false
         )
     )
 }

@@ -11,10 +11,10 @@ import vsukharew.vkclient.R
 import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.di.ScopeCreator
-import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.extension.EMPTY
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseFragment
+import vsukharew.vkclient.common.presentation.loadstate.UIState
 import vsukharew.vkclient.databinding.FragmentFeaturesBinding
 import vsukharew.vkclient.features.di.FeaturesScopeCreator
 import vsukharew.vkclient.features.navigation.FeaturesCoordinator
@@ -31,9 +31,7 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
         setListeners()
         setProperties()
         viewModel.apply {
-            isLoading.observe(viewLifecycleOwner, ::observeLoading)
-            profileInfo.observe(viewLifecycleOwner, ::observeProfileInfo)
-            signOutButtonVisible.observe(viewLifecycleOwner, ::observeSignOutEvent)
+            profileUiState.observe(viewLifecycleOwner, ::observeUiState)
             signOutEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
             signOutDialogEvent.observe(viewLifecycleOwner, ::observeSignOutDialogEvent)
             signOutDialogClosedEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
@@ -41,7 +39,11 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
     }
 
     private fun setListeners() {
-        binding.signOut.setOnClickListener { viewModel.onSignOutClick() }
+        binding.apply {
+            signOut.setOnClickListener { viewModel.onSignOutClick() }
+            retry.setOnClickListener { viewModel.retryLoadProfileInfo() }
+            refreshLayout.setOnRefreshListener { viewModel.refreshProfileInfo() }
+        }
     }
 
     private fun setProperties() {
@@ -52,46 +54,15 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
         featuresCoordinator.navController = null
     }
 
-    private fun observeProfileInfo(event: SingleLiveEvent<Result<ProfileInfo>>) {
-        with(event) {
-            when (peekContent) {
-                is Result.Success -> {
-                    binding.userName.text =
-                        getString(
-                            R.string.features_fragment_user_name_text,
-                            "${peekContent.data.firstName} ${peekContent.data.lastName}"
-                        )
-                }
-                is Result.Error -> {
-                    if (!isHandled) { // check so that snackbars or other actions aren't fired twice
-                        isHandled = true
-                        handleError(peekContent)
-                    }
-                }
-                else -> {
-                    // do nothing
-                }
+    private fun observeUiState(state: UIState<ProfileInfo>) {
+        when (state) {
+            UIState.LoadingProgress -> renderLoadingProgress()
+            UIState.SwipeRefreshProgress -> {
+                // empty implementation
             }
-        }
-    }
-
-    private fun observeLoading(isLoading: Boolean) {
-        binding.userName.apply {
-            text = if (isLoading) {
-                getString(R.string.features_fragment_user_name_loading_text)
-            } else {
-                String.EMPTY
-            }
-        }
-    }
-
-    private fun observeSignOutEvent(isVisible: Boolean) {
-        binding.signOut.isVisible = isVisible
-    }
-
-    private fun observeSignOutEvent(event: SingleLiveEvent<Unit>) {
-        event.getContentIfNotHandled()?.let {
-            featuresCoordinator.onSignOutClick()
+            is UIState.Success -> renderSuccessState(state)
+            is UIState.SwipeRefreshError -> renderSwipeRefreshErrorState(state)
+            is UIState.Error -> renderErrorState(state)
         }
     }
 
@@ -103,6 +74,51 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
             }
             .create()
             .show()
+    }
+
+    private fun observeSignOutEvent(event: SingleLiveEvent<Unit>) {
+        event.getContentIfNotHandled()?.let {
+            featuresCoordinator.onSignOutClick()
+        }
+    }
+
+    private fun renderLoadingProgress() {
+        binding.apply {
+            refreshLayout.isEnabled = false
+            userName.text = getString(R.string.features_fragment_user_name_loading_text)
+            signOut.isVisible = false
+            retry.isVisible = false
+        }
+    }
+
+    private fun renderSuccessState(state: UIState.Success<ProfileInfo>) {
+        binding.apply {
+            refreshLayout.isEnabled = true
+            refreshLayout.isRefreshing = false
+            retry.isVisible = false
+            signOut.isVisible = true
+            userName.text = with(state.data) {
+                getString(
+                    R.string.features_fragment_user_name_text,
+                    "${data.firstName} ${data.lastName}"
+                )
+            }
+        }
+    }
+
+    private fun renderSwipeRefreshErrorState(state: UIState.SwipeRefreshError) {
+        binding.refreshLayout.isRefreshing = false
+        state.error.getContentIfNotHandled()?.let(::handleError)
+    }
+
+    private fun renderErrorState(state: UIState.Error) {
+        binding.apply {
+            userName.text = String.EMPTY
+            signOut.isVisible = false
+            retry.isVisible = true
+            refreshLayout.isRefreshing = false
+        }
+        state.error.getContentIfNotHandled()?.let(::handleError)
     }
 
     override fun onDestroy() {

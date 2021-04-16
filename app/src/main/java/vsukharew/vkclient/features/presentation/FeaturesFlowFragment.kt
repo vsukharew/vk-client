@@ -1,9 +1,15 @@
 package vsukharew.vkclient.features.presentation
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.java.KoinJavaComponent.getKoin
@@ -12,12 +18,15 @@ import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.di.ScopeCreator
 import vsukharew.vkclient.common.extension.EMPTY
+import vsukharew.vkclient.common.extension.textChangesSkipFirst
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.common.presentation.loadstate.UIState
 import vsukharew.vkclient.databinding.FragmentFeaturesBinding
 import vsukharew.vkclient.features.di.FeaturesScopeCreator
 import vsukharew.vkclient.features.navigation.FeaturesCoordinator
+import vsukharew.vkclient.screenname.model.ScreenNameAvailability
+import vsukharew.vkclient.screenname.model.ScreenNameAvailability.*
 
 class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment_features) {
     private val viewModel: FeaturesViewModel by viewModel()
@@ -30,12 +39,32 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
         super.onViewCreated(view, savedInstanceState)
         setListeners()
         setProperties()
+        observeData()
+        observeUiEvents()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        nullifyProperties()
+    }
+
+    private fun observeData() {
         viewModel.apply {
-            profileUiState.observe(viewLifecycleOwner, ::observeUiState)
+            profileUiState.observe(viewLifecycleOwner, ::observeProfileUiState)
+            shortNameUiState.observe(viewLifecycleOwner, ::observeShortNameUiState)
+            shortNameTextState.observe(viewLifecycleOwner, ::observeShortNameTextState)
             signOutEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
             signOutDialogEvent.observe(viewLifecycleOwner, ::observeSignOutDialogEvent)
             signOutDialogClosedEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
         }
+    }
+
+    private fun observeUiEvents() {
+        binding.shortNameText
+            .textChangesSkipFirst()
+            .debounce(500L)
+            .onEach(viewModel::onShortNameChanged)
+            .launchIn(viewModel.viewModelScope)
     }
 
     private fun setListeners() {
@@ -54,7 +83,7 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
         featuresCoordinator.navController = null
     }
 
-    private fun observeUiState(state: UIState<ProfileInfo>) {
+    private fun observeProfileUiState(state: UIState<ProfileInfo>) {
         when (state) {
             UIState.LoadingProgress -> renderLoadingProgress()
             UIState.SwipeRefreshProgress -> {
@@ -63,6 +92,25 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
             is UIState.Success -> renderSuccessState(state)
             is UIState.SwipeRefreshError -> renderSwipeRefreshErrorState(state)
             is UIState.Error -> renderErrorState(state)
+        }
+    }
+
+    private fun observeShortNameUiState(state: UIState<ScreenNameAvailability>) {
+        when (state) {
+            UIState.LoadingProgress -> renderLoadingShortNameState()
+            is UIState.Success -> renderSuccessShortNameState(state)
+            is UIState.Error -> renderErrorShortNameState(state)
+            else -> {
+
+            }
+        }
+    }
+
+    private fun observeShortNameTextState(text: String) {
+        binding.shortNameText.apply {
+            if (getText()?.toString() != text) {
+                setText(text)
+            }
         }
     }
 
@@ -84,6 +132,7 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
 
     private fun renderLoadingProgress() {
         binding.apply {
+            shortNameHint.isVisible = false
             refreshLayout.isEnabled = false
             userName.text = getString(R.string.features_fragment_user_name_loading_text)
             signOut.isVisible = false
@@ -97,11 +146,14 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
             refreshLayout.isRefreshing = false
             retry.isVisible = false
             signOut.isVisible = true
-            userName.text = with(state.data) {
-                getString(
-                    R.string.features_fragment_user_name_text,
-                    "$firstName $lastName"
-                )
+            shortNameHint.isVisible = true
+            with(state.data) {
+                userName.text =
+                    getString(
+                        R.string.features_fragment_user_name_text,
+                        "$firstName $lastName"
+                    )
+                shortNameText.setText(screenName)
             }
         }
     }
@@ -117,12 +169,38 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
             signOut.isVisible = false
             retry.isVisible = true
             refreshLayout.isRefreshing = false
+            shortNameHint.isVisible = false
         }
         state.error.getContentIfNotHandled()?.let(::handleError)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        nullifyProperties()
+    private fun renderLoadingShortNameState() {
+        binding.shortNameHint.apply {
+            boxStrokeColor = Color.BLUE
+            setHelperTextColor(ColorStateList.valueOf(boxStrokeColor))
+            helperText = getString(R.string.features_fragment_username_is_being_checked_text)
+        }
+    }
+
+    private fun renderSuccessShortNameState(state: UIState.Success<ScreenNameAvailability>) {
+        binding.shortNameHint.apply {
+            val (color, text) = when (state.data) {
+                AVAILABLE -> Color.GREEN to R.string.features_fragment_username_available_text
+                UNAVAILABLE -> Color.RED to R.string.features_fragment_username_busy_text
+                CURRENT_USER_NAME -> Color.BLUE to R.string.empty
+            }
+            boxStrokeColor = color
+            setHelperTextColor(ColorStateList.valueOf(color))
+            helperText = getString(text)
+        }
+    }
+
+    private fun renderErrorShortNameState(state: UIState.Error) {
+        binding.shortNameHint.apply {
+            boxStrokeColor = Color.RED
+            setHelperTextColor(ColorStateList.valueOf(boxStrokeColor))
+            helperText = getString(R.string.features_fragment_username_error_hint)
+        }
+        state.error.getContentIfNotHandled()?.let(::handleError)
     }
 }

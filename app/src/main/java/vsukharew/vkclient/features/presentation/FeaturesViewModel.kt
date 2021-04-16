@@ -71,7 +71,7 @@ class FeaturesViewModel(
             val info = withContext(Dispatchers.IO) { accountRepo.getProfileInfo() }
             emit(
                 when (info) {
-                    is Result.Success -> UIState.Success(info)
+                    is Result.Success -> UIState.Success(info.data)
                     is Result.Error -> {
                         val error = SingleLiveEvent(info)
                         when (action) {

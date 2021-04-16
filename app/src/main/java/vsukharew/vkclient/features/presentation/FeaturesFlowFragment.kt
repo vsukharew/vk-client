@@ -100,7 +100,7 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
             userName.text = with(state.data) {
                 getString(
                     R.string.features_fragment_user_name_text,
-                    "${data.firstName} ${data.lastName}"
+                    "$firstName $lastName"
                 )
             }
         }

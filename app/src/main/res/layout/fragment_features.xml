@@ -14,7 +14,7 @@
             android:layout_height="match_parent"
             android:padding="16dp"
             android:orientation="vertical"
-            tools:context=".features.presentation.FeaturesFlowFragment">
+            tools:context=".features.presentation.FeaturesFragment">
 
             <TextView
                 android:id="@+id/user_name"

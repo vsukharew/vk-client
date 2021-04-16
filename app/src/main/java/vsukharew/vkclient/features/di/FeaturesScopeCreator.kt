@@ -5,10 +5,10 @@ import org.koin.core.qualifier.named
 import vsukharew.vkclient.common.di.DIScopes
 import vsukharew.vkclient.common.di.ScopeCreator
 import vsukharew.vkclient.common.di.ScopesIds
-import vsukharew.vkclient.features.presentation.FeaturesFlowFragment
+import vsukharew.vkclient.features.presentation.FeaturesFragment
 
 class FeaturesScopeCreator(
-    fragment: FeaturesFlowFragment,
+    fragment: FeaturesFragment,
     koin: Koin
 ) : ScopeCreator(fragment, koin) {
     override val parentScopes: List<ScopeData> = listOf(

@@ -28,7 +28,7 @@ import vsukharew.vkclient.features.navigation.FeaturesCoordinator
 import vsukharew.vkclient.screenname.model.ScreenNameAvailability
 import vsukharew.vkclient.screenname.model.ScreenNameAvailability.*
 
-class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment_features) {
+class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment_features) {
     private val viewModel: FeaturesViewModel by viewModel()
     private val featuresCoordinator: FeaturesCoordinator by inject()
 

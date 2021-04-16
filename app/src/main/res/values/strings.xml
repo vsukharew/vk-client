@@ -5,12 +5,18 @@
     <string name="unknown_server_error_text">Server error occurred</string>
     <string name="unknown_error_text">Unknown error</string>
     <string name="retry_btn">Retry</string>
+    <string name="empty" />
 
     <string name="auth_login_btn">Log in</string>
     <string name="auth_failed_text">Failed to sign in</string>
 
     <string name="features_fragment_user_name_text">Signed in as %s</string>
     <string name="features_fragment_user_name_loading_text">Profile loading…</string>
+    <string name="features_fragment_your_short_name_text">Your short name</string>
     <string name="features_fragment_sign_out_btn">Sign out</string>
     <string name="features_fragment_sign_out_dialog_text">Since you signed in via browser please clear the password of vk.com if you want to sign in as another user</string>
+    <string name="features_fragment_username_available_text">Username available</string>
+    <string name="features_fragment_username_is_being_checked_text">Checking…</string>
+    <string name="features_fragment_username_busy_text">Username is busy</string>
+    <string name="features_fragment_username_error_hint">Error happened</string>
 </resources>

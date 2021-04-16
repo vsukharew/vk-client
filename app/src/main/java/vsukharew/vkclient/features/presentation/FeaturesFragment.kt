@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.java.KoinJavaComponent.getKoin
 import vsukharew.vkclient.R
 import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
@@ -33,7 +32,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
     private val featuresCoordinator: FeaturesCoordinator by inject()
 
     override val binding by fragmentViewBinding(FragmentFeaturesBinding::bind)
-    override val scopeCreator: ScopeCreator = FeaturesScopeCreator(this, getKoin())
+    override val scopeCreator: ScopeCreator = FeaturesScopeCreator
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

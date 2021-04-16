@@ -7,7 +7,6 @@ import android.view.View
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
-import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import vsukharew.vkclient.R
@@ -26,7 +25,7 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
     private val viewModel: AuthViewModel by viewModel()
     private val coordinator: AuthCoordinator by inject()
 
-    override val scopeCreator: ScopeCreator = AuthScopeCreator(this, getKoin())
+    override val scopeCreator: ScopeCreator = AuthScopeCreator
     override val binding by fragmentViewBinding(FragmentAuthBinding::bind)
 
     override fun onCreate(savedInstanceState: Bundle?) {

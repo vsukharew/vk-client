@@ -25,7 +25,7 @@
         app:startDestination="@id/features_fragment">
         <fragment
             android:id="@+id/features_fragment"
-            android:name="vsukharew.vkclient.features.presentation.FeaturesFlowFragment"
+            android:name="vsukharew.vkclient.features.presentation.FeaturesFragment"
             android:label="FeaturesFlowFragment"
             tools:layout="@layout/fragment_features" >
         </fragment>

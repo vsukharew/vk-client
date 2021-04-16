@@ -10,7 +10,6 @@ import java.net.HttpURLConnection
 sealed class Result<out T> {
 
     data class Success<T>(val data: T) : Result<T>()
-    object SuccessNoBody : Result<Nothing>()
 
     sealed class Error : Result<Nothing>() {
 

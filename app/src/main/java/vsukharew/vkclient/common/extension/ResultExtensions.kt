@@ -7,7 +7,6 @@ fun <T, R> Result<T>.map(
 ) : Result<R> {
     return when (this) {
         is Result.Success -> Result.Success(dataMapper.invoke(this.data))
-        is Result.SuccessNoBody -> Result.SuccessNoBody
         is Result.Error.HttpError.ServerError -> Result.Error.HttpError.ServerError(this.httpCode, this.errorBody)
         is Result.Error.HttpError.ClientError.OtherClientError -> Result.Error.HttpError.OtherHttpError(this.httpCode)
         is Result.Error.HttpError.ClientError.UnauthorizedError -> Result.Error.HttpError.ClientError.UnauthorizedError

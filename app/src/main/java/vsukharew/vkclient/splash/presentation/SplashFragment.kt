@@ -2,7 +2,6 @@ package vsukharew.vkclient.splash.presentation
 
 import android.os.Bundle
 import android.view.View
-import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import vsukharew.vkclient.R
@@ -16,7 +15,7 @@ class SplashFragment : BaseFragment<FragmentSplashBinding>(R.layout.fragment_spl
     private val viewModel: SplashViewModel by viewModel()
     private val coordinator: SplashCoordinator by inject()
 
-    override val scopeCreator: ScopeCreator = SplashScopeCreator(this, getKoin())
+    override val scopeCreator: ScopeCreator = SplashScopeCreator
     override val binding by fragmentViewBinding(FragmentSplashBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

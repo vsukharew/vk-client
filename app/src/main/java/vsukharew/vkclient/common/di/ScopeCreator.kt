@@ -10,16 +10,13 @@ import vsukharew.vkclient.common.extension.linkParentScopes
 /**
  * Class that creates current screen scope that is linked to parent ones
  */
-abstract class ScopeCreator(
-    private val fragment: Fragment,
-    private val koin: Koin
-) {
+abstract class ScopeCreator {
     /**
      * Parent scopes data is provided by each screen
      */
     abstract val parentScopes: List<ScopeData>
 
-    fun getScope(): Lazy<Scope> = with(koin) {
+    fun getScope(fragment: Fragment, koin: Koin): Lazy<Scope> = with(koin) {
         parentScopes.onEach {
             it.scope = getOrCreateScope(it.scopeId, it.qualifier)
         }.let {

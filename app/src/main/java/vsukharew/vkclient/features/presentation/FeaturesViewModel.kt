@@ -68,6 +68,16 @@ class FeaturesViewModel(
         profileInfoAction.value = UIAction.SwipeRefresh
     }
 
+    fun onShortNameChanged(shortName: String) {
+        shortNameTextState.value = shortName
+        with(shortNameTextState) {
+            when (value) {
+                shortNameAction.value?.text -> return
+                else -> shortNameAction.value = UIAction.Text(shortName)
+            }
+        }
+    }
+
     private fun loadProfileInfo(action: UIAction): LiveData<UIState<ProfileInfo>> {
         return liveData {
             val loadingState = when (action) {
@@ -93,21 +103,11 @@ class FeaturesViewModel(
         }
     }
 
-    fun onShortNameChanged(shortName: String) {
-        shortNameTextState.value = shortName
-        with(shortNameTextState) {
-            when (value) {
-                shortNameAction.value?.text -> return
-                else -> shortNameAction.value = UIAction.Text(shortName)
-            }
-        }
-    }
-
     private fun checkShortNameAvailability(
         action: UIAction.Text
     ): LiveData<UIState<ScreenNameAvailability>> {
         return liveData {
-            when(action.text) {
+            when (action.text) {
                 currentShortName -> {
                     emit(UIState.Success(CURRENT_USER_NAME))
                     return@liveData

@@ -39,6 +39,16 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
         super.onViewCreated(view, savedInstanceState)
         setListeners()
         setProperties()
+        observeData()
+        observeUiEvents()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        nullifyProperties()
+    }
+
+    private fun observeData() {
         viewModel.apply {
             profileUiState.observe(viewLifecycleOwner, ::observeProfileUiState)
             shortNameUiState.observe(viewLifecycleOwner, ::observeShortNameUiState)
@@ -47,6 +57,9 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
             signOutDialogEvent.observe(viewLifecycleOwner, ::observeSignOutDialogEvent)
             signOutDialogClosedEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
         }
+    }
+
+    private fun observeUiEvents() {
         binding.shortNameText
             .textChangesSkipFirst()
             .debounce(500L)
@@ -189,10 +202,5 @@ class FeaturesFlowFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.frag
             helperText = getString(R.string.features_fragment_username_error_hint)
         }
         state.error.getContentIfNotHandled()?.let(::handleError)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        nullifyProperties()
     }
 }

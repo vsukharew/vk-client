@@ -21,7 +21,7 @@ ext {
                     'espresso'          : '3.2.0',
                     'swiperefreshlayout': '1.1.0',
                     'lifecycle'         : '2.2.0',
-                    'navigation'        : '2.3.4'
+                    'navigation'        : '2.3.1'
             ],
             gradle    : '4.1.2',
             koin      : '3.0.1-beta-1',

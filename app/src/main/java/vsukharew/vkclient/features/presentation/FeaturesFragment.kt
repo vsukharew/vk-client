@@ -70,6 +70,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         binding.apply {
             signOut.setOnClickListener { viewModel.onSignOutClick() }
             retry.setOnClickListener { viewModel.retryLoadProfileInfo() }
+            publishImage.setOnClickListener { featuresCoordinator.onPublishImageClick() }
             refreshLayout.setOnRefreshListener { viewModel.refreshProfileInfo() }
         }
     }

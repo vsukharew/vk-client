@@ -14,6 +14,7 @@
     <string name="features_fragment_user_name_loading_text">Profile loading…</string>
     <string name="features_fragment_your_short_name_text">Your short name</string>
     <string name="features_fragment_sign_out_btn">Sign out</string>
+    <string name="features_fragment_publish_image_btn">Publish image</string>
     <string name="features_fragment_sign_out_dialog_text">Since you signed in via browser please clear the password of vk.com if you want to sign in as another user</string>
     <string name="features_fragment_username_available_text">Username available</string>
     <string name="features_fragment_username_is_being_checked_text">Checking…</string>

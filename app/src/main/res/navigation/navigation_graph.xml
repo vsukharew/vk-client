@@ -12,7 +12,7 @@
         tools:layout="@layout/fragment_auth">
         <action
             android:id="@+id/action_authFragment_to_functional_graph"
-            app:destination="@id/features_graph"
+            app:destination="@id/features_fragment"
             app:popUpTo="@id/splashFragment"
             app:popUpToInclusive="true"/>
         <deepLink
@@ -21,22 +21,24 @@
             app:uri="https://oauth.vk.com/blank.html.*" />
     </fragment>
 
-    <navigation android:id="@+id/features_graph"
-        app:startDestination="@id/features_fragment">
-        <fragment
-            android:id="@+id/features_fragment"
-            android:name="vsukharew.vkclient.features.presentation.FeaturesFragment"
-            android:label="FeaturesFlowFragment"
-            tools:layout="@layout/fragment_features" >
-        </fragment>
-    </navigation>
+    <fragment
+        android:id="@+id/features_fragment"
+        android:name="vsukharew.vkclient.features.presentation.FeaturesFragment"
+        android:label="FeaturesFlowFragment"
+        tools:layout="@layout/fragment_features" >
+        <action
+            android:id="@+id/action_featuresFragment_to_publish_image_graph"
+            app:destination="@id/publish_image_flow_graph"
+            app:popUpTo="@id/features_fragment" />
+    </fragment>
+
     <fragment
         android:id="@+id/splashFragment"
         android:name="vsukharew.vkclient.splash.presentation.SplashFragment"
         android:label="SplashFragment" >
         <action
             android:id="@+id/action_splashFragment_to_features_graph"
-            app:destination="@id/features_graph"
+            app:destination="@id/features_fragment"
             app:popUpTo="@id/splashFragment"
             app:popUpToInclusive="true" />
         <action
@@ -50,4 +52,6 @@
         app:destination="@id/authFragment"
         app:enterAnim="@android:anim/fade_in"
         app:popUpTo="@id/navigation_graph" />
+
+    <include app:graph="@navigation/publish_image_flow_graph" />
 </navigation>

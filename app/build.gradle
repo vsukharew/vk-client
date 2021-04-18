@@ -71,6 +71,7 @@ dependencies {
     implementation okhttp.logger
     implementation gson
     implementation tink
+    implementation anyTypeAdapter
 
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'
 }

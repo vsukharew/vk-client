@@ -12,7 +12,7 @@
 
     <fragment
         android:id="@+id/attachImageFragment"
-        android:name="vsukharew.vkclient.publishimage.attach.AttachImageFragment"
+        android:name="vsukharew.vkclient.publishimage.attach.presentation.AttachImageFragment"
         android:label="AttachImageFragment"
         tools:layout="@layout/fragment_attach_image"/>
 </navigation>

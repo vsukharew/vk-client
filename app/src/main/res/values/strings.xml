@@ -20,4 +20,7 @@
     <string name="features_fragment_username_is_being_checked_text">Checking…</string>
     <string name="features_fragment_username_busy_text">Username is busy</string>
     <string name="features_fragment_username_error_hint">Error happened</string>
+
+    <string name="publish_image_fragment_back_btn">Back</string>
+    <string name="publish_image_fragment_next_btn">Next</string>
 </resources>

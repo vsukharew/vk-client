@@ -6,7 +6,9 @@ import vsukharev.anytypeadapter.holder.NoDataViewHolder
 import vsukharew.vkclient.R
 import vsukharew.vkclient.databinding.DelegateAddNewImageBinding
 
-class AddNewImageDelegate : NoDataDelegate<DelegateAddNewImageBinding>() {
+class AddNewImageDelegate(
+    private val onAddImageClickListener: () -> Unit = {}
+) : NoDataDelegate<DelegateAddNewImageBinding>() {
 
     override fun createViewHolder(itemView: View): NoDataViewHolder<DelegateAddNewImageBinding> {
         return Holder(DelegateAddNewImageBinding.bind(itemView))
@@ -14,7 +16,12 @@ class AddNewImageDelegate : NoDataDelegate<DelegateAddNewImageBinding>() {
 
     override fun getItemViewType(): Int = R.layout.delegate_add_new_image
 
-    class Holder(
+    inner class Holder(
         binding: DelegateAddNewImageBinding
-    ) : NoDataViewHolder<DelegateAddNewImageBinding>(binding)
+    ) : NoDataViewHolder<DelegateAddNewImageBinding>(binding) {
+
+        init {
+            binding.clickableArea.setOnClickListener { onAddImageClickListener.invoke() }
+        }
+    }
 }

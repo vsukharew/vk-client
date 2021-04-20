@@ -12,4 +12,8 @@ object ServerUrls {
         const val GET_PROFILE = "account.getProfileInfo"
         const val RESOLVE_SCREEN_NAME = "utils.resolveScreenName"
     }
+
+    object Image {
+        const val UPLOAD_ADDRESS_WALL = "photos.getWallUploadServer"
+    }
 }

@@ -11,6 +11,7 @@ import vsukharew.vkclient.BuildConfig
 import vsukharew.vkclient.account.data.model.ScreenNameResponse
 import vsukharew.vkclient.auth.data.AuthStorage
 import vsukharew.vkclient.common.network.calladapter.ResultAdapterFactory
+import vsukharew.vkclient.common.network.calladapter.responsewrapper.ResultResponseWrapperAdapterFactory
 import vsukharew.vkclient.common.network.deserializer.ResolvedScreenNameDeserializer
 import vsukharew.vkclient.common.network.interceptor.AddTokenInterceptor
 import java.util.concurrent.TimeUnit
@@ -41,6 +42,7 @@ private fun provideRetrofit(authStorage: AuthStorage): Retrofit {
         .baseUrl(ServerUrls.BASE_URL)
         .client(provideOkHttpClient(authStorage))
         .addCallAdapterFactory(ResultAdapterFactory())
+        .addCallAdapterFactory(ResultResponseWrapperAdapterFactory())
         .addConverterFactory(GsonConverterFactory.create(provideGson()))
         .build()
 }

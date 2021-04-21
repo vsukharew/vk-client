@@ -18,6 +18,6 @@ class PublishImageFragment :
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        flowNavController.navigate(R.id.attachImageFragment)
+        navigateIfDestinationIsNotCreated(R.id.attachImageFragment)
     }
 }

@@ -18,5 +18,5 @@ interface ImageApi {
     suspend fun uploadImage(
         @Url url: String,
         @Part image: MultipartBody.Part
-    ): Result<UploadImageResponse>
+    ): Result<ResponseWrapper<UploadImageResponse>>
 }

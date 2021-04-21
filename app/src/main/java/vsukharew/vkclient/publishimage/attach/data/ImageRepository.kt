@@ -8,6 +8,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.extension.EMPTY
 import vsukharew.vkclient.common.extension.map
+import vsukharew.vkclient.common.network.response.ResponseWrapper
 import vsukharew.vkclient.publishimage.attach.data.model.UploadImageResponse
 import vsukharew.vkclient.publishimage.attach.data.network.ImageApi
 import vsukharew.vkclient.publishimage.attach.domain.model.Image
@@ -17,7 +18,7 @@ class ImageRepository(
     private val context: Context
 ) : ImageRepo {
 
-    override suspend fun uploadImage(image: Image): Result<UploadImageResponse> {
+    override suspend fun uploadImage(image: Image): Result<ResponseWrapper<UploadImageResponse>> {
         val addressResult =
             imageApi.getImageWallUploadAddress().map { it.response?.uploadUrl ?: String.EMPTY }
 
@@ -27,7 +28,7 @@ class ImageRepository(
         }
     }
 
-    private suspend fun uploadImage(url: String, image: Image): Result<UploadImageResponse> {
+    private suspend fun uploadImage(url: String, image: Image): Result<ResponseWrapper<UploadImageResponse>> {
         val streamResult = runCatching {
             context.contentResolver
                 .openInputStream(Uri.parse(image.uri))

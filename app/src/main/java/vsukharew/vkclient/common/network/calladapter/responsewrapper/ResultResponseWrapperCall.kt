@@ -5,14 +5,12 @@ import okio.Timeout
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import vsukharew.vkclient.common.network.response.ResponseWrapper
 import vsukharew.vkclient.common.domain.model.Result
-import vsukharew.vkclient.common.domain.model.Result.Error.HttpError
-import vsukharew.vkclient.common.domain.model.Result.Error.HttpError.ClientError
+import vsukharew.vkclient.common.network.calladapter.utils.HttpErrorMapper
 import vsukharew.vkclient.common.network.response.ErrorResponse
-import vsukharew.vkclient.common.network.response.ServerErrorCodes
+import vsukharew.vkclient.common.network.response.ResponseWrapper
 import java.io.IOException
-import java.net.HttpURLConnection.*
+import java.net.HttpURLConnection.HTTP_OK
 
 class ResultResponseWrapperCall<T>(
     private val delegate: Call<ResponseWrapper<T>>
@@ -99,20 +97,7 @@ class ResultResponseWrapperCall<T>(
             responseCode: Int,
             errorBody: ErrorResponse?
         ) {
-            val error = when (errorBody?.errorCode) {
-                ServerErrorCodes.AUTHORIZATION_FAILED -> ClientError.UnauthorizedError
-                else -> {
-                    if (responseCode in successfulResponseCodesRange) {
-                        HttpError.ServerError(HTTP_INTERNAL_ERROR, errorBody)
-                    } else {
-                        when (responseCode) {
-                            in clientErrorCodesRange -> ClientError.OtherClientError(responseCode)
-                            in serverErrorCodesRange -> HttpError.ServerError(responseCode, errorBody)
-                            else -> HttpError.OtherHttpError(responseCode)
-                        }
-                    }
-                }
-            }
+            val error = HttpErrorMapper.mapError(responseCode, errorBody)
             callback.onResponse(resultCall, Response.success(error))
         }
 
@@ -123,11 +108,5 @@ class ResultResponseWrapperCall<T>(
             }
             callback.onResponse(resultCall, Response.success(error))
         }
-    }
-
-    private companion object {
-        private val successfulResponseCodesRange = HTTP_OK until HTTP_MULT_CHOICE
-        private val clientErrorCodesRange = HTTP_BAD_REQUEST until HTTP_INTERNAL_ERROR
-        private val serverErrorCodesRange = HTTP_INTERNAL_ERROR..526
     }
 }

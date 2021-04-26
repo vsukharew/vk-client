@@ -31,14 +31,22 @@ class AttachImageViewModel(
         viewModelScope.launch { pollPendingPhotos() }
     }
 
+    fun startLoading(image: UIImage.RealImage, event: ImageEvent? = null) {
+        startLoadingInternal(image, event)
+    }
+
     fun startLoading(uri: String, event: ImageEvent? = null) {
         val image = UIImage.RealImage(Image(uri))
-        imageAction.value = event ?: ImageEvent.Pending(image)
-        event?.let { getUploadAddress(image) }
+        startLoadingInternal(image, event)
     }
 
     fun getUriForFutureImage(): String {
         return uriProvider.createFileForWallImage()
+    }
+
+    private fun startLoadingInternal(image: UIImage.RealImage, event: ImageEvent? = null) {
+        imageAction.value = event ?: ImageEvent.Pending(image)
+        event?.let { getUploadAddress(image) }
     }
 
     private fun getUploadAddress(image: UIImage.RealImage) {

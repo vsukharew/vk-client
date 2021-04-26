@@ -32,7 +32,7 @@ class AttachImageFragment :
         uri = Uri.parse(viewModel.getUriForFutureImage())
         cameraResultLauncher.launch(uri)
     }
-    private val imageDelegate = ImageDelegate()
+    private val imageDelegate = ImageDelegate { viewModel.startLoading(it) }
     private val viewModel: AttachImageViewModel by viewModel()
     private lateinit var cameraResultLauncher: ActivityResultLauncher<Uri>
 

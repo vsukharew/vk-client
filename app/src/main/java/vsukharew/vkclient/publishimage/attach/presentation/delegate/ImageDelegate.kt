@@ -15,8 +15,9 @@ import vsukharew.vkclient.publishimage.attach.presentation.delegate.ImageDelegat
 import vsukharew.vkclient.publishimage.attach.presentation.model.UIImage
 import vsukharew.vkclient.publishimage.attach.presentation.state.ImageUIState
 
-class ImageDelegate :
-    AnyTypeDelegate<Pair<UIImage.RealImage, ImageUIState>, DelegateImageBinding, Holder>() {
+class ImageDelegate(
+    private val retryUploadListener: (UIImage.RealImage) -> Unit
+) : AnyTypeDelegate<Pair<UIImage.RealImage, ImageUIState>, DelegateImageBinding, Holder>() {
 
     override fun createViewHolder(itemView: View): Holder {
         return Holder(DelegateImageBinding.bind(itemView))
@@ -31,14 +32,23 @@ class ImageDelegate :
         private val binding: DelegateImageBinding
     ) : AnyTypeViewHolder<Pair<UIImage.RealImage, ImageUIState>, DelegateImageBinding>(binding) {
 
+        var image: UIImage.RealImage? = null
+
+        init {
+            binding.apply {
+                retryUpload.setOnClickListener { image?.let { retryUploadListener.invoke(it) } }
+            }
+        }
+
         override fun bind(item: Pair<UIImage.RealImage, ImageUIState>) {
+            image = item.first
             val (image, state) = item
             renderState(state)
 
             Glide.with(context)
                 .load(Uri.parse(image.image.uri))
                 .diskCacheStrategy(DiskCacheStrategy.DATA)
-                .into(binding.image)
+                .into(binding.content)
         }
 
         private fun renderState(state: ImageUIState) {
@@ -47,13 +57,13 @@ class ImageDelegate :
                     is ImageUIState.Success -> {
                         progressBar.apply {
                             Log.d("progressBar.progress: ", 100.toString())
-                            isIndeterminate = false
                             progress = 100
                             postDelayed(
                                 { isVisible = false },
                                 500L
                             )
                         }
+                        retryUpload.isVisible = false
                     }
                     is ImageUIState.LoadingProgress -> {
                         Log.d("progressBar.progress: ", state.progress.toString())
@@ -62,16 +72,24 @@ class ImageDelegate :
                             isVisible = true
                             progress = state.progress
                         }
+                        retryUpload.isVisible = false
                     }
                     is ImageUIState.Error -> {
                         progressBar.apply {
+                            isIndeterminate = false
                             Toast.makeText(context, "ERROR", Toast.LENGTH_SHORT).show()
-                            postDelayed({isVisible = false}, 500L)
+                            postDelayed({
+                                isVisible = false
+                                retryUpload.isVisible = true
+                            }, 500L)
                         }
                     }
                     ImageUIState.Pending -> {
+                        retryUpload.isVisible = false
                         progressBar.apply {
+                            isVisible = false
                             isIndeterminate = true
+                            isVisible = true
                         }
                     }
                 }

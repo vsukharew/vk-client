@@ -7,19 +7,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
-import vsukharew.vkclient.common.presentation.loadstate.UIState
 import vsukharew.vkclient.publishimage.attach.domain.infrastructure.UriProvider
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
 import vsukharew.vkclient.publishimage.attach.domain.model.Image
 import vsukharew.vkclient.publishimage.attach.presentation.event.ImageEvent
 import vsukharew.vkclient.publishimage.attach.presentation.model.UIImage
+import vsukharew.vkclient.publishimage.attach.presentation.state.ImageUIState
 
 class AttachImageViewModel(
     private val imageInteractor: ImageInteractor,
     private val uriProvider: UriProvider
 ) : ViewModel() {
 
-    private val photosStates = mutableMapOf<UIImage, UIState<UIImage>>()
+    private val photosStates = mutableMapOf<UIImage, ImageUIState>()
     private val imageAction =
         MutableLiveData<ImageEvent>(ImageEvent.SuccessfulLoading(UIImage.AddNewImagePlaceholder))
     val imagesStatesLiveData = Transformations.switchMap(
@@ -27,10 +27,14 @@ class AttachImageViewModel(
         ::refreshImagesState
     )
 
-    fun startLoading(uri: String) {
+    init {
+        viewModelScope.launch { pollPendingPhotos() }
+    }
+
+    fun startLoading(uri: String, event: ImageEvent? = null) {
         val image = UIImage.RealImage(Image(uri))
-        imageAction.value = ImageEvent.InitialLoading(image)
-        getUploadAddress(image)
+        imageAction.value = event ?: ImageEvent.Pending(image)
+        event?.let { getUploadAddress(image) }
     }
 
     fun getUriForFutureImage(): String {
@@ -39,10 +43,24 @@ class AttachImageViewModel(
 
     private fun getUploadAddress(image: UIImage.RealImage) {
         viewModelScope.launch {
-            delay(7000L)
             imageAction.value =
                 when (val uploadResult =
-                    withContext(Dispatchers.IO) { imageInteractor.uploadImage(image.image) }) {
+                    withContext(Dispatchers.Main) {
+                        imageInteractor.uploadImage(
+                            image.image
+                        ) {
+                            launch {
+                                withContext(coroutineContext) {
+                                    val progress = (it * 100).toInt()
+                                    imageAction.value = if (progress == 100) {
+                                        ImageEvent.SuccessfulLoading(image)
+                                    } else {
+                                        ImageEvent.InitialLoading(image, progress)
+                                    }
+                                }
+                            }
+                        }
+                    }) {
                     is Result.Success -> {
                         ImageEvent.SuccessfulLoading(image)
                     }
@@ -53,18 +71,38 @@ class AttachImageViewModel(
         }
     }
 
-    private fun refreshImagesState(action: ImageEvent): LiveData<Map<UIImage, UIState<UIImage>>> {
+    private fun refreshImagesState(action: ImageEvent): LiveData<Map<UIImage, ImageUIState>> {
         return liveData {
             val image = action.image
             val state = when (action) {
-                is ImageEvent.InitialLoading,
-                is ImageEvent.Retry,
-                is ImageEvent.Remove -> UIState.LoadingProgress
-                is ImageEvent.SuccessfulLoading -> UIState.Success(action.image)
-                is ImageEvent.ErrorLoading -> UIState.Error(SingleLiveEvent(action.error))
+                is ImageEvent.Pending -> ImageUIState.Pending
+                is ImageEvent.InitialLoading -> ImageUIState.LoadingProgress(action.progressLoading)
+                is ImageEvent.Retry -> ImageUIState.LoadingProgress()
+                is ImageEvent.Remove -> ImageUIState.LoadingProgress()
+                is ImageEvent.SuccessfulLoading -> ImageUIState.Success(action.image)
+                is ImageEvent.ErrorLoading -> ImageUIState.Error(SingleLiveEvent(action.error))
             }
             photosStates[image] = state
             emit(photosStates)
+        }
+    }
+
+    private suspend fun pollPendingPhotos() {
+        while (true) {
+            val isLoadingInProgress =
+                photosStates.values.any { it is ImageUIState.LoadingProgress }
+            if (!isLoadingInProgress) {
+                photosStates.forEach {
+                    if (it.value is ImageUIState.Pending) {
+                        startLoading(
+                            (it.key as UIImage.RealImage).image.uri,
+                            ImageEvent.InitialLoading(it.key)
+                        )
+                        return@forEach
+                    }
+                }
+            }
+            delay(2000)
         }
     }
 }

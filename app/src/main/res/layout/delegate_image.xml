@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/image_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -11,11 +12,11 @@
         android:clickable="true"
         android:focusable="true" />
 
-    <ProgressBar
+    <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progress_bar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="visible"
-        style="@style/Widget.AppCompat.ProgressBar"/>
+        app:indicatorSize="56dp" />
 </FrameLayout>

@@ -1,10 +1,12 @@
 package vsukharew.vkclient.publishimage.attach.domain.interactor
 
 import vsukharew.vkclient.common.domain.model.Result
-import vsukharew.vkclient.common.network.response.ResponseWrapper
-import vsukharew.vkclient.publishimage.attach.data.model.UploadImageResponse
 import vsukharew.vkclient.publishimage.attach.domain.model.Image
+import vsukharew.vkclient.publishimage.attach.domain.model.UploadedImage
 
 interface ImageInteractor {
-    suspend fun uploadImage(image: Image): Result<ResponseWrapper<UploadImageResponse>>
+    suspend fun uploadImage(
+        image: Image,
+        onProgressUpdated: (Double) -> Unit
+    ): Result<UploadedImage>
 }

@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.recyclerview.widget.RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 import androidx.recyclerview.widget.SimpleItemAnimator
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import vsukharev.anytypeadapter.adapter.AnyTypeAdapter
@@ -26,7 +27,10 @@ class AttachImageFragment :
 
     private lateinit var uri: Uri
     private val anyTypeAdapter =
-        AnyTypeAdapter().apply { diffStrategy = AnyTypeAdapter.DiffStrategy.Queue }
+        AnyTypeAdapter().apply {
+            diffStrategy = AnyTypeAdapter.DiffStrategy.Queue
+            stateRestorationPolicy = PREVENT_WHEN_EMPTY
+        }
     private val addNewImageDelegate = AddNewImageDelegate {
         uri = Uri.parse(viewModel.getUriForFutureImage())
         cameraResultLauncher.launch(uri)

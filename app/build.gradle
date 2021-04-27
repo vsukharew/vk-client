@@ -52,6 +52,7 @@ dependencies {
     implementation androidx.material
     implementation androidx.swiperefreshlayout
     implementation androidx.viewmodel
+    implementation androidx.recyclerView
     implementation androidx.livedata
     implementation androidx.navigation.fragmentKtx
     implementation androidx.navigation.uiKtx

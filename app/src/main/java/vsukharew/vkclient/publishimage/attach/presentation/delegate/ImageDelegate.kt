@@ -59,7 +59,6 @@ class ImageDelegate(
                     is ImageUIState.Success -> {
                         progressBar.apply {
                             Log.d("progressBar.progress: ", 100.toString())
-                            progress = 100
                             postDelayed(
                                 {
                                     isVisible = false

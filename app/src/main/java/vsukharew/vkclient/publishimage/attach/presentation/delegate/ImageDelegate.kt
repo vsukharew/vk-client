@@ -61,12 +61,14 @@ class ImageDelegate(
                             Log.d("progressBar.progress: ", 100.toString())
                             progress = 100
                             postDelayed(
-                                { isVisible = false },
+                                {
+                                    isVisible = false
+                                    retryUpload.isVisible = false
+                                    removeImage.isVisible = true
+                                },
                                 500L
                             )
                         }
-                        retryUpload.isVisible = false
-                        removeImage.isVisible = true
                     }
                     is ImageUIState.LoadingProgress -> {
                         Log.d("progressBar.progress: ", state.progress.toString())

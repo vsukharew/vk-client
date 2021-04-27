@@ -20,6 +20,7 @@ class AttachImageViewModel(
 ) : ViewModel() {
 
     private val photosStates = mutableMapOf<UIImage, ImageUIState>()
+    private val imagesHashes = mutableMapOf<UIImage, String>()
     private val imageAction =
         MutableLiveData<ImageEvent>(ImageEvent.SuccessfulLoading(UIImage.AddNewImagePlaceholder))
     val imagesStatesLiveData = Transformations.switchMap(
@@ -40,8 +41,12 @@ class AttachImageViewModel(
         startLoadingInternal(image, event)
     }
 
-    fun removeImage(image: UIImage) {
-        imageAction.value = ImageEvent.Remove(image)
+    fun removeImage(image: UIImage.RealImage) {
+        imagesHashes[image]?.let {
+            imageInteractor.removeUploadedImage(it)
+            imageAction.value = ImageEvent.Remove(image)
+            imagesHashes.remove(image)
+        }
     }
 
     fun getUriForFutureImage(): String {
@@ -57,23 +62,22 @@ class AttachImageViewModel(
         viewModelScope.launch {
             imageAction.value =
                 when (val uploadResult =
-                    withContext(Dispatchers.Main) {
+                    withContext(Dispatchers.IO) {
                         imageInteractor.uploadImage(
                             image.image
                         ) {
                             launch {
-                                withContext(coroutineContext) {
+                                withContext(Dispatchers.Main) {
                                     val progress = (it * 100).toInt()
-                                    imageAction.value = if (progress == 100) {
-                                        ImageEvent.SuccessfulLoading(image)
-                                    } else {
-                                        ImageEvent.InitialLoading(image, progress)
-                                    }
+                                    imageAction.value = ImageEvent.InitialLoading(image, progress)
                                 }
                             }
                         }
                     }) {
                     is Result.Success -> {
+                        imageInteractor.addUploadedImage(uploadResult.data.also {
+                            imagesHashes[image] = it.hash
+                        })
                         ImageEvent.SuccessfulLoading(image)
                     }
                     is Result.Error -> {

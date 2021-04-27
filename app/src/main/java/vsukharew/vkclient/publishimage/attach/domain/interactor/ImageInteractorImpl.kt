@@ -6,11 +6,20 @@ import vsukharew.vkclient.publishimage.attach.domain.model.Image
 import vsukharew.vkclient.publishimage.attach.domain.model.UploadedImage
 
 class ImageInteractorImpl(private val imageRepo: ImageRepo) : ImageInteractor {
+    private val uploadedImages = mutableListOf<UploadedImage>()
 
     override suspend fun uploadImage(
         image: Image,
         onProgressUpdated: (Double) -> Unit
     ): Result<UploadedImage> {
         return imageRepo.uploadImage(image, onProgressUpdated)
+    }
+
+    override fun addUploadedImage(image: UploadedImage) {
+        uploadedImages.add(image)
+    }
+
+    override fun removeUploadedImage(hash: String) {
+        uploadedImages.removeIf { it.hash == hash }
     }
 }

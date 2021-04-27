@@ -9,4 +9,6 @@ interface ImageInteractor {
         image: Image,
         onProgressUpdated: (Double) -> Unit
     ): Result<UploadedImage>
+    fun addUploadedImage(image: UploadedImage)
+    fun removeUploadedImage(hash: String)
 }

@@ -40,6 +40,10 @@ class AttachImageViewModel(
         startLoadingInternal(image, event)
     }
 
+    fun removeImage(image: UIImage) {
+        imageAction.value = ImageEvent.Remove(image)
+    }
+
     fun getUriForFutureImage(): String {
         return uriProvider.createFileForWallImage()
     }
@@ -86,11 +90,15 @@ class AttachImageViewModel(
                 is ImageEvent.Pending -> ImageUIState.Pending
                 is ImageEvent.InitialLoading -> ImageUIState.LoadingProgress(action.progressLoading)
                 is ImageEvent.Retry -> ImageUIState.LoadingProgress()
-                is ImageEvent.Remove -> ImageUIState.LoadingProgress()
+                is ImageEvent.Remove -> ImageUIState.Success(action.image)
                 is ImageEvent.SuccessfulLoading -> ImageUIState.Success(action.image)
                 is ImageEvent.ErrorLoading -> ImageUIState.Error(SingleLiveEvent(action.error))
             }
-            photosStates[image] = state
+            if (action is ImageEvent.Remove) {
+                photosStates.remove(action.image)
+            } else {
+                photosStates[image] = state
+            }
             emit(photosStates)
         }
     }

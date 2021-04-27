@@ -21,7 +21,6 @@ import vsukharew.vkclient.publishimage.attach.presentation.delegate.ImageDelegat
 import vsukharew.vkclient.publishimage.attach.presentation.model.UIImage
 import vsukharew.vkclient.publishimage.attach.presentation.state.ImageUIState
 
-
 class AttachImageFragment :
     BaseFragment<FragmentAttachImageBinding>(R.layout.fragment_attach_image) {
 
@@ -32,7 +31,10 @@ class AttachImageFragment :
         uri = Uri.parse(viewModel.getUriForFutureImage())
         cameraResultLauncher.launch(uri)
     }
-    private val imageDelegate = ImageDelegate { viewModel.startLoading(it) }
+    private val imageDelegate = ImageDelegate(
+        { viewModel.startLoading(it) },
+        { viewModel.removeImage(it) }
+    )
     private val viewModel: AttachImageViewModel by viewModel()
     private lateinit var cameraResultLauncher: ActivityResultLauncher<Uri>
 

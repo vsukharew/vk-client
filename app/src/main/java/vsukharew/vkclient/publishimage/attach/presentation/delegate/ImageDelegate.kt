@@ -16,7 +16,8 @@ import vsukharew.vkclient.publishimage.attach.presentation.model.UIImage
 import vsukharew.vkclient.publishimage.attach.presentation.state.ImageUIState
 
 class ImageDelegate(
-    private val retryUploadListener: (UIImage.RealImage) -> Unit
+    private val retryUploadListener: (UIImage.RealImage) -> Unit,
+    private val onRemoveClickListener: (UIImage.RealImage) -> Unit
 ) : AnyTypeDelegate<Pair<UIImage.RealImage, ImageUIState>, DelegateImageBinding, Holder>() {
 
     override fun createViewHolder(itemView: View): Holder {
@@ -37,6 +38,7 @@ class ImageDelegate(
         init {
             binding.apply {
                 retryUpload.setOnClickListener { image?.let { retryUploadListener.invoke(it) } }
+                removeImage.setOnClickListener { image?.let { onRemoveClickListener.invoke(it) } }
             }
         }
 
@@ -64,6 +66,7 @@ class ImageDelegate(
                             )
                         }
                         retryUpload.isVisible = false
+                        removeImage.isVisible = true
                     }
                     is ImageUIState.LoadingProgress -> {
                         Log.d("progressBar.progress: ", state.progress.toString())
@@ -73,19 +76,20 @@ class ImageDelegate(
                             progress = state.progress
                         }
                         retryUpload.isVisible = false
+                        removeImage.isVisible = false
                     }
                     is ImageUIState.Error -> {
                         progressBar.apply {
                             isIndeterminate = false
                             Toast.makeText(context, "ERROR", Toast.LENGTH_SHORT).show()
-                            postDelayed({
-                                isVisible = false
-                                retryUpload.isVisible = true
-                            }, 500L)
+                            isVisible = false
+                            retryUpload.isVisible = true
+                            removeImage.isVisible = true
                         }
                     }
                     ImageUIState.Pending -> {
                         retryUpload.isVisible = false
+                        removeImage.isVisible = false
                         progressBar.apply {
                             isVisible = false
                             isIndeterminate = true

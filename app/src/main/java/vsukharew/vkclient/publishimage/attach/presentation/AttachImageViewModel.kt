@@ -20,7 +20,6 @@ class AttachImageViewModel(
 ) : ViewModel() {
 
     private val photosStates = mutableMapOf<UIImage, ImageUIState>()
-    private val imagesHashes = mutableMapOf<UIImage, String>()
     private val imageAction =
         MutableLiveData<ImageEvent>(ImageEvent.SuccessfulLoading(UIImage.AddNewImagePlaceholder))
     val imagesStatesLiveData = Transformations.switchMap(
@@ -32,39 +31,42 @@ class AttachImageViewModel(
         viewModelScope.launch { pollPendingPhotos() }
     }
 
-    fun startLoading(image: UIImage.RealImage, event: ImageEvent? = null) {
-        startLoadingInternal(image, event)
+    fun startLoading(image: UIImage.RealImage, isRetryLoading: Boolean, event: ImageEvent? = null) {
+        startLoadingInternal(image, isRetryLoading, event)
     }
 
-    fun startLoading(uri: String, event: ImageEvent? = null) {
-        val image = UIImage.RealImage(Image(uri))
-        startLoadingInternal(image, event)
+    fun startLoading(uri: String, isRetryLoading: Boolean, event: ImageEvent? = null) {
+        val domainImage = Image(uri)
+        val image = UIImage.RealImage(domainImage)
+        startLoadingInternal(image, isRetryLoading, event)
     }
 
     fun removeImage(image: UIImage.RealImage) {
-        imagesHashes[image]?.let {
-            imageInteractor.removeUploadedImage(it)
-            imageAction.value = ImageEvent.Remove(image)
-            imagesHashes.remove(image)
-        }
+        imageInteractor.removeUploadedImage(image.image)
+        imageAction.value = ImageEvent.Remove(image)
     }
 
     fun getUriForFutureImage(): String {
         return uriProvider.createFileForWallImage()
     }
 
-    private fun startLoadingInternal(image: UIImage.RealImage, event: ImageEvent? = null) {
-        imageAction.value = event ?: ImageEvent.Pending(image)
-        event?.let { getUploadAddress(image) }
+    private fun startLoadingInternal(
+        image: UIImage.RealImage,
+        isRetryLoading: Boolean,
+        event: ImageEvent? = null
+    ) {
+        imageAction.value = event ?: ImageEvent.Pending(image, isRetryLoading)
+        event?.let { getUploadAddress(image, isRetryLoading) }
     }
 
-    private fun getUploadAddress(image: UIImage.RealImage) {
+    private fun getUploadAddress(image: UIImage.RealImage, isRetryLoading: Boolean) {
         viewModelScope.launch {
             imageAction.value =
                 when (val uploadResult =
                     withContext(Dispatchers.IO) {
                         imageInteractor.uploadImage(
-                            image.image
+                            image.image,
+                            isRetryLoading
                         ) {
                             launch {
                                 withContext(Dispatchers.Main) {
@@ -75,9 +77,6 @@ class AttachImageViewModel(
                         }
                     }) {
                     is Result.Success -> {
-                        imageInteractor.addUploadedImage(uploadResult.data.also {
-                            imagesHashes[image] = it.hash
-                        })
                         ImageEvent.SuccessfulLoading(image)
                     }
                     is Result.Error -> {
@@ -91,7 +90,7 @@ class AttachImageViewModel(
         return liveData {
             val image = action.image
             val state = when (action) {
-                is ImageEvent.Pending -> ImageUIState.Pending
+                is ImageEvent.Pending -> ImageUIState.Pending(action.isRetryLoading)
                 is ImageEvent.InitialLoading -> ImageUIState.LoadingProgress(action.progressLoading)
                 is ImageEvent.Retry -> ImageUIState.LoadingProgress()
                 is ImageEvent.Remove -> ImageUIState.Success(action.image)
@@ -115,7 +114,8 @@ class AttachImageViewModel(
                 photosStates.forEach {
                     if (it.value is ImageUIState.Pending) {
                         startLoading(
-                            (it.key as UIImage.RealImage).image.uri,
+                            (it.key as UIImage.RealImage),
+                            (it.value as ImageUIState.Pending).isAfterRetry,
                             ImageEvent.InitialLoading(it.key)
                         )
                         return@forEach

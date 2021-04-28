@@ -36,13 +36,15 @@ class AttachImageFragment :
         cameraResultLauncher.launch(uri)
     }
     private val imageDelegate = ImageDelegate(
-        { viewModel.startLoading(it) },
+        { viewModel.startLoading(it, true) },
         { viewModel.removeImage(it) }
     )
     private val viewModel: AttachImageViewModel by viewModel()
     private lateinit var cameraResultLauncher: ActivityResultLauncher<Uri>
 
-    override val scopeCreator: ScopeCreator = AttachImageScopeCreator
+    override val scopeCreator: ScopeCreator by lazy {
+        AttachImageScopeCreator(requireParentFragment().requireParentFragment())
+    }
     override val binding by fragmentViewBinding(FragmentAttachImageBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -94,7 +96,7 @@ class AttachImageFragment :
 
     private fun handleResult(isSuccess: Boolean) {
         if (isSuccess) {
-            viewModel.startLoading(uri.toString())
+            viewModel.startLoading(uri.toString(), false)
         }
     }
 }

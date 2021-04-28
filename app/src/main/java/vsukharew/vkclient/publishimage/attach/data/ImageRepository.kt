@@ -18,23 +18,37 @@ class ImageRepository(
     private val context: Context
 ) : ImageRepo {
 
+    override val rawImages: MutableList<Image> = mutableListOf()
+    override val uploadedImages: MutableList<UploadedImage> = mutableListOf()
+
     override suspend fun uploadImage(
         image: Image,
+        isRetryLoading: Boolean,
         onProgressUpdated: (Double) -> Unit
     ): Result<UploadedImage> {
+        if (!isRetryLoading) rawImages.add(image)
         val addressResult =
             imageApi.getImageWallUploadAddress().map { it.response?.uploadUrl ?: String.EMPTY }
-
         return when (addressResult) {
             is Result.Success -> uploadImage(
                 addressResult.data,
                 image,
                 onProgressUpdated
             ).map { wrapper ->
-                with(wrapper) { UploadedImage(server, photosList, aid, hash) }
+                with(wrapper) {
+                    UploadedImage(server, photosList, aid, hash).also { uploadedImages.add(it) }
+                }
             }
             is Result.Error -> addressResult
         }
+    }
+
+    override fun removeUploadedImage(image: Image) {
+        val imageToRemove = rawImages.indexOf(image)
+        if (rawImages.size == uploadedImages.size) {
+            uploadedImages.removeAt(imageToRemove)
+        }
+        rawImages.removeAt(imageToRemove)
     }
 
     private suspend fun uploadImage(

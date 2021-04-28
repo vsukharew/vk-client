@@ -88,7 +88,7 @@ class ImageDelegate(
                             removeImage.isVisible = true
                         }
                     }
-                    ImageUIState.Pending -> {
+                    is ImageUIState.Pending -> {
                         retryUpload.isVisible = false
                         removeImage.isVisible = false
                         progressBar.apply {

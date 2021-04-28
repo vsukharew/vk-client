@@ -4,10 +4,12 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 import androidx.recyclerview.widget.SimpleItemAnimator
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import vsukharev.anytypeadapter.adapter.AnyTypeAdapter
 import vsukharev.anytypeadapter.adapter.AnyTypeCollection
@@ -21,6 +23,7 @@ import vsukharew.vkclient.publishimage.attach.presentation.delegate.AddNewImageD
 import vsukharew.vkclient.publishimage.attach.presentation.delegate.ImageDelegate
 import vsukharew.vkclient.publishimage.attach.presentation.model.UIImage
 import vsukharew.vkclient.publishimage.attach.presentation.state.ImageUIState
+import vsukharew.vkclient.publishimage.navigation.PublishImageCoordinator
 
 class AttachImageFragment :
     BaseFragment<FragmentAttachImageBinding>(R.layout.fragment_attach_image) {
@@ -40,6 +43,7 @@ class AttachImageFragment :
         { viewModel.removeImage(it) }
     )
     private val viewModel: AttachImageViewModel by viewModel()
+    private val flowCoordinator: PublishImageCoordinator by inject()
     private lateinit var cameraResultLauncher: ActivityResultLauncher<Uri>
 
     override val scopeCreator: ScopeCreator by lazy {
@@ -49,8 +53,20 @@ class AttachImageFragment :
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        registerCallbacks()
         initRecycler()
         observeData()
+    }
+
+    private fun registerCallbacks() {
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    isEnabled = false
+                    flowCoordinator.onBackClick()
+                }
+            })
         cameraResultLauncher = registerForActivityResult(
             ActivityResultContracts.TakePicture(),
             ::handleResult

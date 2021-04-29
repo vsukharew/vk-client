@@ -9,6 +9,14 @@ class PublishImageNavigator : BaseNavigator() {
     var flowNavController: NavController? = null
 
     fun exitFlow() {
-        rootNavController?.navigate(R.id.global_action_to_featuresFragment)
+        rootNavController?.popBackStack(R.id.features_fragment, false)
+    }
+
+    fun openCaptionScreen() {
+        flowNavController?.navigate(R.id.action_attachImageFragment_to_captionFragment)
+    }
+
+    fun goBackToImageAttachStage() {
+        flowNavController?.popBackStack(R.id.attachImageFragment, false)
     }
 }

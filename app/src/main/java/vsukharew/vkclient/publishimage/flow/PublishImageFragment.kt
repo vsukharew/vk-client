@@ -6,7 +6,6 @@ import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
-import vsukharew.vkclient.common.di.ScopeCreator
 import vsukharew.vkclient.common.presentation.BaseFlowFragment
 import vsukharew.vkclient.databinding.FragmentPublishImageBinding
 import vsukharew.vkclient.publishimage.flow.di.PublishImageScopeCreator
@@ -18,7 +17,7 @@ class PublishImageFragment :
     private val coordinator: PublishImageCoordinator by inject()
 
     override val fragmentContainerViewId: Int = R.id.publish_images_flow_container
-    override val scopeCreator: ScopeCreator = PublishImageScopeCreator
+    override val scopeCreator: PublishImageScopeCreator = PublishImageScopeCreator
     override val binding by fragmentViewBinding(FragmentPublishImageBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -26,11 +25,17 @@ class PublishImageFragment :
         navigateIfDestinationIsNotCreated(R.id.attachImageFragment)
         setListeners()
         observeData()
-        coordinator.rootNavController = navController
+        coordinator.let {
+            it.rootNavController = navController
+            it.flowNavController = flowNavController
+        }
     }
 
     private fun setListeners() {
-        binding.apply { backBtn.setOnClickListener { coordinator.onBackClick() } }
+        binding.apply {
+            backBtn.setOnClickListener { coordinator.onBackClick() }
+            nextBtn.setOnClickListener { coordinator.onForwardClick() }
+        }
     }
 
     private fun observeData() {

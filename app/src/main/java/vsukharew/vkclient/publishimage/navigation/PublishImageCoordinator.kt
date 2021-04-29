@@ -1,19 +1,13 @@
 package vsukharew.vkclient.publishimage.navigation
 
 import androidx.navigation.NavController
+import vsukharew.vkclient.publishimage.navigation.PublishImageFlowStage.*
 
 class PublishImageCoordinator(private val navigator: PublishImageNavigator) {
-    private val attachImageStage = object : PublishImageFlowStage {
-        override fun onBackClick() {
-            navigator.exitFlow()
-        }
+    private val attachImageStage = AttachImageStage(navigator)
+    private val captionStage = CaptionStage(navigator)
 
-        override fun onForwardClick() {
-
-        }
-    }
-
-    private var currentStage: PublishImageFlowStage = attachImageStage
+    private var currentStage: PublishImageFlowStage = AttachImageStage(navigator)
 
     var rootNavController: NavController? = null
         set(value) {
@@ -28,9 +22,11 @@ class PublishImageCoordinator(private val navigator: PublishImageNavigator) {
 
     fun onBackClick() {
         currentStage.onBackClick()
+        currentStage = attachImageStage
     }
 
     fun onForwardClick() {
         currentStage.onForwardClick()
+        currentStage = captionStage
     }
 }

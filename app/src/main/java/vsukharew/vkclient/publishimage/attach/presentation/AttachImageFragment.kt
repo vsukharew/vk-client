@@ -46,9 +46,7 @@ class AttachImageFragment :
     private val flowCoordinator: PublishImageCoordinator by inject()
     private lateinit var cameraResultLauncher: ActivityResultLauncher<Uri>
 
-    override val scopeCreator: ScopeCreator by lazy {
-        AttachImageScopeCreator(requireParentFragment().requireParentFragment())
-    }
+    override val scopeCreator: ScopeCreator by lazy { AttachImageScopeCreator(requireParentFragment().requireParentFragment()) }
     override val binding by fragmentViewBinding(FragmentAttachImageBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -63,7 +61,6 @@ class AttachImageFragment :
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    isEnabled = false
                     flowCoordinator.onBackClick()
                 }
             })

@@ -53,11 +53,5 @@
         app:enterAnim="@android:anim/fade_in"
         app:popUpTo="@id/navigation_graph" />
 
-    <action
-        android:id="@+id/global_action_to_featuresFragment"
-        app:destination="@id/features_fragment"
-        app:enterAnim="@android:anim/fade_in"
-        app:popUpTo="@id/navigation_graph" />
-
     <include app:graph="@navigation/publish_image_flow_graph" />
 </navigation>

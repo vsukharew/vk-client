@@ -4,19 +4,29 @@ sealed class PublishImageFlowStage {
     abstract fun onBackClick()
     abstract fun onForwardClick()
 
-    data class AttachImageStage(val navigator: PublishImageNavigator) : PublishImageFlowStage() {
+    data class AttachImageStage(
+        private val coordinator: PublishImageCoordinator
+    ) : PublishImageFlowStage() {
         override fun onBackClick() {
-            navigator.exitFlow()
+            coordinator.exitFlow()
         }
 
         override fun onForwardClick() {
-            navigator.openCaptionScreen()
+            coordinator.apply {
+                currentStage = captionStage
+                openCaptionScreen()
+            }
         }
     }
 
-    data class CaptionStage(val navigator: PublishImageNavigator) : PublishImageFlowStage() {
+    data class CaptionStage(
+        private val coordinator: PublishImageCoordinator
+    ) : PublishImageFlowStage() {
         override fun onBackClick() {
-            navigator.goBackToImageAttachStage()
+            coordinator.apply {
+                currentStage = attachImageStage
+                goBackToImageAttachStage()
+            }
         }
 
         override fun onForwardClick() {

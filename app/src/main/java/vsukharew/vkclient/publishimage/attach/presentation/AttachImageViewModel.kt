@@ -13,10 +13,12 @@ import vsukharew.vkclient.publishimage.attach.domain.model.Image
 import vsukharew.vkclient.publishimage.attach.presentation.event.ImageEvent
 import vsukharew.vkclient.publishimage.attach.presentation.model.UIImage
 import vsukharew.vkclient.publishimage.attach.presentation.state.ImageUIState
+import vsukharew.vkclient.publishimage.navigation.PublishImageFlowStage
 
 class AttachImageViewModel(
     private val imageInteractor: ImageInteractor,
-    private val uriProvider: UriProvider
+    private val uriProvider: UriProvider,
+    private val flowStage: PublishImageFlowStage
 ) : ViewModel() {
 
     private val photosStates = mutableMapOf<UIImage, ImageUIState>()
@@ -26,6 +28,7 @@ class AttachImageViewModel(
         imageAction,
         ::refreshImagesState
     )
+    val isNextButtonAvailable = imageInteractor.observePublishingReadiness().asLiveData()
 
     init {
         viewModelScope.launch { pollPendingPhotos() }
@@ -48,6 +51,10 @@ class AttachImageViewModel(
 
     fun getUriForFutureImage(): String {
         return uriProvider.createFileForWallImage()
+    }
+
+    fun goToNextStage() {
+        flowStage.onForwardClick()
     }
 
     private fun startLoadingInternal(

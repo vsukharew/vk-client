@@ -53,6 +53,7 @@ class AttachImageFragment :
         super.onViewCreated(view, savedInstanceState)
         registerCallbacks()
         initRecycler()
+        setListeners()
         observeData()
     }
 
@@ -61,7 +62,7 @@ class AttachImageFragment :
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    flowCoordinator.onBackClick()
+                    flowCoordinator.currentStage.onBackClick()
                 }
             })
         cameraResultLauncher = registerForActivityResult(
@@ -70,9 +71,21 @@ class AttachImageFragment :
         )
     }
 
+    private fun initRecycler() {
+        binding.attachedImages.apply {
+            (itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+            adapter = anyTypeAdapter
+        }
+    }
+
+    private fun setListeners() {
+        binding.apply { nextBtn.setOnClickListener { viewModel.goToNextStage() } }
+    }
+
     private fun observeData() {
         viewModel.apply {
             imagesStatesLiveData.observe(viewLifecycleOwner, ::observeImagesStates)
+            isNextButtonAvailable.observe(viewLifecycleOwner, ::observeNextButtonAvailability)
         }
     }
 
@@ -100,11 +113,8 @@ class AttachImageFragment :
             .let { anyTypeAdapter.setCollection(it) }
     }
 
-    private fun initRecycler() {
-        binding.attachedImages.apply {
-            (itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
-            adapter = anyTypeAdapter
-        }
+    private fun observeNextButtonAvailability(isEnabled: Boolean) {
+        binding.nextBtn.isEnabled = isEnabled
     }
 
     private fun handleResult(isSuccess: Boolean) {

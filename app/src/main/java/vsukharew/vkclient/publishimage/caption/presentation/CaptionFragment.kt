@@ -26,7 +26,7 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    flowCoordinator.onBackClick()
+                    flowCoordinator.currentStage.onBackClick()
                 }
             })
     }

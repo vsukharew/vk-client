@@ -3,7 +3,6 @@ package vsukharew.vkclient.publishimage.flow
 import android.os.Bundle
 import android.view.View
 import org.koin.android.ext.android.inject
-import org.koin.androidx.viewmodel.ext.android.viewModel
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.presentation.BaseFlowFragment
@@ -13,7 +12,6 @@ import vsukharew.vkclient.publishimage.navigation.PublishImageCoordinator
 
 class PublishImageFragment :
     BaseFlowFragment<FragmentPublishImageBinding>(R.layout.fragment_publish_image) {
-    private val viewModel: PublishImageViewModel by viewModel()
     private val coordinator: PublishImageCoordinator by inject()
 
     override val fragmentContainerViewId: Int = R.id.publish_images_flow_container
@@ -23,26 +21,9 @@ class PublishImageFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navigateIfDestinationIsNotCreated(R.id.attachImageFragment)
-        setListeners()
-        observeData()
         coordinator.let {
             it.rootNavController = navController
             it.flowNavController = flowNavController
         }
-    }
-
-    private fun setListeners() {
-        binding.apply {
-            backBtn.setOnClickListener { coordinator.onBackClick() }
-            nextBtn.setOnClickListener { coordinator.onForwardClick() }
-        }
-    }
-
-    private fun observeData() {
-        viewModel.isNextButtonAvailable.observe(viewLifecycleOwner, ::observeNextButtonAvailability)
-    }
-
-    private fun observeNextButtonAvailability(isEnabled: Boolean) {
-        binding.nextBtn.isEnabled = isEnabled
     }
 }

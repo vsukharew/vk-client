@@ -7,10 +7,17 @@ import vsukharew.vkclient.publishimage.attach.domain.infrastructure.AndroidUriPr
 import vsukharew.vkclient.publishimage.attach.domain.infrastructure.UriProvider
 import vsukharew.vkclient.publishimage.attach.presentation.AttachImageFragment
 import vsukharew.vkclient.publishimage.attach.presentation.AttachImageViewModel
+import vsukharew.vkclient.publishimage.navigation.PublishImageCoordinator
 
 val attachImageScreenModule = module {
     scope<AttachImageFragment> {
         scopedBy<UriProvider, AndroidUriProvider>()
-        viewModel { AttachImageViewModel(get(), get()) }
+        viewModel {
+            AttachImageViewModel(
+                get(),
+                get(),
+                (get() as PublishImageCoordinator).attachImageStage
+            )
+        }
     }
 }

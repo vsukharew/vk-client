@@ -16,7 +16,9 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
     private val flowCoordinator: PublishImageCoordinator by inject()
 
     override val binding: FragmentCaptionBinding by fragmentViewBinding(FragmentCaptionBinding::bind)
-    override val scopeCreator: ScopeCreator by lazy { CaptionScopeCreator(requireParentFragment().requireParentFragment()) }
+    override val scopeCreator: ScopeCreator by lazy {
+        CaptionScopeCreator(requireParentFragment().requireParentFragment())
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

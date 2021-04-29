@@ -23,4 +23,6 @@
 
     <string name="publish_image_fragment_back_btn">Back</string>
     <string name="publish_image_fragment_next_btn">Next</string>
+
+    <string name="caption_fragment_caption_hint">Come up with a caption</string>
 </resources>

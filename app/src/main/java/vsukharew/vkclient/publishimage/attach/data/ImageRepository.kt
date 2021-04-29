@@ -71,7 +71,7 @@ class ImageRepository(
                     onProgressUpdated,
                 )
                 val multipartBody =
-                    MultipartBody.Part.createFormData("file1", image.uri, requestBody)
+                    MultipartBody.Part.createFormData("photo", image.uri, requestBody)
                 with(imageApi.uploadImage(url, multipartBody)) {
                     when {
                         isDataReceived() -> {

@@ -15,5 +15,10 @@ object ServerUrls {
 
     object Image {
         const val UPLOAD_ADDRESS_WALL = "photos.getWallUploadServer"
+        const val SAVE_IMAGE_WALL = "photos.saveWallPhoto"
+    }
+
+    object Wall {
+        const val POST_TO_USER_WALL = "wall.post"
     }
 }

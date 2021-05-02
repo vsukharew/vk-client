@@ -17,6 +17,7 @@ class ImageInteractorImpl(private val imageRepo: ImageRepo) : ImageInteractor {
         }
 
     private val publishingReadinessFlow = MutableStateFlow(false)
+    private val publishingPostFlow = MutableStateFlow<Int?>(null)
 
     override suspend fun uploadImage(
         image: Image,
@@ -34,9 +35,18 @@ class ImageInteractorImpl(private val imageRepo: ImageRepo) : ImageInteractor {
         return publishingReadinessFlow
     }
 
+    override fun observePublishedPosts(): Flow<Int?> {
+        return publishingPostFlow
+    }
+
     override fun removeUploadedImage(image: Image) {
         imageRepo.removeUploadedImage(image).also {
             publishingReadinessFlow.value = areImagesReadyForPublishing
         }
+    }
+
+    override suspend fun postImagesOnWall(message: String): Result<Int> {
+        return imageRepo.postImagesOnWall(message)
+            .ifSuccess { publishingPostFlow.value = it }
     }
 }

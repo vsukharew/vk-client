@@ -1,9 +1,11 @@
 package vsukharew.vkclient.publishimage.flow.di
 
 import org.koin.androidx.experimental.dsl.viewModel
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.experimental.builder.scopedBy
 import retrofit2.Retrofit
+import vsukharew.vkclient.common.di.DIScopes
 import vsukharew.vkclient.publishimage.attach.data.ImageRepo
 import vsukharew.vkclient.publishimage.attach.data.ImageRepository
 import vsukharew.vkclient.publishimage.attach.data.network.ImageApi
@@ -24,11 +26,14 @@ private fun provideWallApi(retrofit: Retrofit): WallApi {
 }
 
 val publishImageFlowModule = module {
-    scope<PublishImageFragment> {
+    scope(named(DIScopes.PUBLISHING_POST_DATA)) {
         scoped { provideImageApi(get()) }
         scoped { provideWallApi(get()) }
         scopedBy<ImageRepo, ImageRepository>()
         scopedBy<ImageInteractor, ImageInteractorImpl>()
+    }
+
+    scope<PublishImageFragment> {
         scoped { PublishImageNavigator() }
         scoped { PublishImageCoordinator(get()) }
         viewModel<PublishImageViewModel>()

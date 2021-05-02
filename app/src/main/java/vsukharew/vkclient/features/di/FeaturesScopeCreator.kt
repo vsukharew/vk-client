@@ -18,6 +18,12 @@ object FeaturesScopeCreator : ScopeCreator() {
             named(DIScopes.ACCOUNT),
             shouldCloseOnBackNavigation = true,
             shouldCloseOnForwardNavigation = true
+        ),
+        ScopeData(
+            ScopesIds.PUBLISHING_POST_DATA_SCOPE_ID,
+            named(DIScopes.PUBLISHING_POST_DATA),
+            shouldCloseOnBackNavigation = true,
+            shouldCloseOnForwardNavigation = false
         )
     )
 }

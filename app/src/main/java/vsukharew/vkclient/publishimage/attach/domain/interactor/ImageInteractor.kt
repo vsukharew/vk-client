@@ -14,4 +14,5 @@ interface ImageInteractor {
     fun removeUploadedImage(image: Image)
     suspend fun postImagesOnWall(message: String): Result<Int>
     fun observePublishingReadiness(): Flow<Boolean>
+    fun observePublishedPosts(): Flow<Int?>
 }

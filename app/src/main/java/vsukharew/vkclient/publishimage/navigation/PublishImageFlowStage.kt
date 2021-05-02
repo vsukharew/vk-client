@@ -30,7 +30,7 @@ sealed class PublishImageFlowStage {
         }
 
         override fun onForwardClick() {
-
+            coordinator.exitFlow()
         }
     }
 }

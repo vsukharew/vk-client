@@ -1,19 +1,19 @@
 package vsukharew.vkclient.publishimage.attach.domain.interactor
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.*
 import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.extension.ifSuccess
 import vsukharew.vkclient.publishimage.attach.data.ImageRepo
 import vsukharew.vkclient.publishimage.attach.domain.model.Image
-import vsukharew.vkclient.publishimage.attach.domain.model.UploadedImage
+import vsukharew.vkclient.publishimage.attach.domain.model.SavedWallImage
 
 class ImageInteractorImpl(private val imageRepo: ImageRepo) : ImageInteractor {
 
     private val areImagesReadyForPublishing: Boolean
         get() = with(imageRepo) {
-            rawImages.size == uploadedImages.size
+            rawImages.size == savedImages.size
                     && rawImages.isNotEmpty()
-                    && uploadedImages.isNotEmpty()
+                    && savedImages.isNotEmpty()
         }
 
     private val publishingReadinessFlow = MutableStateFlow(false)
@@ -22,7 +22,7 @@ class ImageInteractorImpl(private val imageRepo: ImageRepo) : ImageInteractor {
         image: Image,
         isRetryLoading: Boolean,
         onProgressUpdated: (Double) -> Unit
-    ): Result<UploadedImage> {
+    ): Result<SavedWallImage> {
         return with(imageRepo) {
             uploadImage(image, isRetryLoading, onProgressUpdated).also {
                 publishingReadinessFlow.value = areImagesReadyForPublishing

@@ -3,6 +3,7 @@ package vsukharew.vkclient.publishimage.attach.presentation
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import vsukharew.vkclient.common.domain.model.Result
@@ -28,7 +29,9 @@ class AttachImageViewModel(
         imageAction,
         ::refreshImagesState
     )
-    val isNextButtonAvailable = imageInteractor.observePublishingReadiness().asLiveData()
+    val isNextButtonAvailable = imageInteractor.observePublishingReadiness()
+        .debounce { if (it) 500L else 0L }
+        .asLiveData()
 
     init {
         viewModelScope.launch { pollPendingPhotos() }

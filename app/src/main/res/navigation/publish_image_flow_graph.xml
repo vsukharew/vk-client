@@ -21,12 +21,21 @@
             app:destination="@id/captionFragment"
             app:enterAnim="@android:anim/fade_in"
             app:popUpTo="@id/attachImageFragment" />
+
+        <action
+            android:id="@+id/action_attachImageFragment_to_chooseImageSourceFragment"
+            app:destination="@id/imageSourceBottomSheetDialog" />
     </fragment>
 
     <fragment
         android:id="@+id/captionFragment"
         android:name="vsukharew.vkclient.publishimage.caption.presentation.CaptionFragment"
         android:label="captionFragment"
-        tools:layout="@layout/fragment_caption">
-    </fragment>
+        tools:layout="@layout/fragment_caption" />
+
+    <dialog
+        android:id="@+id/imageSourceBottomSheetDialog"
+        android:name="vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog"
+        android:label="ImageSourceBottomSheetDialog"
+        tools:layout="@layout/dialog_choose_image_source" />
 </navigation>

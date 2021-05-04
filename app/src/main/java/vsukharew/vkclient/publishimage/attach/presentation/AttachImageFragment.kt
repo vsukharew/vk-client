@@ -16,11 +16,14 @@ import vsukharev.anytypeadapter.adapter.AnyTypeCollection
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.di.ScopeCreator
+import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.databinding.FragmentAttachImageBinding
 import vsukharew.vkclient.publishimage.attach.di.AttachImageScopeCreator
 import vsukharew.vkclient.publishimage.attach.presentation.delegate.AddNewImageDelegate
 import vsukharew.vkclient.publishimage.attach.presentation.delegate.ImageDelegate
+import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.Companion.KEY_IMAGE_SOURCE
+import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.ImageSource
 import vsukharew.vkclient.publishimage.attach.presentation.model.UIImage
 import vsukharew.vkclient.publishimage.attach.presentation.state.ImageUIState
 import vsukharew.vkclient.publishimage.navigation.PublishImageCoordinator
@@ -35,8 +38,7 @@ class AttachImageFragment :
             stateRestorationPolicy = PREVENT_WHEN_EMPTY
         }
     private val addNewImageDelegate = AddNewImageDelegate {
-        uri = Uri.parse(viewModel.getUriForFutureImage())
-        cameraResultLauncher.launch(uri)
+        viewModel.chooseImageSource()
     }
     private val imageDelegate = ImageDelegate(
         { viewModel.startLoading(it, true) },
@@ -86,6 +88,23 @@ class AttachImageFragment :
         viewModel.apply {
             imagesStatesLiveData.observe(viewLifecycleOwner, ::observeImagesStates)
             isNextButtonAvailable.observe(viewLifecycleOwner, ::observeNextButtonAvailability)
+            imageSourceChoice.observe(viewLifecycleOwner, ::observeImageSourceChoice)
+            openCameraAction.observe(viewLifecycleOwner, ::observeOpenCameraAction)
+        }
+        flowCoordinator.apply {
+            addObserverToBackStackEntry(R.id.attachImageFragment) {
+                doIfKeyExists<ImageSource>(KEY_IMAGE_SOURCE) {
+                    when (it) {
+                        ImageSource.CAMERA -> {
+                            viewModel.openCamera()
+                        }
+                        ImageSource.GALLERY -> {
+
+                        }
+                    }
+                    removeKey<Int>(KEY_IMAGE_SOURCE)
+                }
+            }
         }
     }
 
@@ -115,6 +134,17 @@ class AttachImageFragment :
 
     private fun observeNextButtonAvailability(isEnabled: Boolean) {
         binding.nextBtn.isEnabled = isEnabled
+    }
+
+    private fun observeImageSourceChoice(event: SingleLiveEvent<Unit>) {
+        event.getContentIfNotHandled()?.let { flowCoordinator.openImageSourceScreen() }
+    }
+
+    private fun observeOpenCameraAction(event: SingleLiveEvent<Unit>) {
+        event.getContentIfNotHandled()?.let {
+            uri = Uri.parse(viewModel.getUriForFutureImage())
+            cameraResultLauncher.launch(uri)
+        }
     }
 
     private fun handleResult(isSuccess: Boolean) {

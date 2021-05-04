@@ -3,6 +3,8 @@ package vsukharew.vkclient.publishimage.navigation
 import androidx.navigation.NavController
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.navigation.BaseNavigator
+import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.Companion.KEY_IMAGE_SOURCE
+import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.ImageSource
 
 class PublishImageNavigator : BaseNavigator() {
     var rootNavController: NavController? = null
@@ -18,5 +20,15 @@ class PublishImageNavigator : BaseNavigator() {
 
     fun goBackToImageAttachStage() {
         flowNavController?.popBackStack(R.id.attachImageFragment, false)
+    }
+
+    fun openImageSourceScreen() {
+        flowNavController?.navigate(R.id.imageSourceBottomSheetDialog)
+    }
+
+    fun onSourceChoose(source: ImageSource) {
+        flowNavController?.getBackStackEntry(R.id.attachImageFragment)
+            ?.savedStateHandle
+            ?.set(KEY_IMAGE_SOURCE, source)
     }
 }

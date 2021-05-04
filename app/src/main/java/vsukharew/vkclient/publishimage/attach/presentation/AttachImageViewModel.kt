@@ -32,9 +32,19 @@ class AttachImageViewModel(
     val isNextButtonAvailable = imageInteractor.observePublishingReadiness()
         .debounce { if (it) 500L else 0L }
         .asLiveData()
+    val imageSourceChoice = MutableLiveData<SingleLiveEvent<Unit>>()
+    val openCameraAction = MutableLiveData<SingleLiveEvent<Unit>>()
 
     init {
         viewModelScope.launch { pollPendingPhotos() }
+    }
+
+    fun openCamera() {
+        openCameraAction.value = SingleLiveEvent(Unit)
+    }
+
+    fun chooseImageSource() {
+        imageSourceChoice.value = SingleLiveEvent(Unit)
     }
 
     fun startLoading(image: UIImage.RealImage, isRetryLoading: Boolean, event: ImageEvent? = null) {

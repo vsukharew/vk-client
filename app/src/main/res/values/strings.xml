@@ -23,6 +23,9 @@
     <string name="features_fragment_post_published_text">Post published</string>
 
     <string name="attach_image_fragment_next_btn">Next</string>
+    <string name="attach_image_fragment_choose_image_source_text">From gallery</string>
+    <string name="attach_image_fragment_gallery_text">Gallery</string>
+    <string name="attach_image_fragment_camera_text">Camera</string>
 
     <string name="caption_fragment_caption_hint">Come up with a caption</string>
     <string name="caption_fragment_publish_btn">Publish</string>

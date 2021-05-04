@@ -10,8 +10,8 @@ import vsukharew.vkclient.publishimage.attach.data.ImageRepo
 import vsukharew.vkclient.publishimage.attach.data.ImageRepository
 import vsukharew.vkclient.publishimage.attach.data.network.ImageApi
 import vsukharew.vkclient.publishimage.attach.data.network.WallApi
-import vsukharew.vkclient.publishimage.attach.domain.infrastructure.AndroidUriProvider
-import vsukharew.vkclient.publishimage.attach.domain.infrastructure.UriProvider
+import vsukharew.vkclient.publishimage.attach.domain.infrastructure.ContentResolverImpl
+import vsukharew.vkclient.publishimage.attach.domain.infrastructure.DomainContentResolver
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractorImpl
 import vsukharew.vkclient.publishimage.flow.PublishImageFragment
@@ -31,7 +31,7 @@ val publishImageFlowModule = module {
     scope(named(DIScopes.PUBLISHING_POST_DATA)) {
         scoped { provideImageApi(get()) }
         scoped { provideWallApi(get()) }
-        scopedBy<UriProvider, AndroidUriProvider>()
+        scopedBy<DomainContentResolver, ContentResolverImpl>()
         scopedBy<ImageRepo, ImageRepository>()
         scopedBy<ImageInteractor, ImageInteractorImpl>()
     }

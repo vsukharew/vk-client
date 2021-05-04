@@ -1,13 +1,12 @@
 package vsukharew.vkclient.common.network
 
-import android.content.Context
-import android.net.Uri
 import android.util.Log
 import okhttp3.MediaType
 import okhttp3.RequestBody
-import okio.BufferedSink
-import vsukharew.vkclient.publishimage.attach.domain.model.Image
 import okhttp3.logging.HttpLoggingInterceptor
+import okio.BufferedSink
+import vsukharew.vkclient.publishimage.attach.domain.infrastructure.DomainContentResolver
+import vsukharew.vkclient.publishimage.attach.domain.model.Image
 
 /**
  * Request body that notifies about current upload progress
@@ -15,7 +14,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 class ProgressRequestBody(
     private val delegate: RequestBody,
     private val image: Image,
-    private val context: Context,
+    private val contentResolver: DomainContentResolver,
     private val onProgressUpdated: (Double) -> Unit,
 ) : RequestBody() {
 
@@ -40,7 +39,7 @@ class ProgressRequestBody(
         var bytesWritten = 0
         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
 
-        context.contentResolver.openInputStream(Uri.parse(image.uri))!!
+        contentResolver.openInputStream(image.uri)!!
             .use {
                 do {
                     val bytesRead = it.read(buffer)

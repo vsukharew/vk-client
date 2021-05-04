@@ -3,18 +3,19 @@ package vsukharew.vkclient.publishimage.attach.domain.infrastructure
 import android.content.Context
 import android.net.Uri
 import androidx.core.content.FileProvider
-import vsukharew.vkclient.common.utils.DatePatterns.YEAR_MONTH_NUMBER_DAY_HOURS_MINUTES_SECONDS
+import vsukharew.vkclient.common.utils.DatePatterns
 import java.io.File
+import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
-class AndroidUriProvider(private val context: Context) : UriProvider {
+class ContentResolverImpl(private val context: Context) : DomainContentResolver {
 
     private val authority = "${context.packageName}.fileprovider"
 
     override fun createFileForWallImage(): String {
         val timeStamp = SimpleDateFormat(
-            YEAR_MONTH_NUMBER_DAY_HOURS_MINUTES_SECONDS,
+            DatePatterns.YEAR_MONTH_NUMBER_DAY_HOURS_MINUTES_SECONDS,
             Locale.getDefault()
         ).format(Date())
         val storageDir = context.filesDir
@@ -28,17 +29,20 @@ class AndroidUriProvider(private val context: Context) : UriProvider {
             }
         }
         val file = File.createTempFile(
-            "photo $timeStamp",
+            "photo_$timeStamp",
             ".jpg",
             wallImagesDirectory
         )
-        return FileProvider.getUriForFile(context, authority, file)
-            .toString()
+        return FileProvider.getUriForFile(context, authority, file).toString()
     }
 
     override fun getExtensionFromContentUri(uri: String): String? {
         return context.contentResolver.getType(Uri.parse(uri))
             ?.split("/")
             ?.last()
+    }
+
+    override fun openInputStream(uri: String): InputStream? {
+        return context.contentResolver.openInputStream(Uri.parse(uri))
     }
 }

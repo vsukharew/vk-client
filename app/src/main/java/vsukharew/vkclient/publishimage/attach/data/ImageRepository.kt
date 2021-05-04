@@ -1,7 +1,5 @@
 package vsukharew.vkclient.publishimage.attach.data
 
-import android.content.Context
-import android.net.Uri
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -13,7 +11,7 @@ import vsukharew.vkclient.common.network.ProgressRequestBody
 import vsukharew.vkclient.publishimage.attach.data.model.SavedWallImageResponse
 import vsukharew.vkclient.publishimage.attach.data.network.ImageApi
 import vsukharew.vkclient.publishimage.attach.data.network.WallApi
-import vsukharew.vkclient.publishimage.attach.domain.infrastructure.UriProvider
+import vsukharew.vkclient.publishimage.attach.domain.infrastructure.DomainContentResolver
 import vsukharew.vkclient.publishimage.attach.domain.model.Image
 import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource.CAMERA
 import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource.GALLERY
@@ -23,8 +21,7 @@ import java.util.*
 class ImageRepository(
     private val imageApi: ImageApi,
     private val wallApi: WallApi,
-    private val uriProvider: UriProvider,
-    private val context: Context
+    private val contentResolver: DomainContentResolver
 ) : ImageRepo {
 
     override val rawImages: MutableList<Image> = mutableListOf()
@@ -70,8 +67,7 @@ class ImageRepository(
         onProgressUpdated: (Double) -> Unit
     ): Result<SavedWallImageResponse> {
         val streamResult = runCatching {
-            context.contentResolver
-                .openInputStream(Uri.parse(image.uri))
+            contentResolver.openInputStream(image.uri)
                 .use { it!!.readBytes() }
         }
         return when (streamResult.isSuccess) {
@@ -80,13 +76,13 @@ class ImageRepository(
                 val requestBody = ProgressRequestBody(
                     streamResult.getOrThrow().toRequestBody(mediaType),
                     image,
-                    context,
+                    contentResolver,
                     onProgressUpdated,
                 )
                 val fileName = when (image.source) {
                     CAMERA -> image.uri
                     GALLERY -> {
-                        val extension = uriProvider.getExtensionFromContentUri(image.uri)
+                        val extension = contentResolver.getExtensionFromContentUri(image.uri)
                         "${image.uri}.$extension"
                     }
                 }

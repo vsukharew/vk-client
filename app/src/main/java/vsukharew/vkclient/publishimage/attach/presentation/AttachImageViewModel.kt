@@ -8,7 +8,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
-import vsukharew.vkclient.publishimage.attach.domain.infrastructure.UriProvider
+import vsukharew.vkclient.publishimage.attach.domain.infrastructure.DomainContentResolver
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
 import vsukharew.vkclient.publishimage.attach.domain.model.Image
 import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource.CAMERA
@@ -20,7 +20,7 @@ import vsukharew.vkclient.publishimage.navigation.PublishImageFlowStage
 
 class AttachImageViewModel(
     private val imageInteractor: ImageInteractor,
-    private val uriProvider: UriProvider,
+    private val contentResolver: DomainContentResolver,
     private val flowStage: PublishImageFlowStage
 ) : ViewModel() {
 
@@ -73,7 +73,7 @@ class AttachImageViewModel(
     }
 
     fun getUriForFutureImage(): String {
-        return uriProvider.createFileForWallImage()
+        return contentResolver.createFileForWallImage()
     }
 
     fun goToNextStage() {

@@ -8,8 +8,9 @@ import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.presentation.BaseBottomSheetDialog
 import vsukharew.vkclient.databinding.DialogChooseImageSourceBinding
 import vsukharew.vkclient.publishimage.attach.di.ImageSourceDialogScopeCreator
-import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.ImageSource.CAMERA
-import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.ImageSource.GALLERY
+import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource
+import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource.CAMERA
+import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource.GALLERY
 
 class ImageSourceBottomSheetDialog : BaseBottomSheetDialog() {
 
@@ -36,11 +37,6 @@ class ImageSourceBottomSheetDialog : BaseBottomSheetDialog() {
 
     interface ImageSourceListener {
         fun onSourceChoose(source: ImageSource)
-    }
-
-    enum class ImageSource {
-        CAMERA,
-        GALLERY
     }
 
     companion object {

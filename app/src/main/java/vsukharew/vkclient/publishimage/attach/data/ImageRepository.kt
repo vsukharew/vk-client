@@ -13,13 +13,17 @@ import vsukharew.vkclient.common.network.ProgressRequestBody
 import vsukharew.vkclient.publishimage.attach.data.model.SavedWallImageResponse
 import vsukharew.vkclient.publishimage.attach.data.network.ImageApi
 import vsukharew.vkclient.publishimage.attach.data.network.WallApi
+import vsukharew.vkclient.publishimage.attach.domain.infrastructure.UriProvider
 import vsukharew.vkclient.publishimage.attach.domain.model.Image
+import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource.CAMERA
+import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource.GALLERY
 import vsukharew.vkclient.publishimage.attach.domain.model.SavedWallImage
 import java.util.*
 
 class ImageRepository(
     private val imageApi: ImageApi,
     private val wallApi: WallApi,
+    private val uriProvider: UriProvider,
     private val context: Context
 ) : ImageRepo {
 
@@ -79,8 +83,15 @@ class ImageRepository(
                     context,
                     onProgressUpdated,
                 )
+                val fileName = when (image.source) {
+                    CAMERA -> image.uri
+                    GALLERY -> {
+                        val extension = uriProvider.getExtensionFromContentUri(image.uri)
+                        "${image.uri}.$extension"
+                    }
+                }
                 val multipartBody =
-                    MultipartBody.Part.createFormData("photo", image.uri, requestBody)
+                    MultipartBody.Part.createFormData("photo", fileName, requestBody)
                 with(imageApi.uploadImage(url, multipartBody)) {
                     when {
                         isDataReceived() -> { saveImage(photo!!, server!!, hash!!) }

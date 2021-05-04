@@ -3,8 +3,8 @@ package vsukharew.vkclient.publishimage.navigation
 import androidx.navigation.NavController
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.navigation.BaseNavigator
+import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource
 import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.Companion.KEY_IMAGE_SOURCE
-import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.ImageSource
 
 class PublishImageNavigator : BaseNavigator() {
     var rootNavController: NavController? = null

@@ -4,7 +4,7 @@ import androidx.annotation.IdRes
 import androidx.navigation.NavController
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.navigation.BackStackEntryObserver
-import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.ImageSource
+import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource
 import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.ImageSourceListener
 import vsukharew.vkclient.publishimage.navigation.PublishImageFlowStage.AttachImageStage
 import vsukharew.vkclient.publishimage.navigation.PublishImageFlowStage.CaptionStage

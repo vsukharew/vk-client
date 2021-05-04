@@ -11,6 +11,8 @@ import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.publishimage.attach.domain.infrastructure.UriProvider
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
 import vsukharew.vkclient.publishimage.attach.domain.model.Image
+import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource.CAMERA
+import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource.GALLERY
 import vsukharew.vkclient.publishimage.attach.presentation.event.ImageEvent
 import vsukharew.vkclient.publishimage.attach.presentation.model.UIImage
 import vsukharew.vkclient.publishimage.attach.presentation.state.ImageUIState
@@ -47,12 +49,20 @@ class AttachImageViewModel(
         imageSourceChoice.value = SingleLiveEvent(Unit)
     }
 
+    fun startLoading(uris: List<String>) {
+        uris.forEach {
+            val domainImage = Image(it, GALLERY)
+            val uiImage = UIImage.RealImage(domainImage)
+            photosStates[uiImage] = ImageUIState.Pending(false)
+        }
+    }
+
     fun startLoading(image: UIImage.RealImage, isRetryLoading: Boolean, event: ImageEvent? = null) {
         startLoadingInternal(image, isRetryLoading, event)
     }
 
     fun startLoading(uri: String, isRetryLoading: Boolean, event: ImageEvent? = null) {
-        val domainImage = Image(uri)
+        val domainImage = Image(uri, CAMERA)
         val image = UIImage.RealImage(domainImage)
         startLoadingInternal(image, isRetryLoading, event)
     }

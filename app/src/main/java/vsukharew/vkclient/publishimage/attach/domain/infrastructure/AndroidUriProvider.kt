@@ -1,6 +1,7 @@
 package vsukharew.vkclient.publishimage.attach.domain.infrastructure
 
 import android.content.Context
+import android.net.Uri
 import androidx.core.content.FileProvider
 import vsukharew.vkclient.common.utils.DatePatterns.YEAR_MONTH_NUMBER_DAY_HOURS_MINUTES_SECONDS
 import java.io.File
@@ -33,5 +34,11 @@ class AndroidUriProvider(private val context: Context) : UriProvider {
         )
         return FileProvider.getUriForFile(context, authority, file)
             .toString()
+    }
+
+    override fun getExtensionFromContentUri(uri: String): String? {
+        return context.contentResolver.getType(Uri.parse(uri))
+            ?.split("/")
+            ?.last()
     }
 }

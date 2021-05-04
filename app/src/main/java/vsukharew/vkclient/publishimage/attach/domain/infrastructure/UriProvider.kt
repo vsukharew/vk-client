@@ -7,4 +7,6 @@ interface UriProvider {
      * @return string representation of file's Uri
      */
     fun createFileForWallImage(): String
+
+    fun getExtensionFromContentUri(uri: String): String?
 }

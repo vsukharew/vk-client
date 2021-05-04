@@ -11,7 +11,6 @@ import vsukharew.vkclient.publishimage.navigation.PublishImageCoordinator
 
 val attachImageScreenModule = module {
     scope<AttachImageFragment> {
-        scopedBy<UriProvider, AndroidUriProvider>()
         viewModel {
             AttachImageViewModel(
                 get(),

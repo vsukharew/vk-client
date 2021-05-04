@@ -20,10 +20,12 @@ import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.databinding.FragmentAttachImageBinding
 import vsukharew.vkclient.publishimage.attach.di.AttachImageScopeCreator
+import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource
+import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource.CAMERA
+import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource.GALLERY
 import vsukharew.vkclient.publishimage.attach.presentation.delegate.AddNewImageDelegate
 import vsukharew.vkclient.publishimage.attach.presentation.delegate.ImageDelegate
 import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.Companion.KEY_IMAGE_SOURCE
-import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.ImageSource
 import vsukharew.vkclient.publishimage.attach.presentation.model.UIImage
 import vsukharew.vkclient.publishimage.attach.presentation.state.ImageUIState
 import vsukharew.vkclient.publishimage.navigation.PublishImageCoordinator
@@ -47,6 +49,7 @@ class AttachImageFragment :
     private val viewModel: AttachImageViewModel by viewModel()
     private val flowCoordinator: PublishImageCoordinator by inject()
     private lateinit var cameraResultLauncher: ActivityResultLauncher<Uri>
+    private lateinit var galleryResultLauncher: ActivityResultLauncher<String>
 
     override val scopeCreator: ScopeCreator by lazy { AttachImageScopeCreator(requireParentFragment().requireParentFragment()) }
     override val binding by fragmentViewBinding(FragmentAttachImageBinding::bind)
@@ -70,6 +73,10 @@ class AttachImageFragment :
         cameraResultLauncher = registerForActivityResult(
             ActivityResultContracts.TakePicture(),
             ::handleResult
+        )
+        galleryResultLauncher = registerForActivityResult(
+            ActivityResultContracts.GetMultipleContents(),
+            ::handleGalleryResult
         )
     }
 
@@ -95,11 +102,11 @@ class AttachImageFragment :
             addObserverToBackStackEntry(R.id.attachImageFragment) {
                 doIfKeyExists<ImageSource>(KEY_IMAGE_SOURCE) {
                     when (it) {
-                        ImageSource.CAMERA -> {
+                        CAMERA -> {
                             viewModel.openCamera()
                         }
-                        ImageSource.GALLERY -> {
-
+                        GALLERY -> {
+                            galleryResultLauncher.launch("image/*")
                         }
                     }
                     removeKey<Int>(KEY_IMAGE_SOURCE)
@@ -151,5 +158,9 @@ class AttachImageFragment :
         if (isSuccess) {
             viewModel.startLoading(uri.toString(), false)
         }
+    }
+
+    private fun handleGalleryResult(uris: List<Uri>) {
+        viewModel.startLoading(uris.map { it.toString() })
     }
 }

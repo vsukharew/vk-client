@@ -14,5 +14,6 @@ interface ImageRepo {
         onProgressUpdated: (Double) -> Unit
     ): Result<SavedWallImage>
     fun removeUploadedImage(image: Image)
+    fun removeAllImages()
     suspend fun postImagesOnWall(message: String): Result<Int>
 }

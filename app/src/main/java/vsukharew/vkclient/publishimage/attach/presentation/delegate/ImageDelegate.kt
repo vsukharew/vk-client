@@ -1,9 +1,7 @@
 package vsukharew.vkclient.publishimage.attach.presentation.delegate
 
 import android.net.Uri
-import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -58,7 +56,6 @@ class ImageDelegate(
                 when (state) {
                     is ImageUIState.Success -> {
                         progressBar.apply {
-                            Log.d("progressBar.progress: ", 100.toString())
                             postDelayed(
                                 {
                                     isVisible = false
@@ -70,7 +67,6 @@ class ImageDelegate(
                         }
                     }
                     is ImageUIState.LoadingProgress -> {
-                        Log.d("progressBar.progress: ", state.progress.toString())
                         progressBar.apply {
                             isIndeterminate = false
                             isVisible = true
@@ -82,11 +78,10 @@ class ImageDelegate(
                     is ImageUIState.Error -> {
                         progressBar.apply {
                             isIndeterminate = false
-                            Toast.makeText(context, "ERROR", Toast.LENGTH_SHORT).show()
                             isVisible = false
-                            retryUpload.isVisible = true
-                            removeImage.isVisible = true
                         }
+                        retryUpload.isVisible = true
+                        removeImage.isVisible = true
                     }
                     is ImageUIState.Pending -> {
                         retryUpload.isVisible = false

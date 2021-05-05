@@ -5,6 +5,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import vsukharew.vkclient.common.domain.model.AttachmentType
 import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.extension.ifSuccess
 import vsukharew.vkclient.common.extension.map
 import vsukharew.vkclient.common.extension.switchMap
 import vsukharew.vkclient.common.network.ProgressRequestBody
@@ -49,16 +50,27 @@ class ImageRepository(
     override fun removeUploadedImage(image: Image) {
         val imageToRemove = rawImages.indexOf(image)
         if (rawImages.size == savedImages.size) {
+            // image was uploaded and saved.
+            // In this case, collections are synced and it's safe to delete items by the same index
             savedImages.removeAt(imageToRemove)
+            // If there was no step into this 'if'
+            // image was uploaded but not saved due to and error happened
         }
         rawImages.removeAt(imageToRemove)
+    }
+
+    override fun removeAllImages() {
+        rawImages.clear()
+        savedImages.clear()
     }
 
     override suspend fun postImagesOnWall(message: String): Result<Int> {
         val attachments = savedImages.joinToString {
             "${AttachmentType.PHOTO.name.toLowerCase(Locale.getDefault())}${it.ownerId}_${it.id}>"
         }
-        return wallApi.postToWall(message, attachments).map { it.response!!.postId }
+        return wallApi.postToWall(message, attachments)
+            .map { it.response!!.postId }
+            .ifSuccess { removeAllImages() }
     }
 
     private suspend fun uploadImageInternal(

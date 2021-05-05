@@ -12,7 +12,7 @@ interface ImageInteractor {
         onProgressUpdated: (Double) -> Unit
     ): Result<SavedWallImage>
     fun removeUploadedImage(image: Image)
+    fun removeAllImages()
     suspend fun postImagesOnWall(message: String): Result<Int>
-    fun observePublishingReadiness(): Flow<Boolean>
     fun observePublishedPosts(): Flow<Int?>
 }

@@ -9,14 +9,6 @@ import vsukharew.vkclient.publishimage.attach.domain.model.SavedWallImage
 
 class ImageInteractorImpl(private val imageRepo: ImageRepo) : ImageInteractor {
 
-    private val areImagesReadyForPublishing: Boolean
-        get() = with(imageRepo) {
-            rawImages.size == savedImages.size
-                    && rawImages.isNotEmpty()
-                    && savedImages.isNotEmpty()
-        }
-
-    private val publishingReadinessFlow = MutableStateFlow(false)
     private val publishingPostFlow = MutableStateFlow<Int?>(null)
 
     override suspend fun uploadImage(
@@ -25,14 +17,12 @@ class ImageInteractorImpl(private val imageRepo: ImageRepo) : ImageInteractor {
         onProgressUpdated: (Double) -> Unit
     ): Result<SavedWallImage> {
         return with(imageRepo) {
-            uploadImage(image, isRetryLoading, onProgressUpdated).also {
-                publishingReadinessFlow.value = areImagesReadyForPublishing
-            }
+            uploadImage(image, isRetryLoading, onProgressUpdated)
         }
     }
 
-    override fun observePublishingReadiness(): Flow<Boolean> {
-        return publishingReadinessFlow
+    override fun removeAllImages() {
+        imageRepo.removeAllImages()
     }
 
     override fun observePublishedPosts(): Flow<Int?> {
@@ -40,9 +30,7 @@ class ImageInteractorImpl(private val imageRepo: ImageRepo) : ImageInteractor {
     }
 
     override fun removeUploadedImage(image: Image) {
-        imageRepo.removeUploadedImage(image).also {
-            publishingReadinessFlow.value = areImagesReadyForPublishing
-        }
+        imageRepo.removeUploadedImage(image)
     }
 
     override suspend fun postImagesOnWall(message: String): Result<Int> {

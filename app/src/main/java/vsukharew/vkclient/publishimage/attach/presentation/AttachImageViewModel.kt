@@ -3,7 +3,6 @@ package vsukharew.vkclient.publishimage.attach.presentation
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import vsukharew.vkclient.common.domain.model.Result
@@ -31,14 +30,20 @@ class AttachImageViewModel(
         imageAction,
         ::refreshImagesState
     )
-    val isNextButtonAvailable = imageInteractor.observePublishingReadiness()
-        .debounce { if (it) 500L else 0L }
-        .asLiveData()
+    val isNextButtonAvailable = Transformations.map(imagesStatesLiveData) {
+        with(it) { containsNotOnlyPlaceholder() && allImagesAreLoaded() }
+    }
+
     val imageSourceChoice = MutableLiveData<SingleLiveEvent<Unit>>()
     val openCameraAction = MutableLiveData<SingleLiveEvent<Unit>>()
 
     init {
         viewModelScope.launch { pollPendingPhotos() }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        imageInteractor.removeAllImages()
     }
 
     fun openCamera() {
@@ -94,10 +99,7 @@ class AttachImageViewModel(
             imageAction.value =
                 when (val uploadResult =
                     withContext(Dispatchers.IO) {
-                        imageInteractor.uploadImage(
-                            image.image,
-                            isRetryLoading
-                        ) {
+                        imageInteractor.uploadImage(image.image, isRetryLoading) {
                             launch {
                                 withContext(Dispatchers.Main) {
                                     val progress = (it * 100).toInt()
@@ -140,19 +142,26 @@ class AttachImageViewModel(
         while (true) {
             val isLoadingInProgress =
                 photosStates.values.any { it is ImageUIState.LoadingProgress }
+            val delay = if (!isLoadingInProgress) 500L else 2000L
             if (!isLoadingInProgress) {
-                photosStates.forEach {
-                    if (it.value is ImageUIState.Pending) {
+                for (state in photosStates) {
+                    if (state.value is ImageUIState.Pending) {
                         startLoading(
-                            (it.key as UIImage.RealImage),
-                            (it.value as ImageUIState.Pending).isAfterRetry,
-                            ImageEvent.InitialLoading(it.key)
+                            (state.key as UIImage.RealImage),
+                            (state.value as ImageUIState.Pending).isAfterRetry,
+                            ImageEvent.InitialLoading(state.key)
                         )
-                        return@forEach
+                        break
                     }
                 }
             }
-            delay(2000)
+            delay(delay)
         }
     }
+
+    private fun Map<UIImage, ImageUIState>.containsNotOnlyPlaceholder(): Boolean =
+        size > 1 && keys.first() is UIImage.AddNewImagePlaceholder && keys.last() is UIImage.RealImage
+
+    private fun Map<UIImage, ImageUIState>.allImagesAreLoaded(): Boolean =
+        any { it.key is UIImage.RealImage } && all { it.value is ImageUIState.Success }
 }

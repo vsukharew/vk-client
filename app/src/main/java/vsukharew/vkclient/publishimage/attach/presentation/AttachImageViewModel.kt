@@ -23,7 +23,7 @@ class AttachImageViewModel(
     private val flowStage: PublishImageFlowStage
 ) : ViewModel() {
 
-    private val photosStates = mutableMapOf<UIImage, ImageUIState>()
+    private val imagesStates = mutableMapOf<UIImage, ImageUIState>()
     private val imageAction =
         MutableLiveData<ImageEvent>(ImageEvent.SuccessfulLoading(UIImage.AddNewImagePlaceholder))
     val imagesStatesLiveData = Transformations.switchMap(
@@ -58,7 +58,7 @@ class AttachImageViewModel(
         uris.forEach {
             val domainImage = Image(it, GALLERY)
             val uiImage = UIImage.RealImage(domainImage)
-            photosStates[uiImage] = ImageUIState.Pending(false)
+            imagesStates[uiImage] = ImageUIState.Pending(false)
         }
     }
 
@@ -130,21 +130,21 @@ class AttachImageViewModel(
                 is ImageEvent.ErrorLoading -> ImageUIState.Error(SingleLiveEvent(action.error))
             }
             if (action is ImageEvent.Remove) {
-                photosStates.remove(action.image)
+                imagesStates.remove(action.image)
             } else {
-                photosStates[image] = state
+                imagesStates[image] = state
             }
-            emit(photosStates)
+            emit(imagesStates)
         }
     }
 
     private suspend fun pollPendingPhotos() {
         while (true) {
             val isLoadingInProgress =
-                photosStates.values.any { it is ImageUIState.LoadingProgress }
+                imagesStates.values.any { it is ImageUIState.LoadingProgress }
             val delay = if (!isLoadingInProgress) 500L else 2000L
             if (!isLoadingInProgress) {
-                for (state in photosStates) {
+                for (state in imagesStates) {
                     if (state.value is ImageUIState.Pending) {
                         startLoading(
                             (state.key as UIImage.RealImage),

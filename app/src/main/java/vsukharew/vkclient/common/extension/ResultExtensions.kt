@@ -5,7 +5,7 @@ import java.lang.IllegalArgumentException
 
 fun <T, R> Result<T>.map(
     dataMapper: ((T) -> R),
-) : Result<R> {
+): Result<R> {
     return when (this) {
         is Result.Success -> Result.Success(dataMapper.invoke(data))
         else -> mapUnsuccessfulResults()
@@ -14,7 +14,7 @@ fun <T, R> Result<T>.map(
 
 suspend fun <T, R> Result<T>.switchMap(
     dataMapper: suspend ((T) -> Result<R>),
-) : Result<R> {
+): Result<R> {
     return when (this) {
         is Result.Success -> dataMapper.invoke(data)
         else -> mapUnsuccessfulResults()
@@ -28,18 +28,14 @@ fun <T> Result<T>.ifSuccess(block: (T) -> Unit): Result<T> {
     }
 }
 
-private fun <T, R> Result<T>.mapUnsuccessfulResults() : Result<R> {
+private fun <T, R> Result<T>.mapUnsuccessfulResults(): Result<R> {
     return when (this) {
-        is Result.Error.HttpError.ServerError ->
-            Result.Error.HttpError.ServerError(this.httpCode, this.errorBody)
-        is Result.Error.HttpError.ClientError.OtherClientError ->
-            Result.Error.HttpError.OtherHttpError(this.httpCode)
-        is Result.Error.HttpError.ClientError.UnauthorizedError ->
-            Result.Error.HttpError.ClientError.UnauthorizedError
-        is Result.Error.HttpError.OtherHttpError ->
-            Result.Error.HttpError.OtherHttpError(this.httpCode)
-        is Result.Error.NetworkError -> Result.Error.NetworkError(this.e)
-        is Result.Error.UnknownError -> Result.Error.UnknownError(this.e)
+        is Result.Error.HttpError.ServerError -> this
+        is Result.Error.HttpError.ClientError.OtherClientError -> this
+        is Result.Error.HttpError.ClientError.UnauthorizedError -> this
+        is Result.Error.HttpError.OtherHttpError -> this
+        is Result.Error.NetworkError -> this
+        is Result.Error.UnknownError -> this
         else -> throw IllegalArgumentException("Result is Result.Success")
     }
 }

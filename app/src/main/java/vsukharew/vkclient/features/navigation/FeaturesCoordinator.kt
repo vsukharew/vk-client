@@ -14,4 +14,8 @@ class FeaturesCoordinator(
     fun onSignOutClick() {
         featuresNavigator.onSignOutClick()
     }
+
+    fun onPublishImageClick() {
+        featuresNavigator.navigateToPublishImageFlow()
+    }
 }

@@ -2,7 +2,6 @@ package vsukharew.vkclient.auth.data.model
 
 import vsukharew.vkclient.auth.domain.model.Scope
 import vsukharew.vkclient.common.extension.COMMA
-import vsukharew.vkclient.common.extension.EMPTY
 import vsukharew.vkclient.common.extension.randomAlphanumericString
 import vsukharew.vkclient.common.network.ServerUrls.Auth.BASE_URL
 import vsukharew.vkclient.common.network.ServerUrls.Auth.REDIRECT_URL
@@ -20,8 +19,8 @@ data class AuthParams(
 ) {
     val completeUrl: String
     get() {
-        val scopes = Scope.namesLowerCase().joinToString(separator = String.EMPTY) { "&scope=$it" }
-        return "$baseUrl?client_id=$clientId&redirect_uri=$redirectUrl&display=$display$scopes&response_type=$responseType&state=$state&v=5.90"
+        val scopes = Scope.namesLowerCase().joinToString()
+        return "$baseUrl?client_id=$clientId&redirect_uri=$redirectUrl&display=$display&scope=$scopes&response_type=$responseType&state=$state&v=5.90"
     }
 
     companion object {

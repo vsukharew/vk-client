@@ -17,7 +17,9 @@ import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.di.ScopeCreator
 import vsukharew.vkclient.common.extension.EMPTY
+import vsukharew.vkclient.common.extension.snackBar
 import vsukharew.vkclient.common.extension.textChangesSkipFirst
+import vsukharew.vkclient.common.extension.toast
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.common.presentation.loadstate.UIState
@@ -55,6 +57,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
             signOutEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
             signOutDialogEvent.observe(viewLifecycleOwner, ::observeSignOutDialogEvent)
             signOutDialogClosedEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
+            postPublishedEvent.observe(viewLifecycleOwner, ::observePublishedPosts)
         }
     }
 
@@ -70,6 +73,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         binding.apply {
             signOut.setOnClickListener { viewModel.onSignOutClick() }
             retry.setOnClickListener { viewModel.retryLoadProfileInfo() }
+            publishImage.setOnClickListener { featuresCoordinator.onPublishImageClick() }
             refreshLayout.setOnRefreshListener { viewModel.refreshProfileInfo() }
         }
     }
@@ -127,6 +131,11 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         event.getContentIfNotHandled()?.let {
             featuresCoordinator.onSignOutClick()
         }
+    }
+
+    private fun observePublishedPosts(event: SingleLiveEvent<Int?>) {
+        event.getContentIfNotHandled()
+            ?.let { snackBar(R.string.features_fragment_post_published_text) }
     }
 
     private fun renderLoadingProgress() {

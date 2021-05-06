@@ -14,9 +14,19 @@
     <string name="features_fragment_user_name_loading_text">Profile loading…</string>
     <string name="features_fragment_your_short_name_text">Your short name</string>
     <string name="features_fragment_sign_out_btn">Sign out</string>
+    <string name="features_fragment_publish_image_btn">Publish image</string>
     <string name="features_fragment_sign_out_dialog_text">Since you signed in via browser please clear the password of vk.com if you want to sign in as another user</string>
     <string name="features_fragment_username_available_text">Username available</string>
     <string name="features_fragment_username_is_being_checked_text">Checking…</string>
     <string name="features_fragment_username_busy_text">Username is busy</string>
     <string name="features_fragment_username_error_hint">Error happened</string>
+    <string name="features_fragment_post_published_text">Post published</string>
+
+    <string name="attach_image_fragment_next_btn">Next</string>
+    <string name="attach_image_fragment_choose_image_source_text">From gallery</string>
+    <string name="attach_image_fragment_gallery_text">Gallery</string>
+    <string name="attach_image_fragment_camera_text">Camera</string>
+
+    <string name="caption_fragment_caption_hint">Come up with a caption</string>
+    <string name="caption_fragment_publish_btn">Publish</string>
 </resources>

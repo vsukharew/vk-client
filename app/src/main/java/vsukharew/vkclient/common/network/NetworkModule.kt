@@ -10,7 +10,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import vsukharew.vkclient.BuildConfig
 import vsukharew.vkclient.account.data.model.ScreenNameResponse
 import vsukharew.vkclient.auth.data.AuthStorage
-import vsukharew.vkclient.common.network.calladapter.ResultAdapterFactory
+import vsukharew.vkclient.common.network.calladapter.responsewrapper.ResultResponseWrapperAdapterFactory
+import vsukharew.vkclient.common.network.calladapter.uploadimage.UploadImageWrapperAdapterFactory
 import vsukharew.vkclient.common.network.deserializer.ResolvedScreenNameDeserializer
 import vsukharew.vkclient.common.network.interceptor.AddTokenInterceptor
 import java.util.concurrent.TimeUnit
@@ -40,7 +41,8 @@ private fun provideRetrofit(authStorage: AuthStorage): Retrofit {
     return Retrofit.Builder()
         .baseUrl(ServerUrls.BASE_URL)
         .client(provideOkHttpClient(authStorage))
-        .addCallAdapterFactory(ResultAdapterFactory())
+        .addCallAdapterFactory(ResultResponseWrapperAdapterFactory())
+        .addCallAdapterFactory(UploadImageWrapperAdapterFactory())
         .addConverterFactory(GsonConverterFactory.create(provideGson()))
         .build()
 }

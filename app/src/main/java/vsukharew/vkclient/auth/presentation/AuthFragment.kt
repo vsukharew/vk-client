@@ -34,16 +34,16 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
             StartActivityForResult(),
             ::handleVkActivityResult
         )
-        coordinator.let {
-            it.navController = navController
-            it.vkActivityLauncher = vkActivityLauncher
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setListeners()
         observeData()
+        coordinator.let {
+            it.navController = navController
+            it.vkActivityLauncher = vkActivityLauncher
+        }
         activity?.intent?.let(::handleBrowserRedirect)
     }
 

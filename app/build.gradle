@@ -52,6 +52,7 @@ dependencies {
     implementation androidx.material
     implementation androidx.swiperefreshlayout
     implementation androidx.viewmodel
+    implementation androidx.recyclerView
     implementation androidx.livedata
     implementation androidx.navigation.fragmentKtx
     implementation androidx.navigation.uiKtx
@@ -71,6 +72,7 @@ dependencies {
     implementation okhttp.logger
     implementation gson
     implementation tink
+    implementation anyTypeAdapter
 
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'
 }

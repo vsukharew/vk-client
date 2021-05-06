@@ -26,7 +26,7 @@ fun <T: ViewBinding> activityViewBinding(
 ): ActivityViewBindingProperty<T> = ActivityViewBindingProperty(bindingInitializer)
 
 /**
- * The class that holds a reference to [ViewBinding] and synces it with the [Lifecycle]
+ * The class that holds a reference to [ViewBinding] and syncs it with the [Lifecycle]
  */
 abstract class ViewBindingProperty<T: ViewBinding> : LifecycleObserver {
     protected var binding: T? = null

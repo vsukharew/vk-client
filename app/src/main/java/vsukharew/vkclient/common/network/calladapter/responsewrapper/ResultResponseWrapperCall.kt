@@ -1,24 +1,22 @@
-package vsukharew.vkclient.common.network.calladapter
+package vsukharew.vkclient.common.network.calladapter.responsewrapper
 
 import okhttp3.Request
 import okio.Timeout
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import vsukharew.vkclient.common.network.response.ResponseWrapper
 import vsukharew.vkclient.common.domain.model.Result
-import vsukharew.vkclient.common.domain.model.Result.Error.HttpError
-import vsukharew.vkclient.common.domain.model.Result.Error.HttpError.ClientError
+import vsukharew.vkclient.common.network.calladapter.utils.HttpErrorMapper
 import vsukharew.vkclient.common.network.response.ErrorResponse
-import vsukharew.vkclient.common.network.response.ServerErrorCodes
+import vsukharew.vkclient.common.network.response.ResponseWrapper
 import java.io.IOException
-import java.net.HttpURLConnection.*
+import java.net.HttpURLConnection.HTTP_OK
 
-class ResultCall<T>(
+class ResultResponseWrapperCall<T>(
     private val delegate: Call<ResponseWrapper<T>>
 ) : Call<Result<ResponseWrapper<T>>> {
 
-    override fun clone(): Call<Result<ResponseWrapper<T>>> = ResultCall(delegate.clone())
+    override fun clone(): Call<Result<ResponseWrapper<T>>> = ResultResponseWrapperCall(delegate.clone())
 
     override fun execute(): Response<Result<ResponseWrapper<T>>> {
         TODO("Not supported")
@@ -61,7 +59,7 @@ class ResultCall<T>(
      * will be converted to [Result.Error.HttpError.ClientError.UnauthorizedError]
      */
     private class ResponseConverter<T>(
-        private val resultCall: ResultCall<T>,
+        private val resultCall: ResultResponseWrapperCall<T>,
         private val callback: Callback<Result<ResponseWrapper<T>>>
     ) : Callback<ResponseWrapper<T>> {
         override fun onResponse(
@@ -99,20 +97,7 @@ class ResultCall<T>(
             responseCode: Int,
             errorBody: ErrorResponse?
         ) {
-            val error = when (errorBody?.errorCode) {
-                ServerErrorCodes.AUTHORIZATION_FAILED -> ClientError.UnauthorizedError
-                else -> {
-                    if (responseCode in successfulResponseCodesRange) {
-                        HttpError.ServerError(HTTP_INTERNAL_ERROR, errorBody)
-                    } else {
-                        when (responseCode) {
-                            in clientErrorCodesRange -> ClientError.OtherClientError(responseCode)
-                            in serverErrorCodesRange -> HttpError.ServerError(responseCode, errorBody)
-                            else -> HttpError.OtherHttpError(responseCode)
-                        }
-                    }
-                }
-            }
+            val error = HttpErrorMapper.mapError(responseCode, errorBody)
             callback.onResponse(resultCall, Response.success(error))
         }
 
@@ -123,11 +108,5 @@ class ResultCall<T>(
             }
             callback.onResponse(resultCall, Response.success(error))
         }
-    }
-
-    private companion object {
-        private val successfulResponseCodesRange = HTTP_OK until HTTP_MULT_CHOICE
-        private val clientErrorCodesRange = HTTP_BAD_REQUEST until HTTP_INTERNAL_ERROR
-        private val serverErrorCodesRange = HTTP_INTERNAL_ERROR..526
     }
 }

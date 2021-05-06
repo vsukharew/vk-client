@@ -5,5 +5,6 @@ package vsukharew.vkclient.common.di
  */
 enum class DIScopes {
     AUTH_DATA,
-    ACCOUNT
+    ACCOUNT,
+    PUBLISHING_POST_DATA
 }

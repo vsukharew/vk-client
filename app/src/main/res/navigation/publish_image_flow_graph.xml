@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/publish_image_flow_graph"
+    app:startDestination="@id/publishImageFragment">
+    <fragment
+        android:id="@+id/publishImageFragment"
+        android:name="vsukharew.vkclient.publishimage.flow.PublishImageFragment"
+        android:label="PublishImageFragment"
+        tools:layout="@layout/fragment_publish_image" />
+
+    <fragment
+        android:id="@+id/attachImageFragment"
+        android:name="vsukharew.vkclient.publishimage.attach.presentation.AttachImageFragment"
+        android:label="AttachImageFragment"
+        tools:layout="@layout/fragment_attach_image">
+
+        <action
+            android:id="@+id/action_attachImageFragment_to_captionFragment"
+            app:destination="@id/captionFragment"
+            app:enterAnim="@android:anim/fade_in"
+            app:popUpTo="@id/attachImageFragment" />
+
+        <action
+            android:id="@+id/action_attachImageFragment_to_chooseImageSourceFragment"
+            app:destination="@id/imageSourceBottomSheetDialog" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/captionFragment"
+        android:name="vsukharew.vkclient.publishimage.caption.presentation.CaptionFragment"
+        android:label="captionFragment"
+        tools:layout="@layout/fragment_caption" />
+
+    <dialog
+        android:id="@+id/imageSourceBottomSheetDialog"
+        android:name="vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog"
+        android:label="ImageSourceBottomSheetDialog"
+        tools:layout="@layout/dialog_choose_image_source" />
+</navigation>

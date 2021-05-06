@@ -1,13 +1,13 @@
-package vsukharew.vkclient.common.network.calladapter
+package vsukharew.vkclient.common.network.calladapter.uploadimage
 
 import retrofit2.Call
 import retrofit2.CallAdapter
 import retrofit2.Retrofit
-import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.publishimage.attach.data.model.UploadedImageWrapper
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
-class ResultAdapterFactory : CallAdapter.Factory() {
+class UploadImageWrapperAdapterFactory : CallAdapter.Factory() {
 
     override fun get(
         returnType: Type,
@@ -23,14 +23,10 @@ class ResultAdapterFactory : CallAdapter.Factory() {
         }
 
         val responseType = getParameterUpperBound(0, returnType)
-        if (getRawType(responseType) != Result::class.java) {
+        if (getRawType(responseType) != UploadedImageWrapper::class.java) {
             return null
         }
 
-        check(responseType is ParameterizedType) { "response type must be parameterized" }
-
-        // type of the data that is inside response type
-        val dataType = getParameterUpperBound(0, responseType)
-        return ResultAdapter<Any>(dataType)
+        return UploadImageWrapperAdapter(responseType)
     }
 }

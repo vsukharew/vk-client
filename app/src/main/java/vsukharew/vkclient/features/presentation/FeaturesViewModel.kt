@@ -14,12 +14,14 @@ import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.loadstate.UIAction
 import vsukharew.vkclient.common.presentation.loadstate.UIState
+import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
 import vsukharew.vkclient.screenname.model.ScreenNameAvailability
 import vsukharew.vkclient.screenname.model.ScreenNameAvailability.*
 
 class FeaturesViewModel(
     private val accountInteractor: AccountInteractor,
     private val authInteractor: AuthInteractor,
+    private val imageInteractor: ImageInteractor,
     private val sessionInteractor: SessionInteractor
 ) : ViewModel() {
 
@@ -35,6 +37,9 @@ class FeaturesViewModel(
     val signOutEvent = MutableLiveData<SingleLiveEvent<Unit>>()
     val signOutDialogEvent = MutableLiveData<Unit>()
     val signOutDialogClosedEvent = MutableLiveData<SingleLiveEvent<Unit>>()
+    val postPublishedEvent = imageInteractor.observePublishedPosts()
+        .asLiveData()
+        .map { SingleLiveEvent(it) }
 
     fun onSignOutClick() {
         viewModelScope.launch {

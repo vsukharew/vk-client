@@ -9,6 +9,7 @@ import vsukharew.vkclient.common.extension.ifSuccess
 import vsukharew.vkclient.common.extension.map
 import vsukharew.vkclient.common.extension.switchMap
 import vsukharew.vkclient.common.network.ProgressRequestBody
+import vsukharew.vkclient.common.utils.AppDirectories
 import vsukharew.vkclient.publishimage.attach.data.model.SavedWallImageResponse
 import vsukharew.vkclient.publishimage.attach.data.network.ImageApi
 import vsukharew.vkclient.publishimage.attach.data.network.WallApi
@@ -70,7 +71,10 @@ class ImageRepository(
         }
         return wallApi.postToWall(message, attachments)
             .map { it.response!!.postId }
-            .ifSuccess { removeAllImages() }
+            .ifSuccess {
+                removeAllImages()
+                contentResolver.deleteCacheFiles(AppDirectories.WALL_IMAGES)
+            }
     }
 
     private suspend fun uploadImageInternal(

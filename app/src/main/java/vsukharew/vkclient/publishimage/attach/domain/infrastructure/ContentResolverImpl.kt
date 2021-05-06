@@ -3,6 +3,7 @@ package vsukharew.vkclient.publishimage.attach.domain.infrastructure
 import android.content.Context
 import android.net.Uri
 import androidx.core.content.FileProvider
+import vsukharew.vkclient.common.utils.AppDirectories
 import vsukharew.vkclient.common.utils.DatePatterns
 import java.io.File
 import java.io.InputStream
@@ -18,8 +19,8 @@ class ContentResolverImpl(private val context: Context) : DomainContentResolver 
             DatePatterns.YEAR_MONTH_NUMBER_DAY_HOURS_MINUTES_SECONDS,
             Locale.getDefault()
         ).format(Date())
-        val storageDir = context.filesDir
-        val imagesDirectoryPath = "$storageDir/Wall Images"
+        val storageDir = context.cacheDir
+        val imagesDirectoryPath = "$storageDir/${AppDirectories.WALL_IMAGES}"
         val wallImagesDirectory = with(File(imagesDirectoryPath)) {
             if (!exists()) {
                 mkdir()
@@ -44,5 +45,10 @@ class ContentResolverImpl(private val context: Context) : DomainContentResolver 
 
     override fun openInputStream(uri: String): InputStream? {
         return context.contentResolver.openInputStream(Uri.parse(uri))
+    }
+
+    override fun deleteCacheFiles(subdirectoryName: String) {
+        val destinationDirectory = File("${context.cacheDir}/$subdirectoryName")
+        destinationDirectory.listFiles()?.forEach { it.delete() }
     }
 }

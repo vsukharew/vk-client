@@ -11,4 +11,5 @@ interface DomainContentResolver {
     fun createFileForWallImage(): String
     fun getExtensionFromContentUri(uri: String): String?
     fun openInputStream(uri: String): InputStream?
+    fun deleteCacheFiles(subdirectoryName: String)
 }

@@ -5,9 +5,11 @@ import android.view.View
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.google.android.material.snackbar.Snackbar
 import vsukharev.anytypeadapter.delegate.AnyTypeDelegate
 import vsukharev.anytypeadapter.holder.AnyTypeViewHolder
 import vsukharew.vkclient.R
+import vsukharew.vkclient.common.domain.model.Result.Error.DomainError.FileTooLargeError
 import vsukharew.vkclient.databinding.DelegateImageBinding
 import vsukharew.vkclient.publishimage.attach.presentation.delegate.ImageDelegate.Holder
 import vsukharew.vkclient.publishimage.attach.presentation.model.UIImage
@@ -15,7 +17,7 @@ import vsukharew.vkclient.publishimage.attach.presentation.state.ImageUIState
 
 class ImageDelegate(
     private val retryUploadListener: (UIImage.RealImage) -> Unit,
-    private val onRemoveClickListener: (UIImage.RealImage) -> Unit
+    private val onRemoveClickListener: (Pair<UIImage.RealImage, ImageUIState>) -> Unit
 ) : AnyTypeDelegate<Pair<UIImage.RealImage, ImageUIState>, DelegateImageBinding, Holder>() {
 
     override fun createViewHolder(itemView: View): Holder {
@@ -31,19 +33,19 @@ class ImageDelegate(
         private val binding: DelegateImageBinding
     ) : AnyTypeViewHolder<Pair<UIImage.RealImage, ImageUIState>, DelegateImageBinding>(binding) {
 
-        var image: UIImage.RealImage? = null
+        var item: Pair<UIImage.RealImage,ImageUIState> ? = null
 
         init {
             binding.apply {
-                retryUpload.setOnClickListener { image?.let { retryUploadListener.invoke(it) } }
-                removeImage.setOnClickListener { image?.let { onRemoveClickListener.invoke(it) } }
+                retryUpload.setOnClickListener { item?.let { retryUploadListener.invoke(it.first) } }
+                removeImage.setOnClickListener { item?.let { onRemoveClickListener.invoke(it) } }
             }
         }
 
         override fun bind(item: Pair<UIImage.RealImage, ImageUIState>) {
-            image = item.first
-            val (image, state) = item
-            renderState(state)
+            this.item = item
+            val (image, _) = item
+            renderState(item)
 
             Glide.with(context)
                 .load(Uri.parse(image.image.uri))
@@ -51,7 +53,8 @@ class ImageDelegate(
                 .into(binding.content)
         }
 
-        private fun renderState(state: ImageUIState) {
+        private fun renderState(item: Pair<UIImage.RealImage, ImageUIState>) {
+            val (_, state) = item
             binding.apply {
                 when (state) {
                     is ImageUIState.Success -> {
@@ -82,6 +85,14 @@ class ImageDelegate(
                         }
                         retryUpload.isVisible = true
                         removeImage.isVisible = true
+                        if (state.error.peekContent == FileTooLargeError) {
+                            Snackbar.make(
+                                itemView,
+                                R.string.attach_image_fragment_file_too_large,
+                                Snackbar.LENGTH_INDEFINITE
+                            ).setAction(R.string.delete_text) { onRemoveClickListener.invoke(item) }
+                                .show()
+                        }
                     }
                     is ImageUIState.Pending -> {
                         retryUpload.isVisible = false

@@ -12,4 +12,5 @@ interface DomainContentResolver {
     fun getExtensionFromContentUri(uri: String): String?
     fun openInputStream(uri: String): InputStream?
     fun deleteCacheFiles(subdirectoryName: String)
+    fun getFileSize(uri: String): Long?
 }

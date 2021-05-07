@@ -8,6 +8,7 @@
     <string name="got_it_text">Got it</string>
     <string name="grant_text">Grant</string>
     <string name="settings_text">Settings</string>
+    <string name="delete_text">Delete</string>
     <string name="empty" />
 
     <string name="auth_login_btn">Log in</string>
@@ -29,6 +30,7 @@
     <string name="attach_image_fragment_choose_image_source_text">From gallery</string>
     <string name="attach_image_fragment_gallery_text">Gallery</string>
     <string name="attach_image_fragment_camera_text">Camera</string>
+    <string name="attach_image_fragment_file_too_large">File too large</string>
 
     <string name="caption_fragment_caption_hint">Come up with a caption</string>
     <string name="caption_fragment_publish_btn">Publish</string>

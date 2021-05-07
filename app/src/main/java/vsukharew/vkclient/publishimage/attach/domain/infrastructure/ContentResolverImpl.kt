@@ -1,15 +1,18 @@
 package vsukharew.vkclient.publishimage.attach.domain.infrastructure
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.core.content.FileProvider
+import vsukharew.vkclient.common.domain.model.ImageResolution
 import vsukharew.vkclient.common.utils.AppDirectories
 import vsukharew.vkclient.common.utils.DatePatterns
 import java.io.File
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 class ContentResolverImpl(private val context: Context) : DomainContentResolver {
 
@@ -60,5 +63,14 @@ class ContentResolverImpl(private val context: Context) : DomainContentResolver 
                 it.moveToFirst()
                 it.getLong(sizeColumnIndex)
             }
+    }
+
+    override fun getImageResolution(uri: String): ImageResolution {
+        return BitmapFactory.Options()
+            .apply {
+                inJustDecodeBounds = true
+                BitmapFactory.decodeStream(openInputStream(uri), null, this)
+            }
+            .let { ImageResolution(it.outWidth, it.outHeight) }
     }
 }

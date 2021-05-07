@@ -9,7 +9,9 @@ import com.google.android.material.snackbar.Snackbar
 import vsukharev.anytypeadapter.delegate.AnyTypeDelegate
 import vsukharev.anytypeadapter.holder.AnyTypeViewHolder
 import vsukharew.vkclient.R
+import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.domain.model.Result.Error.DomainError.FileTooLargeError
+import vsukharew.vkclient.common.domain.model.Result.Error.DomainError.ImageResolutionTooLargeError
 import vsukharew.vkclient.databinding.DelegateImageBinding
 import vsukharew.vkclient.publishimage.attach.presentation.delegate.ImageDelegate.Holder
 import vsukharew.vkclient.publishimage.attach.presentation.model.UIImage
@@ -85,13 +87,15 @@ class ImageDelegate(
                         }
                         retryUpload.isVisible = true
                         removeImage.isVisible = true
-                        if (state.error.peekContent == FileTooLargeError) {
-                            Snackbar.make(
-                                itemView,
-                                R.string.attach_image_fragment_file_too_large,
-                                Snackbar.LENGTH_INDEFINITE
-                            ).setAction(R.string.delete_text) { onRemoveClickListener.invoke(item) }
-                                .show()
+                        with(state.error) {
+                            if (peekContent is Result.Error.DomainError) {
+                                Snackbar.make(
+                                    itemView,
+                                    getErrorMessage(peekContent),
+                                    Snackbar.LENGTH_INDEFINITE
+                                ).setAction(R.string.delete_text) { onRemoveClickListener.invoke(item) }
+                                    .show()
+                            }
                         }
                     }
                     is ImageUIState.Pending -> {
@@ -104,6 +108,14 @@ class ImageDelegate(
                         }
                     }
                 }
+            }
+        }
+
+        private fun getErrorMessage(error: Result.Error): Int {
+            return when (error) {
+                FileTooLargeError -> R.string.attach_image_fragment_file_too_large
+                ImageResolutionTooLargeError -> R.string.attach_image_fragment_image_resolution_too_large
+                else -> R.string.empty
             }
         }
     }

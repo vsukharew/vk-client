@@ -31,6 +31,7 @@
     <string name="attach_image_fragment_gallery_text">Gallery</string>
     <string name="attach_image_fragment_camera_text">Camera</string>
     <string name="attach_image_fragment_file_too_large">File too large</string>
+    <string name="attach_image_fragment_image_resolution_too_large">Image resolution too large</string>
 
     <string name="caption_fragment_caption_hint">Come up with a caption</string>
     <string name="caption_fragment_publish_btn">Publish</string>

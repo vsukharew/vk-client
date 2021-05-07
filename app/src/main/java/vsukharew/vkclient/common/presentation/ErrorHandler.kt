@@ -29,10 +29,10 @@ class ErrorHandler(
                 }
                 is ServerError -> snackBar(R.string.unknown_server_error_text)
                 is NetworkError -> snackBar(R.string.network_error_text)
-                is DomainError,
                 is UnknownError,
                 is OtherClientError,
-                is OtherHttpError -> fragment.snackBar(R.string.unknown_error_text)
+                is OtherHttpError ,
+                is DomainError -> fragment.snackBar(R.string.unknown_error_text)
             }
         }
     }

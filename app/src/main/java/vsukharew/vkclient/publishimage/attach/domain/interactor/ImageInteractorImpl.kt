@@ -3,11 +3,18 @@ package vsukharew.vkclient.publishimage.attach.domain.interactor
 import kotlinx.coroutines.flow.*
 import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.extension.ifSuccess
+import vsukharew.vkclient.common.extension.switchMap
 import vsukharew.vkclient.publishimage.attach.data.ImageRepo
+import vsukharew.vkclient.publishimage.attach.domain.entity.CheckUploadedImageResolution
+import vsukharew.vkclient.publishimage.attach.domain.entity.CheckUploadedImageSize
 import vsukharew.vkclient.publishimage.attach.domain.model.Image
 import vsukharew.vkclient.publishimage.attach.domain.model.SavedWallImage
 
-class ImageInteractorImpl(private val imageRepo: ImageRepo) : ImageInteractor {
+class ImageInteractorImpl(
+    private val imageRepo: ImageRepo,
+    private val checkSizeEntity: CheckUploadedImageSize,
+    private val checkResolutionEntity: CheckUploadedImageResolution,
+) : ImageInteractor {
 
     private val publishingPostFlow = MutableStateFlow<Int?>(null)
 
@@ -16,8 +23,11 @@ class ImageInteractorImpl(private val imageRepo: ImageRepo) : ImageInteractor {
         isRetryLoading: Boolean,
         onProgressUpdated: (Double) -> Unit
     ): Result<SavedWallImage> {
-        return with(imageRepo) {
-            uploadImage(image, isRetryLoading, onProgressUpdated)
+        return checkSizeEntity.checkUploadedImageSize(image)
+            .switchMap { checkResolutionEntity.checkUploadedImageResolution(image) }
+            .switchMap { with(imageRepo) {
+                uploadImage(image, isRetryLoading, onProgressUpdated)
+            }
         }
     }
 

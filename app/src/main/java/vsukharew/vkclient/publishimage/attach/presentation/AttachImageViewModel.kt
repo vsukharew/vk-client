@@ -6,6 +6,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.domain.model.Result.Error.DomainError
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.publishimage.attach.domain.infrastructure.DomainContentResolver
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
@@ -72,8 +73,12 @@ class AttachImageViewModel(
         startLoadingInternal(image, isRetryLoading, event)
     }
 
-    fun removeImage(image: UIImage.RealImage) {
-        imageInteractor.removeUploadedImage(image.image)
+    fun removeImage(item: Pair<UIImage.RealImage, ImageUIState>) {
+        val (image, state) = item
+        val isDomainError = state is ImageUIState.Error && state.error.peekContent is DomainError
+        if (!isDomainError) {
+            imageInteractor.removeUploadedImage(image.image)
+        }
         imageAction.value = ImageEvent.Remove(image)
     }
 

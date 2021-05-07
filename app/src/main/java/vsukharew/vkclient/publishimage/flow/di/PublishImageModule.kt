@@ -10,6 +10,8 @@ import vsukharew.vkclient.publishimage.attach.data.ImageRepo
 import vsukharew.vkclient.publishimage.attach.data.ImageRepository
 import vsukharew.vkclient.publishimage.attach.data.network.ImageApi
 import vsukharew.vkclient.publishimage.attach.data.network.WallApi
+import vsukharew.vkclient.publishimage.attach.domain.entity.CheckUploadedImageResolution
+import vsukharew.vkclient.publishimage.attach.domain.entity.CheckUploadedImageSize
 import vsukharew.vkclient.publishimage.attach.domain.infrastructure.ContentResolverImpl
 import vsukharew.vkclient.publishimage.attach.domain.infrastructure.DomainContentResolver
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
@@ -31,6 +33,8 @@ val publishImageFlowModule = module {
     scope(named(DIScopes.PUBLISHING_POST_DATA)) {
         scoped { provideImageApi(get()) }
         scoped { provideWallApi(get()) }
+        scoped { CheckUploadedImageSize(get()) }
+        scoped { CheckUploadedImageResolution(get()) }
         scopedBy<DomainContentResolver, ContentResolverImpl>()
         scopedBy<ImageRepo, ImageRepository>()
         scopedBy<ImageInteractor, ImageInteractorImpl>()

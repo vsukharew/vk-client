@@ -9,7 +9,8 @@ import java.net.HttpURLConnection
  */
 sealed class Result<out T> {
 
-    data class Success<T>(val data: T) : Result<T>()
+    open class Success<T>(val data: T) : Result<T>()
+    object SuccessNoBody : Result.Success<Unit>(Unit)
 
     sealed class Error : Result<Nothing>() {
 
@@ -25,6 +26,8 @@ sealed class Result<out T> {
 
         sealed class DomainError : Error() {
             data class LocationNotReceivedError(val e: Throwable) : DomainError()
+            object FileTooLargeError : DomainError()
+            object ImageResolutionTooLargeError : DomainError()
         }
 
         data class NetworkError(val e: IOException) : Error()

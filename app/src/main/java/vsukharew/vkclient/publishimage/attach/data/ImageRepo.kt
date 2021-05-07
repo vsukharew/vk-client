@@ -15,5 +15,9 @@ interface ImageRepo {
     ): Result<SavedWallImage>
     fun removeUploadedImage(image: Image)
     fun removeAllImages()
-    suspend fun postImagesOnWall(message: String): Result<Int>
+    suspend fun postImagesOnWall(
+        message: String,
+        latitude: Double? = null,
+        longitude: Double? = null
+    ): Result<Int>
 }

@@ -36,6 +36,7 @@ private fun <T, R> Result<T>.mapUnsuccessfulResults(): Result<R> {
         is Result.Error.HttpError.OtherHttpError -> this
         is Result.Error.NetworkError -> this
         is Result.Error.UnknownError -> this
+        is Result.Error.DomainError -> this
         else -> throw IllegalArgumentException("Result is Result.Success")
     }
 }

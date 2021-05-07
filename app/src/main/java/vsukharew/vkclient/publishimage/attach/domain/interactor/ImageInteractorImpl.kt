@@ -33,8 +33,12 @@ class ImageInteractorImpl(private val imageRepo: ImageRepo) : ImageInteractor {
         imageRepo.removeUploadedImage(image)
     }
 
-    override suspend fun postImagesOnWall(message: String): Result<Int> {
-        return imageRepo.postImagesOnWall(message)
+    override suspend fun postImagesOnWall(
+        message: String,
+        latitude: Double?,
+        longitude: Double?
+    ): Result<Int> {
+        return imageRepo.postImagesOnWall(message, latitude, longitude)
             .ifSuccess { publishingPostFlow.value = it }
     }
 }

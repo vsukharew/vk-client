@@ -23,6 +23,10 @@ ext {
                     'lifecycle'         : '2.2.0',
                     'navigation'        : '2.3.1'
             ],
+            google : [
+                    tink          : '1.5.0',
+                    location      : '18.0.0'
+            ],
             gradle        : '4.1.2',
             koin          : '3.0.1-beta-1',
             glide         : '4.11.0',
@@ -31,7 +35,6 @@ ext {
             retrofit      : '2.8.1',
             leakcanary    : '2.2',
             junit         : '4.12',
-            tink          : '1.5.0',
             anyTypeAdapter: '1.0.11'
     ]
     androidx = [
@@ -71,8 +74,11 @@ ext {
             client: "com.squareup.okhttp3:okhttp-bom:${versions.okhttp}",
             logger: "com.squareup.okhttp3:logging-interceptor"
     ]
+    google = [
+            location: "com.google.android.gms:play-services-location:${versions.google.location}",
+            tink: "com.google.crypto.tink:tink-android:${versions.google.tink}"
+    ]
     gson = "com.google.code.gson:gson:${versions.gson}"
     junit = "junit:junit:${versions.junit}"
-    tink = "com.google.crypto.tink:tink-android:${versions.tink}"
     anyTypeAdapter = "io.github.vsukharew:anytypeadapter:${versions.anyTypeAdapter}@aar"
 }

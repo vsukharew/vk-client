@@ -7,12 +7,11 @@ import kotlinx.coroutines.launch
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.domain.interactor.SessionInteractor
 import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.domain.model.Result.Error.*
 import vsukharew.vkclient.common.domain.model.Result.Error.HttpError.ClientError.OtherClientError
 import vsukharew.vkclient.common.domain.model.Result.Error.HttpError.ClientError.UnauthorizedError
 import vsukharew.vkclient.common.domain.model.Result.Error.HttpError.OtherHttpError
 import vsukharew.vkclient.common.domain.model.Result.Error.HttpError.ServerError
-import vsukharew.vkclient.common.domain.model.Result.Error.NetworkError
-import vsukharew.vkclient.common.domain.model.Result.Error.UnknownError
 import vsukharew.vkclient.common.extension.snackBar
 
 class ErrorHandler(
@@ -30,8 +29,10 @@ class ErrorHandler(
                 }
                 is ServerError -> snackBar(R.string.unknown_server_error_text)
                 is NetworkError -> snackBar(R.string.network_error_text)
-                is UnknownError, is OtherClientError, is OtherHttpError ->
-                    fragment.snackBar(R.string.unknown_error_text)
+                is DomainError,
+                is UnknownError,
+                is OtherClientError,
+                is OtherHttpError -> fragment.snackBar(R.string.unknown_error_text)
             }
         }
     }

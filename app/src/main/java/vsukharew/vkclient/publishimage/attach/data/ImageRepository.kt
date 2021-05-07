@@ -65,11 +65,15 @@ class ImageRepository(
         savedImages.clear()
     }
 
-    override suspend fun postImagesOnWall(message: String): Result<Int> {
+    override suspend fun postImagesOnWall(
+        message: String,
+        latitude: Double?,
+        longitude: Double?
+    ): Result<Int> {
         val attachments = savedImages.joinToString {
             "${AttachmentType.PHOTO.name.toLowerCase(Locale.getDefault())}${it.ownerId}_${it.id}>"
         }
-        return wallApi.postToWall(message, attachments)
+        return wallApi.postToWall(message, attachments, latitude, longitude)
             .map { it.response!!.postId }
             .ifSuccess {
                 removeAllImages()

@@ -16,6 +16,32 @@ fun Fragment.snackBar(@StringRes text: Int) {
     val view = activity?.findViewById<View>(android.R.id.content)
     view?.let { Snackbar.make(it, text, Snackbar.LENGTH_SHORT).show() }
 }
+fun Fragment.snackBarLong(
+    @StringRes text: Int,
+    @StringRes actionText: Int? = null,
+    action: () -> Unit = {}
+) {
+    view?.let { view ->
+        Snackbar.make(view, text, 5000)
+            .apply {
+                actionText?.let { setAction(it) { action.invoke() } }
+            }
+            .show()
+    }
+}
+fun Fragment.snackBarIndefinite(
+    @StringRes text: Int,
+    @StringRes actionText: Int? = null,
+    action: () -> Unit = {}
+) {
+    view?.let { view ->
+        Snackbar.make(view, text, Snackbar.LENGTH_INDEFINITE)
+            .apply {
+                actionText?.let { setAction(it) { action.invoke() } }
+            }
+            .show()
+    }
+}
 
 /**
  * Creates the scope that survives configuration changes

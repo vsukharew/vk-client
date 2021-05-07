@@ -5,6 +5,9 @@
     <string name="unknown_server_error_text">Server error occurred</string>
     <string name="unknown_error_text">Unknown error</string>
     <string name="retry_btn">Retry</string>
+    <string name="got_it_text">Got it</string>
+    <string name="grant_text">Grant</string>
+    <string name="settings_text">Settings</string>
     <string name="empty" />
 
     <string name="auth_login_btn">Log in</string>
@@ -29,4 +32,13 @@
 
     <string name="caption_fragment_caption_hint">Come up with a caption</string>
     <string name="caption_fragment_publish_btn">Publish</string>
+    <string name="caption_fragment_location_dialog_message_text">You can add location to the post</string>
+    <string name="caption_fragment_location_dialog_add_location_text">Add location</string>
+    <string name="caption_fragment_location_dialog_publish_without_location_text">Skip and publish</string>
+    <string name="caption_fragment_location_dialog_please_grant_permission_text">In order to add location please grant a permission</string>
+    <string name="caption_fragment_location_dialog_publish_permission_is_required_text">You\'ll be unable to add a location without granting the permission</string>
+    <string name="caption_fragment_the_app_is_forbidden_location_access_text">The app is forbidden the location access</string>
+    <string name="caption_fragment_failed_to_receive_location_text">Failed to receive location</string>
+    <string name="caption_fragment_publish_without_location_text">Publish without location</string>
+    <string name="caption_fragment_turn_on_gps_text">Turn on the GPS</string>
 </resources>

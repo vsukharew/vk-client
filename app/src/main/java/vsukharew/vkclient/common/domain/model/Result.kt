@@ -23,6 +23,10 @@ sealed class Result<out T> {
             class OtherHttpError(httpCode: Int) : HttpError(httpCode)
         }
 
+        sealed class DomainError : Error() {
+            data class LocationNotReceivedError(val e: Throwable) : DomainError()
+        }
+
         data class NetworkError(val e: IOException) : Error()
         data class UnknownError(val e: Throwable) : Error()
     }

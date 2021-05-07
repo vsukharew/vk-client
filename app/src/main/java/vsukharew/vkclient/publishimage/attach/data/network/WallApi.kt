@@ -11,6 +11,8 @@ interface WallApi {
     @POST(POST_TO_USER_WALL)
     suspend fun postToWall(
         @Query("message") message: String,
-        @Query("attachments") attachments: String
+        @Query("attachments") attachments: String,
+        @Query("lat") latitude: Double? = null,
+        @Query("long") longitude: Double? = null
     ): Result<ResponseWrapper<PublishedPostResponse>>
 }

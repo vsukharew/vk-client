@@ -20,13 +20,26 @@ class PublishImageFragment :
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        navigateIfDestinationIsNotCreated(R.id.attachImageFragment)
+        configureNavigation()
         setProperties()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         nullifyProperties()
+    }
+
+    private fun configureNavigation() {
+        navigateIfDestinationIsNotCreated(R.id.attachImageFragment)
+        flowNavController.addOnDestinationChangedListener { _, destination, _ ->
+            requireActivity().title = getString(
+                when (destination.id) {
+                    R.id.attachImageFragment -> R.string.attach_image_fragment_title
+                    R.id.captionFragment -> R.string.caption_fragment_title
+                    else -> R.string.app_name
+                }
+            )
+        }
     }
 
     private fun setProperties() {

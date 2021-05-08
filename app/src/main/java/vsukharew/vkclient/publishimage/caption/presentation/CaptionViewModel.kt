@@ -25,7 +25,11 @@ class CaptionViewModel(
     val requestLocationPermissionEvent = MutableLiveData<SingleLiveEvent<Unit>>()
 
     fun suggestToAddLocationToPost() {
-        shouldShowAddLocationDialog.value = true
+        if (locationProvider.areGooglePlayServicesEnabled()) {
+            shouldShowAddLocationDialog.value = true
+        } else {
+            publishPost()
+        }
     }
 
     fun requestLocationPermission() {

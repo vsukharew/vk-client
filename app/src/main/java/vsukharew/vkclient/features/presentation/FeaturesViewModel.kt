@@ -21,8 +21,8 @@ import vsukharew.vkclient.screenname.model.ScreenNameAvailability.*
 class FeaturesViewModel(
     private val accountInteractor: AccountInteractor,
     private val authInteractor: AuthInteractor,
-    private val imageInteractor: ImageInteractor,
-    private val sessionInteractor: SessionInteractor
+    private val sessionInteractor: SessionInteractor,
+    imageInteractor: ImageInteractor
 ) : ViewModel() {
 
     private val profileInfoAction = MutableLiveData<UIAction>(UIAction.InitialLoading)
@@ -38,7 +38,7 @@ class FeaturesViewModel(
     val signOutDialogEvent = MutableLiveData<Unit>()
     val signOutDialogClosedEvent = MutableLiveData<SingleLiveEvent<Unit>>()
     val postPublishedEvent = imageInteractor.observePublishedPosts()
-        .asLiveData()
+        .asLiveData(context = viewModelScope.coroutineContext)
         .map { SingleLiveEvent(it) }
 
     fun onSignOutClick() {

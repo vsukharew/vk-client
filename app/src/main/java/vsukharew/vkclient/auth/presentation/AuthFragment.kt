@@ -40,15 +40,23 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
         super.onViewCreated(view, savedInstanceState)
         setListeners()
         observeData()
-        coordinator.let {
-            it.navController = navController
-            it.vkActivityLauncher = vkActivityLauncher
-        }
+        setProperties()
         activity?.intent?.let(::handleBrowserRedirect)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        nullifyProperties()
+    }
+
+    private fun setProperties() {
+        coordinator.let {
+            it.navController = navController
+            it.vkActivityLauncher = vkActivityLauncher
+        }
+    }
+
+    private fun nullifyProperties() {
         coordinator.apply {
             vkActivityLauncher = null
             navController = null

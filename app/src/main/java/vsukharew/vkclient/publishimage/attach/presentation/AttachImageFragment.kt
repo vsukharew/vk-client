@@ -2,7 +2,6 @@ package vsukharew.vkclient.publishimage.attach.presentation
 
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
@@ -124,12 +123,6 @@ class AttachImageFragment :
                             add(addNewImageDelegate)
                         }
                         is UIImage.RealImage -> {
-                            if (it.value is ImageUIState.LoadingProgress) {
-                                Log.d(
-                                    "progress-adapter: ",
-                                    (it.value as ImageUIState.LoadingProgress).progress.toString()
-                                )
-                            }
                             add((it.key as UIImage.RealImage) to it.value, imageDelegate)
                         }
                     }

@@ -57,56 +57,77 @@ class ImageDelegate(
 
         private fun renderState(item: Pair<UIImage.RealImage, ImageUIState>) {
             val (_, state) = item
+            when (state) {
+                is ImageUIState.Success -> renderSuccessState(binding)
+                is ImageUIState.LoadingProgress -> renderLoadingState(binding, state)
+                is ImageUIState.Error -> renderErrorState(binding, state, item)
+                is ImageUIState.Pending -> renderPendingState(binding)
+            }
+        }
+
+        private fun renderSuccessState(binding: DelegateImageBinding) {
             binding.apply {
-                when (state) {
-                    is ImageUIState.Success -> {
-                        progressBar.apply {
-                            postDelayed(
-                                {
-                                    isVisible = false
-                                    retryUpload.isVisible = false
-                                    removeImage.isVisible = true
-                                },
-                                500L
-                            )
-                        }
-                    }
-                    is ImageUIState.LoadingProgress -> {
-                        progressBar.apply {
-                            isIndeterminate = false
-                            isVisible = true
-                            progress = state.progress
-                        }
-                        retryUpload.isVisible = false
-                        removeImage.isVisible = false
-                    }
-                    is ImageUIState.Error -> {
-                        progressBar.apply {
-                            isIndeterminate = false
+                progressBar.apply {
+                    postDelayed(
+                        {
                             isVisible = false
-                        }
-                        retryUpload.isVisible = true
-                        removeImage.isVisible = true
-                        with(state.error) {
-                            if (peekContent is Result.Error.DomainError) {
-                                Snackbar.make(
-                                    itemView,
-                                    getErrorMessage(peekContent),
-                                    Snackbar.LENGTH_INDEFINITE
-                                ).setAction(R.string.delete_text) { onRemoveClickListener.invoke(item) }
-                                    .show()
-                            }
-                        }
+                            retryUpload.isVisible = false
+                            removeImage.isVisible = true
+                        },
+                        500L
+                    )
+                }
+            }
+        }
+
+        private fun renderLoadingState(
+            binding: DelegateImageBinding,
+            state: ImageUIState.LoadingProgress
+        ) {
+            binding.apply {
+                progressBar.apply {
+                    isIndeterminate = false
+                    isVisible = true
+                    progress = state.progress
+                }
+                retryUpload.isVisible = false
+                removeImage.isVisible = false
+            }
+        }
+
+        private fun renderErrorState(
+            binding: DelegateImageBinding,
+            state: ImageUIState.Error,
+            item: Pair<UIImage.RealImage, ImageUIState>
+        ) {
+            binding.apply {
+                progressBar.apply {
+                    isIndeterminate = false
+                    isVisible = false
+                }
+                retryUpload.isVisible = true
+                removeImage.isVisible = true
+                with(state.error) {
+                    if (peekContent is Result.Error.DomainError) {
+                        Snackbar.make(
+                            itemView,
+                            getErrorMessage(peekContent),
+                            Snackbar.LENGTH_INDEFINITE
+                        ).setAction(R.string.delete_text) { onRemoveClickListener.invoke(item) }
+                            .show()
                     }
-                    is ImageUIState.Pending -> {
-                        retryUpload.isVisible = false
-                        removeImage.isVisible = false
-                        progressBar.apply {
-                            isVisible = false
-                            isIndeterminate = true
-                            isVisible = true
-                        }
-                    }
+                }
+            }
+        }
+
+        private fun renderPendingState(binding: DelegateImageBinding) {
+            binding.apply {
+                retryUpload.isVisible = false
+                removeImage.isVisible = false
+                progressBar.apply {
+                    isVisible = false
+                    isIndeterminate = true
+                    isVisible = true
                 }
             }
         }

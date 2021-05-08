@@ -1,6 +1,5 @@
 package vsukharew.vkclient.common.network
 
-import android.util.Log
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import okhttp3.logging.HttpLoggingInterceptor
@@ -50,14 +49,12 @@ class ProgressRequestBody(
                         currentProgressValue - previousProgressValue < .01 -> {
                             currentProgressValue = bytesWritten.toDouble() / contentLength()
                             if (currentProgressValue == 1.0 && shouldNotifyUpdate) {
-                                Log.d("progress-body", currentProgressValue.toString())
                                 onProgressUpdated.invoke(currentProgressValue)
                             }
                         }
                         else -> {
                             previousProgressValue = currentProgressValue
                             if (shouldNotifyUpdate) {
-                                Log.d("progress-body", currentProgressValue.toString())
                                 onProgressUpdated.invoke(currentProgressValue)
                             }
                         }

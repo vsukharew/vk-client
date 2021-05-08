@@ -21,9 +21,25 @@ class PublishImageFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navigateIfDestinationIsNotCreated(R.id.attachImageFragment)
+        setProperties()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        nullifyProperties()
+    }
+
+    private fun setProperties() {
         coordinator.let {
             it.rootNavController = navController
             it.flowNavController = flowNavController
+        }
+    }
+
+    private fun nullifyProperties() {
+        coordinator.apply {
+            rootNavController = null
+            flowNavController = null
         }
     }
 }

@@ -7,6 +7,7 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -19,7 +20,6 @@ import vsukharew.vkclient.common.di.ScopeCreator
 import vsukharew.vkclient.common.extension.EMPTY
 import vsukharew.vkclient.common.extension.snackBar
 import vsukharew.vkclient.common.extension.textChangesSkipFirst
-import vsukharew.vkclient.common.extension.toast
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.common.presentation.loadstate.UIState
@@ -29,6 +29,7 @@ import vsukharew.vkclient.features.navigation.FeaturesCoordinator
 import vsukharew.vkclient.screenname.model.ScreenNameAvailability
 import vsukharew.vkclient.screenname.model.ScreenNameAvailability.*
 
+@FlowPreview
 class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment_features) {
     private val viewModel: FeaturesViewModel by viewModel()
     private val featuresCoordinator: FeaturesCoordinator by inject()
@@ -55,7 +56,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
             shortNameUiState.observe(viewLifecycleOwner, ::observeShortNameUiState)
             shortNameTextState.observe(viewLifecycleOwner, ::observeShortNameTextState)
             signOutEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
-            signOutDialogEvent.observe(viewLifecycleOwner, ::observeSignOutDialogEvent)
+            signOutDialogEvent.observe(viewLifecycleOwner, { observeSignOutDialogEvent() })
             signOutDialogClosedEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
             postPublishedEvent.observe(viewLifecycleOwner, ::observePublishedPosts)
         }
@@ -117,7 +118,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         }
     }
 
-    private fun observeSignOutDialogEvent(event: Unit) {
+    private fun observeSignOutDialogEvent() {
         AlertDialog.Builder(requireContext())
             .setMessage(R.string.features_fragment_sign_out_dialog_text)
             .setPositiveButton(R.string.ok_text) { _, _ ->
@@ -142,6 +143,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         binding.apply {
             shortNameHint.isVisible = false
             refreshLayout.isEnabled = false
+            publishImage.isVisible = false
             userName.text = getString(R.string.features_fragment_user_name_loading_text)
             signOut.isVisible = false
             retry.isVisible = false
@@ -153,6 +155,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
             refreshLayout.isEnabled = true
             refreshLayout.isRefreshing = false
             retry.isVisible = false
+            publishImage.isVisible = true
             signOut.isVisible = true
             shortNameHint.isVisible = true
             with(state.data) {
@@ -178,6 +181,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
             retry.isVisible = true
             refreshLayout.isRefreshing = false
             shortNameHint.isVisible = false
+            publishImage.isVisible = false
         }
         state.error.getContentIfNotHandled()?.let(::handleError)
     }

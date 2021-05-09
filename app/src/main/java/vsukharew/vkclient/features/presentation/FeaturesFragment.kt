@@ -199,7 +199,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
             val (color, text) = when (state.data) {
                 AVAILABLE -> Color.GREEN to R.string.features_fragment_username_available_text
                 UNAVAILABLE -> Color.RED to R.string.features_fragment_username_busy_text
-                CURRENT_USER_NAME -> Color.BLUE to R.string.empty
+                else -> Color.BLUE to R.string.empty
             }
             boxStrokeColor = color
             setHelperTextColor(ColorStateList.valueOf(color))

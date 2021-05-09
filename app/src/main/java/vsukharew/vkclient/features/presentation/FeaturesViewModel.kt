@@ -11,6 +11,7 @@ import vsukharew.vkclient.auth.domain.model.AuthType.APP
 import vsukharew.vkclient.auth.domain.model.AuthType.BROWSER
 import vsukharew.vkclient.common.domain.interactor.SessionInteractor
 import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.extension.EMPTY
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.loadstate.UIAction
 import vsukharew.vkclient.common.presentation.loadstate.UIState
@@ -115,6 +116,10 @@ class FeaturesViewModel(
             when (action.text) {
                 currentShortName -> {
                     emit(UIState.Success(CURRENT_USER_NAME))
+                    return@liveData
+                }
+                String.EMPTY -> {
+                    emit(UIState.Success(EMPTY))
                     return@liveData
                 }
                 else -> emit(UIState.LoadingProgress)

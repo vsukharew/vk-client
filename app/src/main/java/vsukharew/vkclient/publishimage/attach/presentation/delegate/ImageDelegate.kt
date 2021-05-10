@@ -35,7 +35,7 @@ class ImageDelegate(
         private val binding: DelegateImageBinding
     ) : AnyTypeViewHolder<Pair<UIImage.RealImage, ImageUIState>, DelegateImageBinding>(binding) {
 
-        var item: Pair<UIImage.RealImage,ImageUIState> ? = null
+        var item: Pair<UIImage.RealImage,ImageUIState>? = null
 
         init {
             binding.apply {
@@ -86,9 +86,11 @@ class ImageDelegate(
         ) {
             binding.apply {
                 progressBar.apply {
-                    isIndeterminate = false
+                    isIndeterminate = state.progress == 0
                     isVisible = true
-                    progress = state.progress
+                    if (!isIndeterminate) {
+                        progress = state.progress
+                    }
                 }
                 retryUpload.isVisible = false
                 removeImage.isVisible = false

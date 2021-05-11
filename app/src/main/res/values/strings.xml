@@ -24,7 +24,7 @@
     <string name="features_fragment_username_available_text">Username available</string>
     <string name="features_fragment_username_is_being_checked_text">Checking…</string>
     <string name="features_fragment_username_busy_text">Username is busy</string>
-    <string name="features_fragment_username_error_hint">Error happened</string>
+    <string name="features_fragment_username_error_hint">Error occurred</string>
     <string name="features_fragment_post_published_text">Post published</string>
 
     <string name="attach_image_fragment_title">Attach image</string>

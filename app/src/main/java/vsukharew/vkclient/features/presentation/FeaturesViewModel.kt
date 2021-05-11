@@ -22,6 +22,7 @@ class FeaturesViewModel(
     private val accountInteractor: AccountInteractor,
     private val authInteractor: AuthInteractor,
     private val sessionInteractor: SessionInteractor,
+    private val savedState: SavedStateHandle,
     imageInteractor: ImageInteractor
 ) : ViewModel() {
 
@@ -31,9 +32,10 @@ class FeaturesViewModel(
     private val shortNameAction = MutableLiveData<UIAction.Text>()
     val shortNameUiState = Transformations.switchMap(shortNameAction, ::checkShortNameAvailability)
 
-    private var currentShortName: String? = null
+    private var currentShortName: String? = savedState[KEY_SHORT_NAME]
     val shortNameTextState = MutableLiveData<String>()
 
+    val selectionState = savedState.getLiveData<Int>(KEY_SELECTION_STATE_INFO)
     val signOutEvent = MutableLiveData<SingleLiveEvent<Unit>>()
     val signOutDialogEvent = MutableLiveData<Unit>()
     val signOutDialogClosedEvent = MutableLiveData<SingleLiveEvent<Unit>>()
@@ -74,13 +76,22 @@ class FeaturesViewModel(
     }
 
     fun onShortNameChanged(shortName: String) {
+        rewriteProfileInfo(shortName)
         shortNameTextState.value = shortName
         with(shortNameTextState) {
             when (value) {
-                shortNameAction.value?.text -> return
-                else -> shortNameAction.value = UIAction.Text(shortName)
+                shortNameAction.value?.text -> {
+                    return
+                }
+                else -> {
+                    shortNameAction.value = UIAction.Text(shortName)
+                }
             }
         }
+    }
+
+    fun saveCursorPosition(position: Int) {
+        savedState[KEY_SELECTION_STATE_INFO] = position
     }
 
     private fun loadProfileInfo(action: UIAction): LiveData<UIState<ProfileInfo>> {
@@ -91,21 +102,41 @@ class FeaturesViewModel(
                 else -> return@liveData
             }
             emit(loadingState)
-            val info = withContext(Dispatchers.IO) { accountInteractor.getProfileInfo() }
-            emit(
-                when (info) {
-                    is Result.Success -> UIState.Success(info.data)
-                        .also { currentShortName = info.data.screenName }
-                    is Result.Error -> {
-                        val error = SingleLiveEvent(info)
-                        when (action) {
-                            is UIAction.SwipeRefresh -> UIState.SwipeRefreshError(error)
-                            else -> UIState.Error(error)
-                        }
+            when (action) {
+                UIAction.SwipeRefresh, UIAction.Retry -> {
+                    handleProfileInfoResult(this, accountInteractor.getProfileInfo(), action)
+                }
+                else -> {
+                    savedState.get<ProfileInfo>(KEY_PROFILE_INFO)?.let {
+                        emit(UIState.Success(it))
+                    } ?: handleProfileInfoResult(this, accountInteractor.getProfileInfo(), action)
+                }
+            }
+        }
+    }
+
+    private suspend fun handleProfileInfoResult(
+        scope: LiveDataScope<UIState<ProfileInfo>>,
+        info: Result<ProfileInfo>,
+        action: UIAction
+    ) {
+        scope.emit(
+            when (info) {
+                is Result.Success -> {
+                    currentShortName = info.data.screenName.also { savedState[KEY_SHORT_NAME] = it }
+                    val data = info.data.copy(screenName = currentShortName)
+                    savedState[KEY_PROFILE_INFO] = data
+                    UIState.Success(data)
+                }
+                is Result.Error -> {
+                    val error = SingleLiveEvent(info)
+                    when (action) {
+                        is UIAction.SwipeRefresh -> UIState.SwipeRefreshError(error)
+                        else -> UIState.Error(error)
                     }
                 }
-            )
-        }
+            }
+        )
     }
 
     private fun checkShortNameAvailability(
@@ -138,5 +169,17 @@ class FeaturesViewModel(
                 }
             )
         }
+    }
+
+    private fun rewriteProfileInfo(currentShortName: String) {
+        val currentProfileInfo = savedState.get<ProfileInfo>(KEY_PROFILE_INFO)
+            ?.copy(screenName = currentShortName)
+        savedState[KEY_PROFILE_INFO] = currentProfileInfo
+    }
+
+    private companion object {
+        private const val KEY_SHORT_NAME = "short_name"
+        private const val KEY_PROFILE_INFO = "profile_info"
+        private const val KEY_SELECTION_STATE_INFO = "selection_state"
     }
 }

@@ -9,7 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 import androidx.recyclerview.widget.SimpleItemAnimator
 import org.koin.android.ext.android.inject
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.stateViewModel
 import vsukharev.anytypeadapter.adapter.AnyTypeAdapter
 import vsukharev.anytypeadapter.adapter.AnyTypeCollection
 import vsukharew.vkclient.R
@@ -45,7 +45,7 @@ class AttachImageFragment :
         { viewModel.startLoading(it, true) },
         { viewModel.removeImage(it) }
     )
-    private val viewModel: AttachImageViewModel by viewModel()
+    private val viewModel: AttachImageViewModel by stateViewModel()
     private val flowCoordinator: PublishImageCoordinator by inject()
     private lateinit var cameraResultLauncher: ActivityResultLauncher<Uri>
     private lateinit var galleryResultLauncher: ActivityResultLauncher<String>

@@ -1,10 +1,7 @@
 package vsukharew.vkclient.publishimage.attach.presentation
 
 import androidx.lifecycle.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.domain.model.Result.Error.DomainError
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
@@ -21,16 +18,15 @@ import vsukharew.vkclient.publishimage.navigation.PublishImageFlowStage
 class AttachImageViewModel(
     private val imageInteractor: ImageInteractor,
     private val contentResolver: DomainContentResolver,
-    private val flowStage: PublishImageFlowStage
+    private val flowStage: PublishImageFlowStage,
+    private val savedState: SavedStateHandle
 ) : ViewModel() {
 
     private val imagesStates = mutableMapOf<UIImage, ImageUIState>()
-    private val imageAction =
-        MutableLiveData<ImageEvent>(ImageEvent.SuccessfulLoading(UIImage.AddNewImagePlaceholder))
-    val imagesStatesLiveData = Transformations.switchMap(
-        imageAction,
-        ::refreshImagesState
-    )
+    private val imageAction = savedState.get<List<String>>(KEY_IMAGES_URIS)?.let {
+        MutableLiveData<ImageEvent>()
+    } ?: MutableLiveData<ImageEvent>(ImageEvent.SuccessfulLoading(UIImage.AddNewImagePlaceholder))
+    val imagesStatesLiveData = Transformations.switchMap(imageAction, ::refreshImagesState)
     val isNextButtonAvailable = Transformations.map(imagesStatesLiveData) {
         with(it) { containsNotOnlyPlaceholder() && allImagesAreLoaded() }
     }
@@ -39,7 +35,12 @@ class AttachImageViewModel(
     val openCameraAction = MutableLiveData<SingleLiveEvent<Unit>>()
 
     init {
-        viewModelScope.launch { pollPendingPhotos() }
+        viewModelScope.apply {
+            launch { pollPendingPhotos() }
+            savedState.get<List<String>>(KEY_IMAGES_URIS)?.let {
+                launch { restoreImagesForUploading(it) }
+            }
+        }
     }
 
     override fun onCleared() {
@@ -60,11 +61,17 @@ class AttachImageViewModel(
             val domainImage = Image(it, GALLERY)
             val uiImage = UIImage.RealImage(domainImage)
             imagesStates[uiImage] = ImageUIState.Pending(false)
+            saveImageUri(uiImage)
         }
     }
 
-    fun startLoading(image: UIImage.RealImage, isRetryLoading: Boolean, event: ImageEvent? = null) {
-        startLoadingInternal(image, isRetryLoading, event)
+    fun startLoading(
+        image: UIImage.RealImage,
+        isRetryLoading: Boolean,
+        event: ImageEvent? = null,
+        shouldSaveImageUri: Boolean = true
+    ) {
+        startLoadingInternal(image, isRetryLoading, event, shouldSaveImageUri)
     }
 
     fun startLoading(uri: String, isRetryLoading: Boolean, event: ImageEvent? = null) {
@@ -80,6 +87,7 @@ class AttachImageViewModel(
             imageInteractor.removeUploadedImage(image.image)
         }
         imageAction.value = ImageEvent.Remove(image)
+        deleteUriFromSaved(image)
     }
 
     fun getUriForFutureImage(): String {
@@ -93,10 +101,14 @@ class AttachImageViewModel(
     private fun startLoadingInternal(
         image: UIImage.RealImage,
         isRetryLoading: Boolean,
-        event: ImageEvent? = null
+        event: ImageEvent? = null,
+        shouldSaveImageUri: Boolean = true
     ) {
         imageAction.value = event ?: ImageEvent.Pending(image, isRetryLoading)
         event?.let { getUploadAddress(image, isRetryLoading) }
+        if (shouldSaveImageUri) {
+            saveImageUri(image)
+        }
     }
 
     private fun getUploadAddress(image: UIImage.RealImage, isRetryLoading: Boolean) {
@@ -124,8 +136,7 @@ class AttachImageViewModel(
     }
 
     private fun refreshImagesState(action: ImageEvent): LiveData<Map<UIImage, ImageUIState>> {
-        return liveData {
-            val image = action.image
+        return liveData(context = viewModelScope.coroutineContext) {
             val state = when (action) {
                 is ImageEvent.Pending -> ImageUIState.Pending(action.isRetryLoading)
                 is ImageEvent.InitialLoading -> ImageUIState.LoadingProgress(action.progressLoading)
@@ -137,7 +148,7 @@ class AttachImageViewModel(
             if (action is ImageEvent.Remove) {
                 imagesStates.remove(action.image)
             } else {
-                imagesStates[image] = state
+                imagesStates[action.image] = state
             }
             emit(imagesStates)
         }
@@ -154,7 +165,8 @@ class AttachImageViewModel(
                         startLoading(
                             (state.key as UIImage.RealImage),
                             (state.value as ImageUIState.Pending).isAfterRetry,
-                            ImageEvent.InitialLoading(state.key)
+                            ImageEvent.InitialLoading(state.key),
+                            false
                         )
                         break
                     }
@@ -164,9 +176,32 @@ class AttachImageViewModel(
         }
     }
 
+    private fun saveImageUri(image: UIImage.RealImage) {
+        val savedImages = savedState.get<List<String>>(KEY_IMAGES_URIS)
+        savedState[KEY_IMAGES_URIS] = (savedImages ?: emptyList()) + listOf(image.image.uri)
+    }
+
+    private suspend fun restoreImagesForUploading(imagesUris: List<String>) {
+        imagesUris.also {
+            savedState.remove<List<String>>(KEY_IMAGES_URIS)
+            imageAction.value =
+                ImageEvent.SuccessfulLoading(UIImage.AddNewImagePlaceholder)
+            delay(100)
+        }.let(::startLoading)
+    }
+
+    private fun deleteUriFromSaved(image: UIImage.RealImage) {
+        val savedImages = savedState.get<List<String>>(KEY_IMAGES_URIS)
+        savedState[KEY_IMAGES_URIS] = savedImages?.filter { it != image.image.uri }
+    }
+
     private fun Map<UIImage, ImageUIState>.containsNotOnlyPlaceholder(): Boolean =
         size > 1 && keys.first() is UIImage.AddNewImagePlaceholder && keys.last() is UIImage.RealImage
 
     private fun Map<UIImage, ImageUIState>.allImagesAreLoaded(): Boolean =
         any { it.key is UIImage.RealImage } && all { it.value is ImageUIState.Success }
+
+    private companion object {
+        private const val KEY_IMAGES_URIS = "images_uris"
+    }
 }

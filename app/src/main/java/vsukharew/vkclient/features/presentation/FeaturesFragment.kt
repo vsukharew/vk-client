@@ -33,6 +33,7 @@ import vsukharew.vkclient.screenname.model.ScreenNameAvailability.*
 class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment_features) {
     private val viewModel: FeaturesViewModel by stateViewModel()
     private val featuresCoordinator: FeaturesCoordinator by inject()
+    private var signOutDialog: AlertDialog? = null
 
     override val binding by fragmentViewBinding(FragmentFeaturesBinding::bind)
     override val scopeCreator: ScopeCreator = FeaturesScopeCreator
@@ -53,6 +54,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
     override fun onDestroy() {
         super.onDestroy()
         nullifyProperties()
+        signOutDialog?.dismiss()
     }
 
     private fun observeData() {
@@ -135,7 +137,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
             .setPositiveButton(R.string.ok_text) { _, _ ->
                 viewModel.onSignOutDialogClosed()
             }
-            .create()
+            .create().also { signOutDialog = it }
             .show()
     }
 

@@ -6,6 +6,9 @@ import vsukharew.vkclient.R
 import vsukharew.vkclient.common.navigation.BackStackEntryObserver
 import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource
 import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.ImageSourceListener
+import vsukharew.vkclient.publishimage.flow.PublishImageViewModel.PublishImageStage
+import vsukharew.vkclient.publishimage.flow.PublishImageViewModel.PublishImageStage.ATTACH_IMAGE
+import vsukharew.vkclient.publishimage.flow.PublishImageViewModel.PublishImageStage.CAPTION
 import vsukharew.vkclient.publishimage.navigation.PublishImageFlowStage.AttachImageStage
 import vsukharew.vkclient.publishimage.navigation.PublishImageFlowStage.CaptionStage
 
@@ -27,6 +30,13 @@ class PublishImageCoordinator(private val navigator: PublishImageNavigator) : Im
 
     override fun onSourceChoose(source: ImageSource) {
         navigator.onSourceChoose(source)
+    }
+
+    fun setCurrentStage(stage: PublishImageStage) {
+        currentStage = when (stage) {
+            ATTACH_IMAGE -> attachImageStage
+            CAPTION -> captionStage
+        }
     }
 
     fun addObserverToBackStackEntry(@IdRes id: Int, onResumeBlock: () -> Unit = {}) {

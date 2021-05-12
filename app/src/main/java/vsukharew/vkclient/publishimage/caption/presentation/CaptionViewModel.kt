@@ -22,7 +22,12 @@ class CaptionViewModel(
     private val publishingAction = MutableLiveData<CaptionUIAction>()
     val publishingState = Transformations.switchMap(publishingAction, ::mapUiAction)
     val shouldShowAddLocationDialog = MutableLiveData<Boolean>()
+    val showReloadImagesDialog = MutableLiveData<Unit>()
     val requestLocationPermissionEvent = MutableLiveData<SingleLiveEvent<Unit>>()
+
+    init {
+        restorePossiblePhotosLoss()
+    }
 
     fun suggestToAddLocationToPost() {
         if (locationProvider.areGooglePlayServicesEnabled()) {
@@ -50,6 +55,17 @@ class CaptionViewModel(
     fun publishPost(latitude: Double? = null, longitude: Double? = null) {
         captionLiveData.value?.let {
             publishingAction.value = CaptionUIAction.Publish(it, latitude, longitude)
+        }
+    }
+
+    private fun restorePossiblePhotosLoss() {
+        // Made for simplicity. If there's no saved photos exist at this stage, process got killed
+        // by the system and user need to get back to previous screen in order to reload photos
+
+        // Otherwise one have to create database and save all the objects received during the upload
+        // process
+        if (!imageInteractor.doSavedImagesExist()) {
+            showReloadImagesDialog.value = Unit
         }
     }
 

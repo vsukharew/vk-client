@@ -28,6 +28,7 @@ sealed class Result<out T> {
             data class LocationNotReceivedError(val e: Throwable) : DomainError()
             object FileTooLargeError : DomainError()
             object ImageResolutionTooLargeError : DomainError()
+            object NoPhotosToPostError : DomainError()
         }
 
         data class NetworkError(val e: IOException) : Error()

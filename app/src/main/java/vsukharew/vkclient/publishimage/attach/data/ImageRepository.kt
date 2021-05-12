@@ -5,6 +5,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import vsukharew.vkclient.common.domain.model.AttachmentType
 import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.domain.model.Result.Error.DomainError.NoPhotosToPostError
 import vsukharew.vkclient.common.extension.ifSuccess
 import vsukharew.vkclient.common.extension.map
 import vsukharew.vkclient.common.extension.switchMap
@@ -70,6 +71,9 @@ class ImageRepository(
         latitude: Double?,
         longitude: Double?
     ): Result<Int> {
+        if (savedImages.isEmpty()) {
+            return NoPhotosToPostError
+        }
         val attachments = savedImages.joinToString {
             "${AttachmentType.PHOTO.name.toLowerCase(Locale.getDefault())}${it.ownerId}_${it.id}>"
         }

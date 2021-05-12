@@ -31,6 +31,10 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
     private val viewModel: CaptionViewModel by viewModel()
     private lateinit var locationPermissionLauncher: ActivityResultLauncher<String>
 
+    private var reloadPhotosDialog: AlertDialog? = null
+    private var attachLocationDialog: AlertDialog? = null
+    private var locationNotReceivedDialog: AlertDialog? = null
+
     override val binding: FragmentCaptionBinding by fragmentViewBinding(FragmentCaptionBinding::bind)
     override val scopeCreator: ScopeCreator by lazy {
         CaptionScopeCreator(requireParentFragment().requireParentFragment())
@@ -41,6 +45,13 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
         registerCallbacks()
         setListeners()
         observeData()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        reloadPhotosDialog?.dismiss()
+        attachLocationDialog?.dismiss()
+        locationNotReceivedDialog?.dismiss()
     }
 
     private fun registerCallbacks() {
@@ -76,6 +87,7 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
                 viewLifecycleOwner,
                 ::observeShouldShowAddLocationDialog
             )
+            showReloadImagesDialog.observe(viewLifecycleOwner, { observeShowReloadImagesDialog() })
             requestLocationPermissionEvent.observe(
                 viewLifecycleOwner,
                 ::observeRequestLocationPermission
@@ -91,6 +103,9 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
                 when (state.error.peekContent) {
                     is Result.Error.DomainError.LocationNotReceivedError -> {
                         showLocationNotReceivedDialog()
+                    }
+                    is Result.Error.DomainError.NoPhotosToPostError -> {
+                        showReloadPhotosDialog()
                     }
                     else -> state.error.getContentIfNotHandled()?.let(::handleError)
                 }
@@ -108,7 +123,7 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
             .setPositiveButton(R.string.caption_fragment_location_dialog_add_location_text) { _, _ ->
                 viewModel.requestLocationPermission()
             }
-            .create()
+            .create().also { attachLocationDialog = it }
             .show()
     }
 
@@ -116,6 +131,10 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
         event.getContentIfNotHandled()?.let {
             locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
+    }
+
+    private fun observeShowReloadImagesDialog() {
+        showReloadPhotosDialog()
     }
 
     private fun showLocationNotReceivedDialog() {
@@ -126,7 +145,15 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
                 viewModel.publishPost()
             }
             .setPositiveButton(R.string.retry_btn) { _, _ -> viewModel.requestLocationPermission() }
-            .create()
+            .create().also { locationNotReceivedDialog = it }
+            .show()
+    }
+
+    private fun showReloadPhotosDialog() {
+        AlertDialog.Builder(requireContext())
+            .setMessage(R.string.caption_fragment_get_back_to_previous_screen_text)
+            .setPositiveButton(R.string.ok_text) { dialog, _ ->  dialog.dismiss() }
+            .create().also { reloadPhotosDialog = it }
             .show()
     }
 

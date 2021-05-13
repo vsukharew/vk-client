@@ -2,6 +2,7 @@ package vsukharew.vkclient.publishimage.attach.presentation
 
 import androidx.lifecycle.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.domain.model.Result.Error.DomainError
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
@@ -22,13 +23,18 @@ class AttachImageViewModel(
     private val savedState: SavedStateHandle
 ) : ViewModel() {
 
+    private val isNextButtonAvailableFlow = MutableStateFlow(false)
     private val imagesStates = mutableMapOf<UIImage, ImageUIState>()
     private val imageAction = savedState.get<List<String>>(KEY_IMAGES_URIS)?.let {
         MutableLiveData<ImageEvent>()
     } ?: MutableLiveData<ImageEvent>(ImageEvent.SuccessfulLoading(UIImage.AddNewImagePlaceholder))
     val imagesStatesLiveData = Transformations.switchMap(imageAction, ::refreshImagesState)
-    val isNextButtonAvailable = Transformations.map(imagesStatesLiveData) {
-        with(it) { containsNotOnlyPlaceholder() && allImagesAreLoaded() }
+    val isNextButtonAvailable = MutableLiveData<Boolean>()
+
+    init {
+        isNextButtonAvailableFlow.debounce(500L)
+            .onEach { isNextButtonAvailable.value = it }
+            .launchIn(viewModelScope)
     }
 
     val imageSourceChoice = MutableLiveData<SingleLiveEvent<Unit>>()
@@ -136,7 +142,7 @@ class AttachImageViewModel(
     }
 
     private fun refreshImagesState(action: ImageEvent): LiveData<Map<UIImage, ImageUIState>> {
-        return liveData(context = viewModelScope.coroutineContext) {
+        return liveData {
             val state = when (action) {
                 is ImageEvent.Pending -> ImageUIState.Pending(action.isRetryLoading)
                 is ImageEvent.InitialLoading -> ImageUIState.LoadingProgress(action.progressLoading)
@@ -151,6 +157,9 @@ class AttachImageViewModel(
                 imagesStates[action.image] = state
             }
             emit(imagesStates)
+            isNextButtonAvailableFlow.value = with(imagesStates) {
+                containsNotOnlyPlaceholder() && allImagesAreLoaded()
+            }
         }
     }
 

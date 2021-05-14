@@ -22,9 +22,9 @@ import vsukharew.vkclient.databinding.FragmentAuthBinding
 
 class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
     private lateinit var vkActivityLauncher: ActivityResultLauncher<Intent>
-    private val viewModel: AuthViewModel by viewModel()
     private val coordinator: AuthCoordinator by inject()
 
+    override val viewModel: AuthViewModel by viewModel()
     override val scopeCreator: ScopeCreator = AuthScopeCreator
     override val binding by fragmentViewBinding(FragmentAuthBinding::bind)
 
@@ -89,8 +89,7 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
                 event?.getContentIfNotHandled()?.let {
                     coordinator.openFeaturesScreen()
                 }
-            }
-            )
+            })
         }
     }
 

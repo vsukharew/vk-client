@@ -45,12 +45,14 @@ class AttachImageFragment :
         { viewModel.startLoading(it, true) },
         { viewModel.removeImage(it) }
     )
-    private val viewModel: AttachImageViewModel by stateViewModel()
     private val flowCoordinator: PublishImageCoordinator by inject()
     private lateinit var cameraResultLauncher: ActivityResultLauncher<Uri>
     private lateinit var galleryResultLauncher: ActivityResultLauncher<String>
 
-    override val scopeCreator: ScopeCreator by lazy { AttachImageScopeCreator(requireParentFragment().requireParentFragment()) }
+    override val scopeCreator: ScopeCreator by lazy {
+        AttachImageScopeCreator(requireParentFragment().requireParentFragment())
+    }
+    override val viewModel: AttachImageViewModel by stateViewModel()
     override val binding by fragmentViewBinding(FragmentAttachImageBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

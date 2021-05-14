@@ -31,10 +31,10 @@ import vsukharew.vkclient.screenname.model.ScreenNameAvailability.*
 
 @FlowPreview
 class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment_features) {
-    private val viewModel: FeaturesViewModel by stateViewModel()
     private val featuresCoordinator: FeaturesCoordinator by inject()
     private var signOutDialog: AlertDialog? = null
 
+    override val viewModel: FeaturesViewModel by stateViewModel()
     override val binding by fragmentViewBinding(FragmentFeaturesBinding::bind)
     override val scopeCreator: ScopeCreator = FeaturesScopeCreator
 

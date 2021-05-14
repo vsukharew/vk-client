@@ -12,6 +12,7 @@ import vsukharew.vkclient.auth.domain.model.AuthType.BROWSER
 import vsukharew.vkclient.common.domain.interactor.SessionInteractor
 import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
+import vsukharew.vkclient.common.presentation.BaseViewModel
 import vsukharew.vkclient.common.presentation.loadstate.UIAction
 import vsukharew.vkclient.common.presentation.loadstate.UIState
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
@@ -24,7 +25,7 @@ class FeaturesViewModel(
     private val sessionInteractor: SessionInteractor,
     private val savedState: SavedStateHandle,
     imageInteractor: ImageInteractor
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val profileInfoAction = MutableLiveData<UIAction>(UIAction.InitialLoading)
     val profileUiState = Transformations.switchMap(profileInfoAction, ::loadProfileInfo)

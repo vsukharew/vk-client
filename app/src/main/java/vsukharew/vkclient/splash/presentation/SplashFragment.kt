@@ -12,9 +12,9 @@ import vsukharew.vkclient.databinding.FragmentSplashBinding
 import vsukharew.vkclient.splash.di.SplashScopeCreator
 
 class SplashFragment : BaseFragment<FragmentSplashBinding>(R.layout.fragment_splash) {
-    private val viewModel: SplashViewModel by viewModel()
     private val coordinator: SplashCoordinator by inject()
 
+    override val viewModel: SplashViewModel by viewModel()
     override val scopeCreator: ScopeCreator = SplashScopeCreator
     override val binding by fragmentViewBinding(FragmentSplashBinding::bind)
 

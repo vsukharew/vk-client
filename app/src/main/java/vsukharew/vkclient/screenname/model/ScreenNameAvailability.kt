@@ -7,5 +7,6 @@ import kotlinx.parcelize.Parcelize
 enum class ScreenNameAvailability : Parcelable {
     AVAILABLE,
     UNAVAILABLE,
-    CURRENT_USER_NAME
+    CURRENT_USER_NAME,
+    EMPTY
 }

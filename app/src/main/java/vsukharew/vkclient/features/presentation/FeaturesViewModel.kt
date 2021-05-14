@@ -130,10 +130,14 @@ class FeaturesViewModel(
                     UIState.Success(data)
                 }
                 is Result.Error -> {
-                    val error = SingleLiveEvent(info)
+                    val errorEvent = SingleLiveEvent(info)
+                    errorLiveData.value = errorEvent
                     when (action) {
-                        is UIAction.SwipeRefresh -> UIState.SwipeRefreshError(error)
-                        else -> UIState.Error(error)
+                        is UIAction.SwipeRefresh -> {
+                            val currentData = savedState.get<ProfileInfo>(KEY_PROFILE_INFO)!!
+                            UIState.SwipeRefreshError(currentData, errorEvent)
+                        }
+                        else -> UIState.Error(errorEvent)
                     }
                 }
             }

@@ -101,9 +101,9 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
             UIState.SwipeRefreshProgress -> {
                 // empty implementation
             }
-            is UIState.Success -> renderSuccessState(state)
+            is UIState.Success -> renderSuccessState(state.data)
             is UIState.SwipeRefreshError -> renderSwipeRefreshErrorState(state)
-            is UIState.Error -> renderErrorState(state)
+            is UIState.Error -> renderErrorState()
         }
     }
 
@@ -163,7 +163,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         }
     }
 
-    private fun renderSuccessState(state: UIState.Success<ProfileInfo>) {
+    private fun renderSuccessState(data: ProfileInfo) {
         binding.apply {
             refreshLayout.apply {
                 isEnabled = true
@@ -173,7 +173,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
             publishImage.isVisible = true
             signOut.isVisible = true
             shortNameHint.isVisible = true
-            with(state.data) {
+            with(data) {
                 userName.text =
                     getString(
                         R.string.features_fragment_user_name_text,
@@ -184,12 +184,12 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         }
     }
 
-    private fun renderSwipeRefreshErrorState(state: UIState.SwipeRefreshError) {
-        binding.refreshLayout.isRefreshing = false
+    private fun renderSwipeRefreshErrorState(state: UIState.SwipeRefreshError<ProfileInfo>) {
+        renderSuccessState(state.currentData)
         state.error.getContentIfNotHandled()?.let(::handleError)
     }
 
-    private fun renderErrorState(state: UIState.Error) {
+    private fun renderErrorState() {
         binding.apply {
             userName.text = String.EMPTY
             signOut.isVisible = false
@@ -198,7 +198,6 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
             shortNameHint.isVisible = false
             publishImage.isVisible = false
         }
-        state.error.getContentIfNotHandled()?.let(::handleError)
     }
 
     private fun renderLoadingShortNameState() {

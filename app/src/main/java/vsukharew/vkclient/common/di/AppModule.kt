@@ -6,7 +6,7 @@ import org.koin.experimental.builder.singleBy
 import vsukharew.vkclient.auth.data.AuthRepo
 import vsukharew.vkclient.auth.data.AuthRepository
 import vsukharew.vkclient.auth.data.AuthStorage
-import vsukharew.vkclient.auth.data.SharedPrefsAuthStorage
+import vsukharew.vkclient.auth.data.storage.SharedPrefsAuthStorage
 import vsukharew.vkclient.auth.data.storage.FileAuthStorage
 import vsukharew.vkclient.common.domain.interactor.SessionInteractor
 import vsukharew.vkclient.common.domain.interactor.SessionInteractorImpl

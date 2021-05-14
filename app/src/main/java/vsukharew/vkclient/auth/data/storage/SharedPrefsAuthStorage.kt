@@ -1,9 +1,10 @@
-package vsukharew.vkclient.auth.data
+package vsukharew.vkclient.auth.data.storage
 
 import android.content.Context
 import android.util.Base64
 import com.google.crypto.tink.Aead
 import com.google.crypto.tink.integration.android.AndroidKeystoreKmsClient
+import vsukharew.vkclient.auth.data.AuthStorage
 import vsukharew.vkclient.auth.domain.model.AuthType
 import vsukharew.vkclient.auth.domain.model.Token
 import vsukharew.vkclient.auth.domain.model.Token.Companion.ACCESS_TOKEN_KEY

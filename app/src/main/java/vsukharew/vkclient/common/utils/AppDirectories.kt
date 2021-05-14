@@ -5,4 +5,5 @@ package vsukharew.vkclient.common.utils
  */
 object AppDirectories {
     const val WALL_IMAGES = "wall_images"
+    const val AUTH = "auth"
 }

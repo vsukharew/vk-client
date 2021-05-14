@@ -4,8 +4,6 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.experimental.builder.scopedBy
-import vsukharew.vkclient.auth.data.AuthRepo
-import vsukharew.vkclient.auth.data.AuthRepository
 import vsukharew.vkclient.auth.domain.interactor.AuthInteractor
 import vsukharew.vkclient.auth.domain.interactor.AuthInteractorImpl
 import vsukharew.vkclient.auth.navigation.AuthCoordinator
@@ -16,7 +14,6 @@ import vsukharew.vkclient.common.di.DIScopes
 
 val authDataModule = module {
     scope(named(DIScopes.AUTH_DATA)) {
-        scopedBy<AuthRepo, AuthRepository>()
         scopedBy<AuthInteractor, AuthInteractorImpl>()
     }
 }

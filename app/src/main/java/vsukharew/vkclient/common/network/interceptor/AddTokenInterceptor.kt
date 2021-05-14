@@ -3,9 +3,10 @@ package vsukharew.vkclient.common.network.interceptor
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
+import vsukharew.vkclient.auth.data.AuthRepo
 import vsukharew.vkclient.auth.data.AuthStorage
 
-class AddTokenInterceptor(private val authStorage: AuthStorage) : Interceptor {
+class AddTokenInterceptor(private val authRepo: AuthRepo) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
         return runBlocking {
@@ -13,7 +14,7 @@ class AddTokenInterceptor(private val authStorage: AuthStorage) : Interceptor {
                 .url
                 .newBuilder()
                 .apply {
-                    authStorage.getToken()
+                    authRepo.getToken()
                         ?.accessToken
                         ?.let { addQueryParameter(QUERY_ACCESS_TOKEN_KEY, it) }
                         addQueryParameter("v", "5.90")

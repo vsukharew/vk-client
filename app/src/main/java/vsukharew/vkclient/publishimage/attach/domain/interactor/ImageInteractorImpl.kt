@@ -18,6 +18,8 @@ class ImageInteractorImpl(
 
     private val publishingPostFlow = MutableStateFlow<Int?>(null)
 
+    override fun doSavedImagesExist(): Boolean = imageRepo.savedImages.isNotEmpty()
+
     override suspend fun uploadImage(
         image: Image,
         isRetryLoading: Boolean,

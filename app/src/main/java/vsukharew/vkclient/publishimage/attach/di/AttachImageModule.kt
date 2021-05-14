@@ -12,7 +12,8 @@ val attachImageScreenModule = module {
             AttachImageViewModel(
                 get(),
                 get(),
-                (get() as PublishImageCoordinator).attachImageStage
+                (get() as PublishImageCoordinator).attachImageStage,
+                get()
             )
         }
     }

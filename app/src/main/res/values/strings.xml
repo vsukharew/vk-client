@@ -24,7 +24,7 @@
     <string name="features_fragment_username_available_text">Username available</string>
     <string name="features_fragment_username_is_being_checked_text">Checking…</string>
     <string name="features_fragment_username_busy_text">Username is busy</string>
-    <string name="features_fragment_username_error_hint">Error happened</string>
+    <string name="features_fragment_username_error_hint">Error occurred</string>
     <string name="features_fragment_post_published_text">Post published</string>
 
     <string name="attach_image_fragment_title">Attach image</string>
@@ -45,6 +45,7 @@
     <string name="caption_fragment_location_dialog_publish_permission_is_required_text">You\'ll be unable to add a location without granting the permission</string>
     <string name="caption_fragment_the_app_is_forbidden_location_access_text">The app is forbidden the location access</string>
     <string name="caption_fragment_failed_to_receive_location_text">Failed to receive location</string>
+    <string name="caption_fragment_get_back_to_previous_screen_text">Please get back to previous screen and reload photos</string>
     <string name="caption_fragment_publish_without_location_text">Publish without location</string>
     <string name="caption_fragment_turn_on_gps_text">Turn on the GPS</string>
 </resources>

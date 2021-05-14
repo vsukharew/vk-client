@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.stateViewModel
 import vsukharew.vkclient.R
 import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
@@ -31,8 +31,9 @@ import vsukharew.vkclient.screenname.model.ScreenNameAvailability.*
 
 @FlowPreview
 class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment_features) {
-    private val viewModel: FeaturesViewModel by viewModel()
+    private val viewModel: FeaturesViewModel by stateViewModel()
     private val featuresCoordinator: FeaturesCoordinator by inject()
+    private var signOutDialog: AlertDialog? = null
 
     override val binding by fragmentViewBinding(FragmentFeaturesBinding::bind)
     override val scopeCreator: ScopeCreator = FeaturesScopeCreator
@@ -45,9 +46,15 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         observeUiEvents()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel.saveCursorPosition(binding.shortNameText.selectionEnd)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         nullifyProperties()
+        signOutDialog?.dismiss()
     }
 
     private fun observeData() {
@@ -55,6 +62,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
             profileUiState.observe(viewLifecycleOwner, ::observeProfileUiState)
             shortNameUiState.observe(viewLifecycleOwner, ::observeShortNameUiState)
             shortNameTextState.observe(viewLifecycleOwner, ::observeShortNameTextState)
+            selectionState.observe(viewLifecycleOwner, ::observeSelectionState)
             signOutEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
             signOutDialogEvent.observe(viewLifecycleOwner, { observeSignOutDialogEvent() })
             signOutDialogClosedEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
@@ -65,7 +73,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
     private fun observeUiEvents() {
         binding.shortNameText
             .textChangesSkipFirst()
-            .debounce(500L)
+            .debounce(DELAY_MILLIS)
             .onEach(viewModel::onShortNameChanged)
             .launchIn(viewModel.viewModelScope)
     }
@@ -114,8 +122,13 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         binding.shortNameText.apply {
             if (getText()?.toString() != text) {
                 setText(text)
+                setSelection(text.length)
             }
         }
+    }
+
+    private fun observeSelectionState(selection: Int) {
+        binding.shortNameText.setSelection(selection)
     }
 
     private fun observeSignOutDialogEvent() {
@@ -124,7 +137,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
             .setPositiveButton(R.string.ok_text) { _, _ ->
                 viewModel.onSignOutDialogClosed()
             }
-            .create()
+            .create().also { signOutDialog = it }
             .show()
     }
 
@@ -152,8 +165,10 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
 
     private fun renderSuccessState(state: UIState.Success<ProfileInfo>) {
         binding.apply {
-            refreshLayout.isEnabled = true
-            refreshLayout.isRefreshing = false
+            refreshLayout.apply {
+                isEnabled = true
+                isRefreshing = false
+            }
             retry.isVisible = false
             publishImage.isVisible = true
             signOut.isVisible = true
@@ -214,5 +229,9 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
             helperText = getString(R.string.features_fragment_username_error_hint)
         }
         state.error.getContentIfNotHandled()?.let(::handleError)
+    }
+
+    private companion object {
+        private const val DELAY_MILLIS = 500L
     }
 }

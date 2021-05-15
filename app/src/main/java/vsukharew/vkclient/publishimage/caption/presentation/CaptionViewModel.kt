@@ -86,8 +86,10 @@ class CaptionViewModel(
                         { onFailedRequestLocation(it) }
                     )
                 }
-                is CaptionUIAction.FailedToRequestLocation ->
+                is CaptionUIAction.FailedToRequestLocation -> {
+                    locationNotReceivedEvent.value = Unit
                     emit(CaptionUIState.Error(SingleLiveEvent(LocationNotReceivedError(action.e))))
+                }
                 is CaptionUIAction.Publish -> {
                     emit(CaptionUIState.LoadingProgress)
                     when (val result =
@@ -101,9 +103,6 @@ class CaptionViewModel(
                         is Result.Success -> {
                             emit(CaptionUIState.Success(result.data))
                             flowStage.onForwardClick()
-                        }
-                        is LocationNotReceivedError -> {
-                            locationNotReceivedEvent.value = Unit
                         }
                         Result.Error.DomainError.NoPhotosToPostError -> {
                             askToReloadPhotosEvent.value = Unit

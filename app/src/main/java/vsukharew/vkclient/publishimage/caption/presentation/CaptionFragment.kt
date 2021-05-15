@@ -15,7 +15,6 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.di.ScopeCreator
-import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.extension.snackBarIndefinite
 import vsukharew.vkclient.common.extension.snackBarLong
 import vsukharew.vkclient.common.extension.systemSettings
@@ -28,7 +27,7 @@ import vsukharew.vkclient.publishimage.navigation.PublishImageCoordinator
 
 class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_caption) {
     private val flowCoordinator: PublishImageCoordinator by inject()
-    private val viewModel: CaptionViewModel by viewModel()
+    override val viewModel: CaptionViewModel by viewModel()
     private lateinit var locationPermissionLauncher: ActivityResultLauncher<String>
 
     private var reloadPhotosDialog: AlertDialog? = null
@@ -92,6 +91,8 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
                 viewLifecycleOwner,
                 ::observeRequestLocationPermission
             )
+            locationNotReceivedEvent.observe(viewLifecycleOwner, { showLocationNotReceivedDialog() })
+            askToReloadPhotosEvent.observe(viewLifecycleOwner, { showReloadPhotosDialog() })
         }
     }
 
@@ -99,17 +100,6 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
         binding.apply {
             progressBar.isVisible = state is CaptionUIState.LoadingProgress
             publish.isVisible = state !is CaptionUIState.LoadingProgress
-            if (state is CaptionUIState.Error) {
-                when (state.error.peekContent) {
-                    is Result.Error.DomainError.LocationNotReceivedError -> {
-                        showLocationNotReceivedDialog()
-                    }
-                    is Result.Error.DomainError.NoPhotosToPostError -> {
-                        showReloadPhotosDialog()
-                    }
-                    else -> state.error.getContentIfNotHandled()?.let(::handleError)
-                }
-            }
         }
     }
 

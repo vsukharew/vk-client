@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.*
 import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.domain.model.Result.Error.DomainError
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
+import vsukharew.vkclient.common.presentation.BaseViewModel
 import vsukharew.vkclient.publishimage.attach.domain.infrastructure.DomainContentResolver
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
 import vsukharew.vkclient.publishimage.attach.domain.model.Image
@@ -21,7 +22,7 @@ class AttachImageViewModel(
     private val contentResolver: DomainContentResolver,
     private val flowStage: PublishImageFlowStage,
     private val savedState: SavedStateHandle
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val isNextButtonAvailableFlow = MutableStateFlow(false)
     private val imagesStates = mutableMapOf<UIImage, ImageUIState>()

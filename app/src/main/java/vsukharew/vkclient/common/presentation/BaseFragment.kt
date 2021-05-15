@@ -15,6 +15,7 @@ import org.koin.core.scope.Scope
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.di.ScopeCreator
 import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.livedata.SingleLiveEvent
 
 abstract class BaseFragment<V : ViewBinding>(
     @LayoutRes private val layoutResId: Int
@@ -22,6 +23,7 @@ abstract class BaseFragment<V : ViewBinding>(
 
     protected abstract val scopeCreator: ScopeCreator
     protected abstract val binding: ViewBinding
+    protected abstract val viewModel: BaseViewModel
     override val scope: Scope by lazy { scopeCreator.getScope(this, getKoin()).value }
 
     private val errorHandler: ErrorHandler by inject()
@@ -37,6 +39,11 @@ abstract class BaseFragment<V : ViewBinding>(
         savedInstanceState: Bundle?
     ): View = inflater.inflate(layoutResId, container, false)
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel.errorLiveData.observe(viewLifecycleOwner, ::observeError)
+    }
+
     override fun onStop() {
         super.onStop()
         if (requireActivity().isFinishing) {
@@ -46,5 +53,9 @@ abstract class BaseFragment<V : ViewBinding>(
 
     protected fun handleError(error: Result.Error) {
         errorHandler.handleError(this, error)
+    }
+
+    private fun observeError(event: SingleLiveEvent<Result.Error>) {
+        event.getContentIfNotHandled()?.let(::handleError)
     }
 }

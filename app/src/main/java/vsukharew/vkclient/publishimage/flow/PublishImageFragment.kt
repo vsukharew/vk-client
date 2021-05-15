@@ -17,8 +17,8 @@ import vsukharew.vkclient.publishimage.navigation.PublishImageCoordinator
 class PublishImageFragment :
     BaseFlowFragment<FragmentPublishImageBinding>(R.layout.fragment_publish_image) {
     private val coordinator: PublishImageCoordinator by inject()
-    private val viewModel: PublishImageViewModel by stateViewModel()
 
+    override val viewModel: PublishImageViewModel by stateViewModel()
     override val fragmentContainerViewId: Int = R.id.publish_images_flow_container
     override val scopeCreator: PublishImageScopeCreator = PublishImageScopeCreator
     override val binding by fragmentViewBinding(FragmentPublishImageBinding::bind)

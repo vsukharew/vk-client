@@ -7,6 +7,7 @@ import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.domain.model.Result.Error.DomainError.LocationNotReceivedError
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.location.LocationProvider
+import vsukharew.vkclient.common.presentation.BaseViewModel
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
 import vsukharew.vkclient.publishimage.caption.presentation.state.CaptionUIAction
 import vsukharew.vkclient.publishimage.caption.presentation.state.CaptionUIState
@@ -16,7 +17,7 @@ class CaptionViewModel(
     private val imageInteractor: ImageInteractor,
     private val locationProvider: LocationProvider,
     private val flowStage: PublishImageFlowStage
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val captionLiveData = MutableLiveData<String>()
     private val publishingAction = MutableLiveData<CaptionUIAction>()
@@ -24,6 +25,8 @@ class CaptionViewModel(
     val shouldShowAddLocationDialog = MutableLiveData<Boolean>()
     val showReloadImagesDialog = MutableLiveData<Unit>()
     val requestLocationPermissionEvent = MutableLiveData<SingleLiveEvent<Unit>>()
+    val locationNotReceivedEvent = MutableLiveData<Unit>()
+    val askToReloadPhotosEvent = MutableLiveData<Unit>()
 
     init {
         restorePossiblePhotosLoss()
@@ -83,8 +86,10 @@ class CaptionViewModel(
                         { onFailedRequestLocation(it) }
                     )
                 }
-                is CaptionUIAction.FailedToRequestLocation ->
+                is CaptionUIAction.FailedToRequestLocation -> {
+                    locationNotReceivedEvent.value = Unit
                     emit(CaptionUIState.Error(SingleLiveEvent(LocationNotReceivedError(action.e))))
+                }
                 is CaptionUIAction.Publish -> {
                     emit(CaptionUIState.LoadingProgress)
                     when (val result =
@@ -99,8 +104,13 @@ class CaptionViewModel(
                             emit(CaptionUIState.Success(result.data))
                             flowStage.onForwardClick()
                         }
+                        Result.Error.DomainError.NoPhotosToPostError -> {
+                            askToReloadPhotosEvent.value = Unit
+                        }
                         is Result.Error -> {
-                            emit(CaptionUIState.Error(SingleLiveEvent(result)))
+                            val event = SingleLiveEvent(result)
+                            emit(CaptionUIState.Error(event))
+                            errorLiveData.value = event
                         }
                     }
                 }

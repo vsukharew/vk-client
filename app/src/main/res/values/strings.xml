@@ -1,3 +1,51 @@
 <resources>
     <string name="app_name">vkclient</string>
+    <string name="ok_text">OK</string>
+    <string name="network_error_text">Check your connection</string>
+    <string name="unknown_server_error_text">Server error occurred</string>
+    <string name="unknown_error_text">Unknown error</string>
+    <string name="retry_btn">Retry</string>
+    <string name="got_it_text">Got it</string>
+    <string name="grant_text">Grant</string>
+    <string name="settings_text">Settings</string>
+    <string name="delete_text">Delete</string>
+    <string name="empty" />
+
+    <string name="auth_fragment_title">Sign in</string>
+    <string name="auth_login_btn">@string/auth_fragment_title</string>
+    <string name="auth_failed_text">Failed to sign in</string>
+
+    <string name="features_fragment_user_name_text">Signed in as %s</string>
+    <string name="features_fragment_user_name_loading_text">Profile loading…</string>
+    <string name="features_fragment_your_short_name_text">Your short name</string>
+    <string name="features_fragment_sign_out_btn">Sign out</string>
+    <string name="features_fragment_publish_image_btn">Publish image</string>
+    <string name="features_fragment_sign_out_dialog_text">Since you signed in via browser please clear the password of vk.com if you want to sign in as another user</string>
+    <string name="features_fragment_username_available_text">Username available</string>
+    <string name="features_fragment_username_is_being_checked_text">Checking…</string>
+    <string name="features_fragment_username_busy_text">Username is busy</string>
+    <string name="features_fragment_username_error_hint">Error occurred</string>
+    <string name="features_fragment_post_published_text">Post published</string>
+
+    <string name="attach_image_fragment_title">Attach image</string>
+    <string name="attach_image_fragment_next_btn">Next</string>
+    <string name="attach_image_fragment_choose_image_source_text">From gallery</string>
+    <string name="attach_image_fragment_gallery_text">Gallery</string>
+    <string name="attach_image_fragment_camera_text">Camera</string>
+    <string name="attach_image_fragment_file_too_large">File too large</string>
+    <string name="attach_image_fragment_image_resolution_too_large">Image resolution too large</string>
+
+    <string name="caption_fragment_title">Caption</string>
+    <string name="caption_fragment_caption_hint">Come up with a caption</string>
+    <string name="caption_fragment_publish_btn">Publish</string>
+    <string name="caption_fragment_location_dialog_message_text">You can add location to the post</string>
+    <string name="caption_fragment_location_dialog_add_location_text">Add location</string>
+    <string name="caption_fragment_location_dialog_publish_without_location_text">Skip and publish</string>
+    <string name="caption_fragment_location_dialog_please_grant_permission_text">In order to add location please grant a permission</string>
+    <string name="caption_fragment_location_dialog_publish_permission_is_required_text">You\'ll be unable to add a location without granting the permission</string>
+    <string name="caption_fragment_the_app_is_forbidden_location_access_text">The app is forbidden the location access</string>
+    <string name="caption_fragment_failed_to_receive_location_text">Failed to receive location</string>
+    <string name="caption_fragment_get_back_to_previous_screen_text">Please get back to previous screen and reload photos</string>
+    <string name="caption_fragment_publish_without_location_text">Publish without location</string>
+    <string name="caption_fragment_turn_on_gps_text">Turn on the GPS</string>
 </resources>

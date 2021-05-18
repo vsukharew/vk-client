@@ -10,6 +10,7 @@
    - Geopositioning
    
 ### Tech stack
+Note: for simplicity, everywhere in project MutableLiveData variables are used instead of "mutableLiveData" and "_immutableLivedata" ones
 - Kotlin Coroutines
 - Android ViewModel
 - [Tink](https://github.com/google/tink)

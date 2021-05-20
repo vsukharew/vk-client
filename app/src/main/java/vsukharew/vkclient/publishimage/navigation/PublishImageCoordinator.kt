@@ -40,7 +40,7 @@ class PublishImageCoordinator(private val navigator: PublishImageNavigator) : Im
     }
 
     fun addObserverToBackStackEntry(@IdRes id: Int, onResumeBlock: () -> Unit = {}) {
-        flowNavController?.let { BackStackEntryObserver.addObserver(it, id, onResumeBlock) }
+        flowNavController?.let { BackStackEntryObserver(onResumeBlock).addObserver(it, id) }
     }
 
     fun <T> doIfKeyExists(key: String, block: (T?) -> Unit) {

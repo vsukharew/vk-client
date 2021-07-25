@@ -6,19 +6,19 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.domain.interactor.SessionInteractor
-import vsukharew.vkclient.common.domain.model.Result
-import vsukharew.vkclient.common.domain.model.Result.Error.*
-import vsukharew.vkclient.common.domain.model.Result.Error.HttpError.ClientError.OtherClientError
-import vsukharew.vkclient.common.domain.model.Result.Error.HttpError.ClientError.UnauthorizedError
-import vsukharew.vkclient.common.domain.model.Result.Error.HttpError.OtherHttpError
-import vsukharew.vkclient.common.domain.model.Result.Error.HttpError.ServerError
+import vsukharew.vkclient.common.domain.model.Either
+import vsukharew.vkclient.common.domain.model.Either.Error.*
+import vsukharew.vkclient.common.domain.model.Either.Error.HttpError.ClientError.OtherClientError
+import vsukharew.vkclient.common.domain.model.Either.Error.HttpError.ClientError.UnauthorizedError
+import vsukharew.vkclient.common.domain.model.Either.Error.HttpError.OtherHttpError
+import vsukharew.vkclient.common.domain.model.Either.Error.HttpError.ServerError
 import vsukharew.vkclient.common.extension.snackBar
 
 class ErrorHandler(
     private val sessionInteractor: SessionInteractor
 ) : CoroutineScope by CoroutineScope(Dispatchers.Main) {
 
-    fun handleError(fragment: BaseFragment<*>, error: Result.Error) {
+    fun handleError(fragment: BaseFragment<*>, error: Either.Error) {
         with(fragment) {
             when (error) {
                 UnauthorizedError -> {

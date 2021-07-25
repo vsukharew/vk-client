@@ -3,7 +3,7 @@ package vsukharew.vkclient.common.network.calladapter.responsewrapper
 import retrofit2.Call
 import retrofit2.CallAdapter
 import retrofit2.Retrofit
-import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.domain.model.Either
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
@@ -23,7 +23,7 @@ class ResultResponseWrapperAdapterFactory : CallAdapter.Factory() {
         }
 
         val responseType = getParameterUpperBound(0, returnType)
-        if (getRawType(responseType) != Result::class.java) {
+        if (getRawType(responseType) != Either::class.java) {
             return null
         }
 

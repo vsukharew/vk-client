@@ -3,8 +3,8 @@ package vsukharew.vkclient.publishimage.caption.presentation
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import vsukharew.vkclient.common.domain.model.Result
-import vsukharew.vkclient.common.domain.model.Result.Error.DomainError.LocationNotReceivedError
+import vsukharew.vkclient.common.domain.model.Either
+import vsukharew.vkclient.common.domain.model.Either.Error.DomainError.LocationNotReceivedError
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.location.LocationProvider
 import vsukharew.vkclient.common.presentation.BaseViewModel
@@ -100,14 +100,14 @@ class CaptionViewModel(
                                 action.longitude
                             )
                         }) {
-                        is Result.Success -> {
+                        is Either.Success -> {
                             emit(CaptionUIState.Success(result.data))
                             flowStage.onForwardClick()
                         }
-                        Result.Error.DomainError.NoPhotosToPostError -> {
+                        Either.Error.DomainError.NoPhotosToPostError -> {
                             askToReloadPhotosEvent.value = Unit
                         }
-                        is Result.Error -> {
+                        is Either.Error -> {
                             val event = SingleLiveEvent(result)
                             emit(CaptionUIState.Error(event))
                             errorLiveData.value = event

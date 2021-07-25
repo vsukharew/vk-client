@@ -1,7 +1,7 @@
 package vsukharew.vkclient.publishimage.attach.domain.interactor
 
 import kotlinx.coroutines.flow.Flow
-import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.publishimage.attach.domain.model.Image
 import vsukharew.vkclient.publishimage.attach.domain.model.SavedWallImage
 
@@ -11,13 +11,13 @@ interface ImageInteractor {
         image: Image,
         isRetryLoading: Boolean,
         onProgressUpdated: (Double) -> Unit
-    ): Result<SavedWallImage>
+    ): Either<SavedWallImage>
     fun removeUploadedImage(image: Image)
     fun removeAllImages()
     suspend fun postImagesOnWall(
         message: String,
         latitude: Double? = null,
         longitude: Double? = null
-    ): Result<Int>
+    ): Either<Int>
     fun observePublishedPosts(): Flow<Int?>
 }

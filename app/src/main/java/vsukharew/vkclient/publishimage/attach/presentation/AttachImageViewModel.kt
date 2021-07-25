@@ -3,8 +3,8 @@ package vsukharew.vkclient.publishimage.attach.presentation
 import androidx.lifecycle.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import vsukharew.vkclient.common.domain.model.Result
-import vsukharew.vkclient.common.domain.model.Result.Error.DomainError
+import vsukharew.vkclient.common.domain.model.Either
+import vsukharew.vkclient.common.domain.model.Either.Error.DomainError
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseViewModel
 import vsukharew.vkclient.publishimage.attach.domain.infrastructure.DomainContentResolver
@@ -132,10 +132,10 @@ class AttachImageViewModel(
                             }
                         }
                     }) {
-                    is Result.Success -> {
+                    is Either.Success -> {
                         ImageEvent.SuccessfulLoading(image)
                     }
-                    is Result.Error -> {
+                    is Either.Error -> {
                         ImageEvent.ErrorLoading(image, uploadResult)
                     }
                 }

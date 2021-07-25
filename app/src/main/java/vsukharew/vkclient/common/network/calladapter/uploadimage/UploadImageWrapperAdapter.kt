@@ -3,7 +3,7 @@ package vsukharew.vkclient.common.network.calladapter.uploadimage
 import retrofit2.Call
 import retrofit2.CallAdapter
 import vsukharew.vkclient.common.network.response.ResponseWrapper
-import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.publishimage.attach.data.model.UploadedImageWrapper
 import java.lang.reflect.Type
 
@@ -13,7 +13,7 @@ import java.lang.reflect.Type
  *  UploadImageWrapper
  * ```
  *
- * @see [Result]
+ * @see [Either]
  * @see [ResponseWrapper]
  */
 class UploadImageWrapperAdapter(

@@ -6,13 +6,13 @@ import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.account.domain.model.ScreenName
 import vsukharew.vkclient.account.domain.model.ScreenName.ResolvedScreenName
 import vsukharew.vkclient.account.domain.model.ScreenName.UnresolvedScreenName
-import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.extension.EMPTY
 import vsukharew.vkclient.common.extension.map
 
 class AccountRepository(private val accountApi: AccountApi) : AccountRepo {
 
-    override suspend fun getProfileInfo(): Result<ProfileInfo> {
+    override suspend fun getProfileInfo(): Either<ProfileInfo> {
         return accountApi.getProfileInfo()
             .map { wrapper ->
                 wrapper.response?.let {
@@ -25,7 +25,7 @@ class AccountRepository(private val accountApi: AccountApi) : AccountRepo {
             }
     }
 
-    override suspend fun resolveScreenName(name: String): Result<ScreenName> {
+    override suspend fun resolveScreenName(name: String): Either<ScreenName> {
         return accountApi.resolveScreenName(name)
             .map { wrapper ->
                 wrapper.response?.let {

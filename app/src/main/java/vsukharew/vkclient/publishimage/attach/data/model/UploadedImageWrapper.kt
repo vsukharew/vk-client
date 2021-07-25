@@ -1,7 +1,7 @@
 package vsukharew.vkclient.publishimage.attach.data.model
 
 import com.google.gson.annotations.SerializedName
-import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.network.response.ErrorResponse
 
 data class UploadedImageWrapper(
@@ -11,7 +11,7 @@ data class UploadedImageWrapper(
     @SerializedName("hash") val hash : String?,
     @SerializedName("error") val errorResponse: ErrorResponse?
 ) {
-    var domainError: Result.Error? = null
+    var domainError: Either.Error? = null
     var responseCode: Int? = null
 
     fun isDataReceived(): Boolean = server != null && photo != null && hash != null

@@ -9,9 +9,9 @@ import com.google.android.material.snackbar.Snackbar
 import vsukharev.anytypeadapter.delegate.AnyTypeDelegate
 import vsukharev.anytypeadapter.holder.AnyTypeViewHolder
 import vsukharew.vkclient.R
-import vsukharew.vkclient.common.domain.model.Result
-import vsukharew.vkclient.common.domain.model.Result.Error.DomainError.FileTooLargeError
-import vsukharew.vkclient.common.domain.model.Result.Error.DomainError.ImageResolutionTooLargeError
+import vsukharew.vkclient.common.domain.model.Either
+import vsukharew.vkclient.common.domain.model.Either.Error.DomainError.FileTooLargeError
+import vsukharew.vkclient.common.domain.model.Either.Error.DomainError.ImageResolutionTooLargeError
 import vsukharew.vkclient.databinding.DelegateImageBinding
 import vsukharew.vkclient.publishimage.attach.presentation.delegate.ImageDelegate.Holder
 import vsukharew.vkclient.publishimage.attach.presentation.model.UIImage
@@ -110,7 +110,7 @@ class ImageDelegate(
                 retryUpload.isVisible = true
                 removeImage.isVisible = true
                 with(state.error) {
-                    if (peekContent is Result.Error.DomainError) {
+                    if (peekContent is Either.Error.DomainError) {
                         Snackbar.make(
                             itemView,
                             getErrorMessage(peekContent),
@@ -134,7 +134,7 @@ class ImageDelegate(
             }
         }
 
-        private fun getErrorMessage(error: Result.Error): Int {
+        private fun getErrorMessage(error: Either.Error): Int {
             return when (error) {
                 FileTooLargeError -> R.string.attach_image_fragment_file_too_large
                 ImageResolutionTooLargeError -> R.string.attach_image_fragment_image_resolution_too_large

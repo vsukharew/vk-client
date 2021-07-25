@@ -5,7 +5,7 @@ import okio.Timeout
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.network.calladapter.utils.HttpErrorMapper
 import vsukharew.vkclient.publishimage.attach.data.model.UploadedImageWrapper
 import java.io.IOException
@@ -81,8 +81,8 @@ class UploadImageWrapperCall(
 
         private fun handleOnFailure(callback: Callback<UploadedImageWrapper>, e: Throwable) {
             val wrapper = when (e) {
-                is IOException -> Result.Error.NetworkError(e)
-                else -> Result.Error.UnknownError(e)
+                is IOException -> Either.Error.NetworkError(e)
+                else -> Either.Error.UnknownError(e)
             }.let { error -> UploadedImageWrapper.EMPTY.also { it.domainError = error } }
             callback.onResponse(resultCall, Response.success(wrapper))
         }

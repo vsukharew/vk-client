@@ -67,6 +67,8 @@ dependencies {
     implementation kotlin.coroutines
     implementation kotlin.coroutinesAndroid
 
+    implementation cicerone
+
     implementation androidx.appCompat
     implementation androidx.ktx
     implementation androidx.constraintLayout

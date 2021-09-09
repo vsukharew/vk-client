@@ -23,9 +23,9 @@ ext {
                     'lifecycle'         : '2.2.0',
                     'navigation'        : '2.3.1'
             ],
-            google : [
-                    tink          : '1.5.0',
-                    location      : '18.0.0'
+            google        : [
+                    tink    : '1.5.0',
+                    location: '18.0.0'
             ],
             gradle        : '4.1.2',
             koin          : '3.0.1-beta-1',
@@ -35,7 +35,8 @@ ext {
             retrofit      : '2.8.1',
             leakcanary    : '2.2',
             junit         : '4.12',
-            anyTypeAdapter: '1.0.11'
+            anyTypeAdapter: '1.0.11',
+            cicerone      : '7.0'
     ]
     androidx = [
             appCompat         : "androidx.appcompat:appcompat:${versions.androidx.appCompat}",
@@ -76,9 +77,10 @@ ext {
     ]
     google = [
             location: "com.google.android.gms:play-services-location:${versions.google.location}",
-            tink: "com.google.crypto.tink:tink-android:${versions.google.tink}"
+            tink    : "com.google.crypto.tink:tink-android:${versions.google.tink}"
     ]
     gson = "com.google.code.gson:gson:${versions.gson}"
     junit = "junit:junit:${versions.junit}"
     anyTypeAdapter = "io.github.vsukharew:anytypeadapter:${versions.anyTypeAdapter}@aar"
+    cicerone = "com.github.terrakok:cicerone:${versions.cicerone}"
 }

@@ -1,5 +1,6 @@
 package vsukharew.vkclient.common.di
 
+import com.github.terrakok.cicerone.Cicerone
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.experimental.builder.singleBy
@@ -11,11 +12,18 @@ import vsukharew.vkclient.auth.data.storage.FileAuthStorage
 import vsukharew.vkclient.common.domain.interactor.SessionInteractor
 import vsukharew.vkclient.common.domain.interactor.SessionInteractorImpl
 import vsukharew.vkclient.common.presentation.ErrorHandler
+import vsukharew.vkclient.common.utils.DefaultIntentChecker
+import vsukharew.vkclient.common.utils.IntentChecker
+
+val cicerone = Cicerone.create()
 
 val appModule = module {
     singleBy<AuthStorage, SharedPrefsAuthStorage>(named("prefs"))
     singleBy<AuthStorage, FileAuthStorage>(named("file"))
     singleBy<SessionInteractor, SessionInteractorImpl>()
+    singleBy<IntentChecker, DefaultIntentChecker>()
+    single { cicerone.router }
+    single { cicerone.getNavigatorHolder() }
     single<AuthRepo> {
         AuthRepository(
             sharedPrefsStorage = get(named("prefs")),

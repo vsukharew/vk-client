@@ -22,7 +22,7 @@ abstract class BaseFlowFragment<V : ViewBinding>(
     protected fun navigateIfDestinationIsNotCreated(@IdRes destination: Int) {
         with(flowNavController) {
             if (currentDestination == null || currentDestination!!.id == graph.startDestination) {
-                navigate(R.id.attachImageFragment)
+                navigate(destination)
             }
         }
     }

@@ -10,9 +10,9 @@ import androidx.activity.result.contract.ActivityResultContracts.StartActivityFo
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import vsukharew.vkclient.R
+import vsukharew.vkclient.auth.data.model.AuthParams
 import vsukharew.vkclient.auth.di.AuthScopeCreator
 import vsukharew.vkclient.auth.domain.model.AuthType
-import vsukharew.vkclient.auth.navigation.AuthCoordinator
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.di.ScopeCreator
 import vsukharew.vkclient.common.extension.toast
@@ -22,8 +22,6 @@ import vsukharew.vkclient.databinding.FragmentAuthBinding
 
 class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
     private lateinit var vkActivityLauncher: ActivityResultLauncher<Intent>
-    private val coordinator: AuthCoordinator by inject()
-
     override val viewModel: AuthViewModel by viewModel()
     override val scopeCreator: ScopeCreator = AuthScopeCreator
     override val binding by fragmentViewBinding(FragmentAuthBinding::bind)
@@ -40,27 +38,7 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
         super.onViewCreated(view, savedInstanceState)
         setListeners()
         observeData()
-        setProperties()
         activity?.intent?.let(::handleBrowserRedirect)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        nullifyProperties()
-    }
-
-    private fun setProperties() {
-        coordinator.let {
-            it.navController = navController
-            it.vkActivityLauncher = vkActivityLauncher
-        }
-    }
-
-    private fun nullifyProperties() {
-        coordinator.apply {
-            vkActivityLauncher = null
-            navController = null
-        }
     }
 
     private fun handleBrowserRedirect(intent: Intent) {
@@ -80,17 +58,26 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
 
     private fun observeData() {
         viewModel.apply {
-            openBrowserForAuthEvent.observe(viewLifecycleOwner, { event ->
-                event.getContentIfNotHandled()?.let {
-                    coordinator.onLoginClick(requireContext(), it)
-                }
-            })
-            openFunctionScreenEvent.observe(viewLifecycleOwner, { event ->
-                event?.getContentIfNotHandled()?.let {
-                    coordinator.openFeaturesScreen()
-                }
+            openExternalAuthScreenEvent.observe(viewLifecycleOwner, { event ->
+                event.getContentIfNotHandled()?.let(::openVkActivity)
             })
         }
+    }
+
+    private fun openVkActivity(authParams: AuthParams) {
+        vkActivityLauncher.launch(
+            Intent(VK_APP_AUTH_ACTION, null).apply {
+                setPackage(VK_APP_PACKAGE_NAME)
+                putExtras(
+                    Bundle().apply {
+                        putInt(VK_EXTRA_CLIENT_ID, authParams.clientId)
+                        putBoolean(VK_EXTRA_REVOKE, authParams.revoke)
+                        putString(VK_EXTRA_SCOPE, authParams.scopes)
+                        putString(VK_EXTRA_REDIRECT_URL, authParams.redirectUrl)
+                    }
+                )
+            }
+        )
     }
 
     private fun handleVkActivityResult(result: ActivityResult) {
@@ -127,5 +114,11 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
 
     private companion object {
         const val VK_AUTH_ERROR = "error"
+        private const val VK_APP_PACKAGE_NAME = "com.vkontakte.android"
+        private const val VK_APP_AUTH_ACTION = "com.vkontakte.android.action.SDK_AUTH"
+        private const val VK_EXTRA_CLIENT_ID = "client_id"
+        private const val VK_EXTRA_SCOPE = "scope"
+        private const val VK_EXTRA_REVOKE = "revoke"
+        private const val VK_EXTRA_REDIRECT_URL = "redirect_url"
     }
 }

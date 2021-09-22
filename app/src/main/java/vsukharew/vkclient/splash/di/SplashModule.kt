@@ -9,8 +9,6 @@ import vsukharew.vkclient.splash.presentation.SplashViewModel
 
 val splashModule = module {
     scope<SplashFragment> {
-        scoped { SplashNavigator() }
-        scoped { SplashCoordinator(get()) }
-        viewModel { SplashViewModel(get()) }
+        viewModel { SplashViewModel(get(), get()) }
     }
 }

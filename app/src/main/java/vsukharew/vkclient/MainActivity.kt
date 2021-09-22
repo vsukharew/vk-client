@@ -23,7 +23,12 @@ class MainActivity : BaseActivity(), AndroidScopeComponent {
     override val scope: Scope by activityRetainedScope()
     private val navigator = object : AppNavigator(this, R.id.fragment_container_view) {
         override fun applyCommands(commands: Array<out Command>) {
+            // as soon as NavHostFragment is in stack, one have to pass navigation management to
+            // Navigation Component and stop applying Cicerone commands
             val isNavHostNotInStack = fragmentManager.fragments.firstOrNull() !is NavHostFragment
+
+            // dirty workaround for applying Cicerone commands during return from external activity
+            // where the authorization goes
             val isGoingToFeaturesScreen = commands.firstOrNull()?.let {
                 it is Replace && it.screen is NavigationComponentIntroScreen
             }

@@ -15,6 +15,7 @@ import vsukharew.vkclient.common.delegation.activityViewBinding
 import vsukharew.vkclient.common.presentation.BaseActivity
 import vsukharew.vkclient.databinding.ActivityMainBinding
 import vsukharew.vkclient.common.navigation.NavigationComponentIntroScreen
+import vsukharew.vkclient.common.navigation.TitleLifecycleCallback
 import vsukharew.vkclient.splash.navigation.SplashScreen
 
 class MainActivity : BaseActivity(), AndroidScopeComponent {
@@ -34,6 +35,9 @@ class MainActivity : BaseActivity(), AndroidScopeComponent {
     private val navigatorHolder = getKoin().get<NavigatorHolder>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        supportFragmentManager.registerFragmentLifecycleCallbacks(
+            TitleLifecycleCallback(this), true
+        )
         super.onCreate(savedInstanceState)
         navigator.applyCommands(arrayOf(Replace(SplashScreen())))
     }

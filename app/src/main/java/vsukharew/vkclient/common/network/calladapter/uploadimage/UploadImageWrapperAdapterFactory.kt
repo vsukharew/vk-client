@@ -8,6 +8,7 @@ import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
 class UploadImageWrapperAdapterFactory : CallAdapter.Factory() {
+    private val lazyMessage = { "return type must be parameterized" }
 
     override fun get(
         returnType: Type,
@@ -18,15 +19,14 @@ class UploadImageWrapperAdapterFactory : CallAdapter.Factory() {
             return null
         }
 
-        check(returnType is ParameterizedType) {
-            "return type must be parameterized"
-        }
-
-        val responseType = getParameterUpperBound(0, returnType)
-        if (getRawType(responseType) != UploadedImageWrapper::class.java) {
+        check(returnType is ParameterizedType, lazyMessage)
+        val outerResponseType = getParameterUpperBound(0, returnType)
+        check(outerResponseType is ParameterizedType, lazyMessage)
+        val innerResponseType = getParameterUpperBound(0, outerResponseType)
+        if (getRawType(innerResponseType) != UploadedImageWrapper::class.java) {
             return null
         }
 
-        return UploadImageWrapperAdapter(responseType)
+        return UploadImageWrapperAdapter(innerResponseType)
     }
 }

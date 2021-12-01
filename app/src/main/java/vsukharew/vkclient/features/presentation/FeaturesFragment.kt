@@ -22,6 +22,7 @@ import vsukharew.vkclient.common.extension.snackBar
 import vsukharew.vkclient.common.extension.textChangesSkipFirst
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseFragment
+import vsukharew.vkclient.common.presentation.loadstate.ProfileInfoUiState
 import vsukharew.vkclient.common.presentation.loadstate.UIState
 import vsukharew.vkclient.databinding.FragmentFeaturesBinding
 import vsukharew.vkclient.features.di.FeaturesScopeCreator
@@ -95,15 +96,15 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         featuresCoordinator.navController = null
     }
 
-    private fun observeProfileUiState(state: UIState<ProfileInfo>) {
+    private fun observeProfileUiState(state: ProfileInfoUiState) {
         when (state) {
-            UIState.LoadingProgress -> renderLoadingProgress()
-            UIState.SwipeRefreshProgress -> {
+            ProfileInfoUiState.LoadingProgress -> renderLoadingProgress()
+            ProfileInfoUiState.SwipeRefreshProgress -> {
                 // empty implementation
             }
-            is UIState.Success -> renderSuccessState(state.data)
-            is UIState.SwipeRefreshError -> renderSwipeRefreshErrorState(state)
-            is UIState.Error -> renderErrorState()
+            is ProfileInfoUiState.Success -> renderSuccessState(state.data)
+            is ProfileInfoUiState.SwipeRefreshError -> renderSwipeRefreshErrorState(state)
+            is ProfileInfoUiState.Error -> renderErrorState()
         }
     }
 
@@ -184,7 +185,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         }
     }
 
-    private fun renderSwipeRefreshErrorState(state: UIState.SwipeRefreshError<ProfileInfo>) {
+    private fun renderSwipeRefreshErrorState(state: ProfileInfoUiState.SwipeRefreshError) {
         renderSuccessState(state.currentData)
         state.error.getContentIfNotHandled()?.let(::handleError)
     }

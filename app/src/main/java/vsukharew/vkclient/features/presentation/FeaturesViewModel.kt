@@ -14,6 +14,7 @@ import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.extension.EMPTY
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseViewModel
+import vsukharew.vkclient.common.presentation.loadstate.ProfileInfoUiState
 import vsukharew.vkclient.common.presentation.loadstate.UIAction
 import vsukharew.vkclient.common.presentation.loadstate.UIState
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
@@ -96,11 +97,11 @@ class FeaturesViewModel(
         savedState[KEY_SELECTION_STATE_INFO] = position
     }
 
-    private fun loadProfileInfo(action: UIAction): LiveData<UIState<ProfileInfo>> {
+    private fun loadProfileInfo(action: UIAction): LiveData<ProfileInfoUiState> {
         return liveData {
             val loadingState = when (action) {
-                UIAction.Retry, UIAction.InitialLoading -> UIState.LoadingProgress
-                UIAction.SwipeRefresh -> UIState.SwipeRefreshProgress
+                UIAction.Retry, UIAction.InitialLoading -> ProfileInfoUiState.LoadingProgress
+                UIAction.SwipeRefresh -> ProfileInfoUiState.SwipeRefreshProgress
                 else -> return@liveData
             }
             emit(loadingState)
@@ -110,7 +111,7 @@ class FeaturesViewModel(
                 }
                 else -> {
                     savedState.get<ProfileInfo>(KEY_PROFILE_INFO)?.let {
-                        emit(UIState.Success(it))
+                        emit(ProfileInfoUiState.Success(it))
                     } ?: handleProfileInfoResult(this, accountInteractor.getProfileInfo(), action)
                 }
             }
@@ -118,7 +119,7 @@ class FeaturesViewModel(
     }
 
     private suspend fun handleProfileInfoResult(
-        scope: LiveDataScope<UIState<ProfileInfo>>,
+        scope: LiveDataScope<ProfileInfoUiState>,
         info: Result<ProfileInfo>,
         action: UIAction
     ) {
@@ -128,7 +129,7 @@ class FeaturesViewModel(
                     currentShortName = info.data.screenName.also { savedState[KEY_SHORT_NAME] = it }
                     val data = info.data.copy(screenName = currentShortName)
                     savedState[KEY_PROFILE_INFO] = data
-                    UIState.Success(data)
+                    ProfileInfoUiState.Success(data)
                 }
                 is Result.Error -> {
                     val errorEvent = SingleLiveEvent(info)
@@ -136,9 +137,9 @@ class FeaturesViewModel(
                     when (action) {
                         is UIAction.SwipeRefresh -> {
                             val currentData = savedState.get<ProfileInfo>(KEY_PROFILE_INFO)!!
-                            UIState.SwipeRefreshError(currentData, errorEvent)
+                            ProfileInfoUiState.SwipeRefreshError(currentData, errorEvent)
                         }
-                        else -> UIState.Error(errorEvent)
+                        else -> ProfileInfoUiState.Error(errorEvent)
                     }
                 }
             }

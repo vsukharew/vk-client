@@ -23,7 +23,7 @@ import vsukharew.vkclient.common.extension.textChangesSkipFirst
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.common.presentation.loadstate.ProfileInfoUiState
-import vsukharew.vkclient.common.presentation.loadstate.UIState
+import vsukharew.vkclient.common.presentation.loadstate.ShortNameAvailabilityState
 import vsukharew.vkclient.databinding.FragmentFeaturesBinding
 import vsukharew.vkclient.features.di.FeaturesScopeCreator
 import vsukharew.vkclient.features.navigation.FeaturesCoordinator
@@ -108,14 +108,11 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         }
     }
 
-    private fun observeShortNameUiState(state: UIState<ScreenNameAvailability>) {
+    private fun observeShortNameUiState(state: ShortNameAvailabilityState) {
         when (state) {
-            UIState.LoadingProgress -> renderLoadingShortNameState()
-            is UIState.Success -> renderSuccessShortNameState(state)
-            is UIState.Error -> renderErrorShortNameState(state)
-            else -> {
-
-            }
+            ShortNameAvailabilityState.LoadingProgress -> renderLoadingShortNameState()
+            is ShortNameAvailabilityState.Success -> renderSuccessShortNameState(state)
+            is ShortNameAvailabilityState.Error -> renderErrorShortNameState(state)
         }
     }
 
@@ -209,7 +206,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         }
     }
 
-    private fun renderSuccessShortNameState(state: UIState.Success<ScreenNameAvailability>) {
+    private fun renderSuccessShortNameState(state: ShortNameAvailabilityState.Success) {
         binding.shortNameHint.apply {
             val (color, text) = when (state.data) {
                 AVAILABLE -> Color.GREEN to R.string.features_fragment_username_available_text
@@ -222,7 +219,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         }
     }
 
-    private fun renderErrorShortNameState(state: UIState.Error) {
+    private fun renderErrorShortNameState(state: ShortNameAvailabilityState.Error) {
         binding.shortNameHint.apply {
             boxStrokeColor = Color.RED
             setHelperTextColor(ColorStateList.valueOf(boxStrokeColor))

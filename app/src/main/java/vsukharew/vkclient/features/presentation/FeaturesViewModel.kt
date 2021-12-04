@@ -15,10 +15,9 @@ import vsukharew.vkclient.common.extension.EMPTY
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseViewModel
 import vsukharew.vkclient.common.presentation.loadstate.ProfileInfoUiState
-import vsukharew.vkclient.common.presentation.loadstate.UIAction
-import vsukharew.vkclient.common.presentation.loadstate.UIState
+import vsukharew.vkclient.common.presentation.loadstate.FeaturesScreenAction
+import vsukharew.vkclient.common.presentation.loadstate.ShortNameAvailabilityState
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
-import vsukharew.vkclient.screenname.model.ScreenNameAvailability
 import vsukharew.vkclient.screenname.model.ScreenNameAvailability.*
 
 class FeaturesViewModel(
@@ -29,10 +28,10 @@ class FeaturesViewModel(
     imageInteractor: ImageInteractor
 ) : BaseViewModel() {
 
-    private val profileInfoAction = MutableLiveData<UIAction>(UIAction.InitialLoading)
+    private val profileInfoAction = MutableLiveData<FeaturesScreenAction>(FeaturesScreenAction.InitialLoading)
     val profileUiState = Transformations.switchMap(profileInfoAction, ::loadProfileInfo)
 
-    private val shortNameAction = MutableLiveData<UIAction.Text>()
+    private val shortNameAction = MutableLiveData<FeaturesScreenAction.Text>()
     val shortNameUiState = Transformations.switchMap(shortNameAction, ::checkShortNameAvailability)
 
     private var currentShortName: String? = savedState[KEY_SHORT_NAME]
@@ -71,11 +70,11 @@ class FeaturesViewModel(
     }
 
     fun retryLoadProfileInfo() {
-        profileInfoAction.value = UIAction.Retry
+        profileInfoAction.value = FeaturesScreenAction.Retry
     }
 
     fun refreshProfileInfo() {
-        profileInfoAction.value = UIAction.SwipeRefresh
+        profileInfoAction.value = FeaturesScreenAction.SwipeRefresh
     }
 
     fun onShortNameChanged(shortName: String) {
@@ -87,7 +86,7 @@ class FeaturesViewModel(
                     return
                 }
                 else -> {
-                    shortNameAction.value = UIAction.Text(shortName)
+                    shortNameAction.value = FeaturesScreenAction.Text(shortName)
                 }
             }
         }
@@ -97,16 +96,16 @@ class FeaturesViewModel(
         savedState[KEY_SELECTION_STATE_INFO] = position
     }
 
-    private fun loadProfileInfo(action: UIAction): LiveData<ProfileInfoUiState> {
+    private fun loadProfileInfo(action: FeaturesScreenAction): LiveData<ProfileInfoUiState> {
         return liveData {
             val loadingState = when (action) {
-                UIAction.Retry, UIAction.InitialLoading -> ProfileInfoUiState.LoadingProgress
-                UIAction.SwipeRefresh -> ProfileInfoUiState.SwipeRefreshProgress
+                FeaturesScreenAction.Retry, FeaturesScreenAction.InitialLoading -> ProfileInfoUiState.LoadingProgress
+                FeaturesScreenAction.SwipeRefresh -> ProfileInfoUiState.SwipeRefreshProgress
                 else -> return@liveData
             }
             emit(loadingState)
             when (action) {
-                UIAction.SwipeRefresh, UIAction.Retry -> {
+                FeaturesScreenAction.SwipeRefresh, FeaturesScreenAction.Retry -> {
                     handleProfileInfoResult(this, accountInteractor.getProfileInfo(), action)
                 }
                 else -> {
@@ -121,7 +120,7 @@ class FeaturesViewModel(
     private suspend fun handleProfileInfoResult(
         scope: LiveDataScope<ProfileInfoUiState>,
         info: Result<ProfileInfo>,
-        action: UIAction
+        action: FeaturesScreenAction
     ) {
         scope.emit(
             when (info) {
@@ -135,7 +134,7 @@ class FeaturesViewModel(
                     val errorEvent = SingleLiveEvent(info)
                     errorLiveData.value = errorEvent
                     when (action) {
-                        is UIAction.SwipeRefresh -> {
+                        is FeaturesScreenAction.SwipeRefresh -> {
                             val currentData = savedState.get<ProfileInfo>(KEY_PROFILE_INFO)!!
                             ProfileInfoUiState.SwipeRefreshError(currentData, errorEvent)
                         }
@@ -147,19 +146,19 @@ class FeaturesViewModel(
     }
 
     private fun checkShortNameAvailability(
-        action: UIAction.Text
-    ): LiveData<UIState<ScreenNameAvailability>> {
+        action: FeaturesScreenAction.Text
+    ): LiveData<ShortNameAvailabilityState> {
         return liveData {
             when (action.text) {
                 currentShortName -> {
-                    emit(UIState.Success(CURRENT_USER_NAME))
+                    emit(ShortNameAvailabilityState.Success(CURRENT_USER_NAME))
                     return@liveData
                 }
                 String.EMPTY -> {
-                    emit(UIState.Success(EMPTY))
+                    emit(ShortNameAvailabilityState.Success(EMPTY))
                     return@liveData
                 }
-                else -> emit(UIState.LoadingProgress)
+                else -> emit(ShortNameAvailabilityState.LoadingProgress)
             }
             val doesExist = withContext(Dispatchers.IO) {
                 accountInteractor.doesShortNameExist(action.text)
@@ -171,11 +170,11 @@ class FeaturesViewModel(
                             doesExist.data -> UNAVAILABLE
                             else -> AVAILABLE
                         }
-                        UIState.Success(availability)
+                        ShortNameAvailabilityState.Success(availability)
                     }
                     is Result.Error -> {
                         val error = SingleLiveEvent(doesExist)
-                        UIState.Error(error)
+                        ShortNameAvailabilityState.Error(error)
                     }
                 }
             )

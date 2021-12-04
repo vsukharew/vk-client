@@ -3,12 +3,7 @@ package vsukharew.vkclient.common.presentation.loadstate
 import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
-
-sealed class UIState<out T> {
-    object LoadingProgress : UIState<Nothing>()
-    data class Success<T>(val data: T) : UIState<T>()
-    data class Error(val error: SingleLiveEvent<Result.Error>) : UIState<Nothing>()
-}
+import vsukharew.vkclient.screenname.model.ScreenNameAvailability
 
 sealed class ProfileInfoUiState {
     data class SwipeRefreshState(val isEnabled: Boolean, val isRefreshing: Boolean)
@@ -76,4 +71,10 @@ sealed class ProfileInfoUiState {
             isRefreshing = false
         )
     }
+}
+
+sealed class ShortNameAvailabilityState {
+    object LoadingProgress : ShortNameAvailabilityState()
+    data class Success(val data: ScreenNameAvailability) : ShortNameAvailabilityState()
+    data class Error(val error: SingleLiveEvent<Result.Error>) : ShortNameAvailabilityState()
 }

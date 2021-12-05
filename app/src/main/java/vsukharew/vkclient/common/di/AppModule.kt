@@ -8,6 +8,8 @@ import vsukharew.vkclient.auth.data.AuthRepository
 import vsukharew.vkclient.auth.data.AuthStorage
 import vsukharew.vkclient.auth.data.storage.SharedPrefsAuthStorage
 import vsukharew.vkclient.auth.data.storage.FileAuthStorage
+import vsukharew.vkclient.common.DefaultDispatchersProvider
+import vsukharew.vkclient.common.DispatchersProvider
 import vsukharew.vkclient.common.domain.interactor.SessionInteractor
 import vsukharew.vkclient.common.domain.interactor.SessionInteractorImpl
 import vsukharew.vkclient.common.presentation.ErrorHandler
@@ -16,6 +18,7 @@ val appModule = module {
     singleBy<AuthStorage, SharedPrefsAuthStorage>(named("prefs"))
     singleBy<AuthStorage, FileAuthStorage>(named("file"))
     singleBy<SessionInteractor, SessionInteractorImpl>()
+    singleBy<DispatchersProvider, DefaultDispatchersProvider>()
     single<AuthRepo> {
         AuthRepository(
             sharedPrefsStorage = get(named("prefs")),

@@ -18,7 +18,7 @@ interface ImageApi {
 
     @Multipart
     @POST
-    suspend fun uploadImage(@Url url: String, @Part image: MultipartBody.Part): UploadedImageWrapper
+    suspend fun uploadImage(@Url url: String, @Part image: MultipartBody.Part): Either<UploadedImageWrapper, AppError>
 
     @POST(SAVE_IMAGE_WALL)
     suspend fun saveImage(

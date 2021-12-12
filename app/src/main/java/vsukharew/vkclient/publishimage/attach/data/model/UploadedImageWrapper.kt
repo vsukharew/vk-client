@@ -10,13 +10,4 @@ data class UploadedImageWrapper(
     @SerializedName("aid") val aid : Int?,
     @SerializedName("hash") val hash : String?,
     @SerializedName("error") val errorResponse: ErrorResponse?
-) {
-    var domainError: AppError? = null
-    var responseCode: Int? = null
-
-    fun isDataReceived(): Boolean = server != null && photo != null && hash != null
-
-    companion object {
-        val EMPTY = UploadedImageWrapper(null, null, null, null, null)
-    }
-}
+)

@@ -3,8 +3,9 @@ package vsukharew.vkclient.publishimage.caption.presentation
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
-import vsukharew.vkclient.common.domain.model.Either.Error.DomainError.LocationNotReceivedError
+import vsukharew.vkclient.common.domain.model.AppError.DomainError.LocationNotReceivedError
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.location.LocationProvider
 import vsukharew.vkclient.common.presentation.BaseViewModel
@@ -88,7 +89,17 @@ class CaptionViewModel(
                 }
                 is CaptionUIAction.FailedToRequestLocation -> {
                     locationNotReceivedEvent.value = Unit
-                    emit(CaptionUIState.Error(SingleLiveEvent(LocationNotReceivedError(action.e))))
+                    emit(
+                        CaptionUIState.Error(
+                            SingleLiveEvent(
+                                Either.Right(
+                                    LocationNotReceivedError(
+                                        action.e
+                                    )
+                                )
+                            )
+                        )
+                    )
                 }
                 is CaptionUIAction.Publish -> {
                     emit(CaptionUIState.LoadingProgress)
@@ -100,17 +111,22 @@ class CaptionViewModel(
                                 action.longitude
                             )
                         }) {
-                        is Either.Success -> {
+                        is Either.Left -> {
                             emit(CaptionUIState.Success(result.data))
                             flowStage.onForwardClick()
                         }
-                        Either.Error.DomainError.NoPhotosToPostError -> {
-                            askToReloadPhotosEvent.value = Unit
-                        }
-                        is Either.Error -> {
-                            val event = SingleLiveEvent(result)
-                            emit(CaptionUIState.Error(event))
-                            errorLiveData.value = event
+                        is Either.Right -> {
+                            when (result.data) {
+                                AppError.DomainError.NoPhotosToPostError -> {
+                                    askToReloadPhotosEvent.value = Unit
+                                }
+                                else -> {
+                                    val event = SingleLiveEvent(result)
+
+                                    emit(CaptionUIState.Error(event))
+                                    errorLiveData.value = event
+                                }
+                            }
                         }
                     }
                 }

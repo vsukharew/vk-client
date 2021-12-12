@@ -3,9 +3,9 @@ package vsukharew.vkclient.publishimage.attach.data
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.AttachmentType
 import vsukharew.vkclient.common.domain.model.Either
-import vsukharew.vkclient.common.domain.model.Either.Error.DomainError.NoPhotosToPostError
 import vsukharew.vkclient.common.extension.ifSuccess
 import vsukharew.vkclient.common.extension.map
 import vsukharew.vkclient.common.extension.switchMap
@@ -34,7 +34,7 @@ class ImageRepository(
         image: Image,
         isRetryLoading: Boolean,
         onProgressUpdated: (Double) -> Unit
-    ): Either<SavedWallImage> {
+    ): Either<SavedWallImage, AppError> {
         if (!isRetryLoading) rawImages.add(image)
         return imageApi.getImageWallUploadAddress()
             .switchMap { uploadImageInternal(it.response!!.uploadUrl, image, onProgressUpdated) }
@@ -70,9 +70,9 @@ class ImageRepository(
         message: String,
         latitude: Double?,
         longitude: Double?
-    ): Either<Int> {
+    ): Either<Int, AppError> {
         if (savedImages.isEmpty()) {
-            return NoPhotosToPostError
+            return Either.Right(AppError.DomainError.NoPhotosToPostError)
         }
         val attachments = savedImages.joinToString {
             "${AttachmentType.PHOTO.name.toLowerCase(Locale.getDefault())}${it.ownerId}_${it.id}>"
@@ -89,7 +89,7 @@ class ImageRepository(
         url: String,
         image: Image,
         onProgressUpdated: (Double) -> Unit
-    ): Either<SavedWallImageResponse> {
+    ): Either<SavedWallImageResponse, AppError> {
         val streamResult = runCatching {
             contentResolver.openInputStream(image.uri)
                 .use { it!!.readBytes() }
@@ -115,11 +115,11 @@ class ImageRepository(
                 with(imageApi.uploadImage(url, multipartBody)) {
                     when {
                         isDataReceived() -> { saveImage(photo!!, server!!, hash!!) }
-                        else -> domainError!!
+                        else -> Either.Right(domainError!!)
                     }
                 }
             }
-            else -> Either.Error.UnknownError(streamResult.exceptionOrNull()!!)
+            else -> Either.Right(AppError.UnknownError(streamResult.exceptionOrNull()!!))
         }
     }
 
@@ -127,7 +127,7 @@ class ImageRepository(
         photo: String,
         server: Int,
         hash: String
-    ): Either<SavedWallImageResponse> {
+    ): Either<SavedWallImageResponse, AppError> {
         return imageApi.saveImage(photo, server, hash).map { it.response!!.first() }
     }
 }

@@ -4,7 +4,7 @@ import androidx.lifecycle.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import vsukharew.vkclient.common.domain.model.Either
-import vsukharew.vkclient.common.domain.model.Either.Error.DomainError
+import vsukharew.vkclient.common.domain.model.AppError.DomainError
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseViewModel
 import vsukharew.vkclient.publishimage.attach.domain.infrastructure.DomainContentResolver
@@ -89,7 +89,7 @@ class AttachImageViewModel(
 
     fun removeImage(item: Pair<UIImage.RealImage, ImageUIState>) {
         val (image, state) = item
-        val isDomainError = state is ImageUIState.Error && state.error.peekContent is DomainError
+        val isDomainError = state is ImageUIState.Error && state.error.peekContent.data is DomainError
         if (!isDomainError) {
             imageInteractor.removeUploadedImage(image.image)
         }
@@ -132,10 +132,10 @@ class AttachImageViewModel(
                             }
                         }
                     }) {
-                    is Either.Success -> {
+                    is Either.Left -> {
                         ImageEvent.SuccessfulLoading(image)
                     }
-                    is Either.Error -> {
+                    is Either.Right -> {
                         ImageEvent.ErrorLoading(image, uploadResult)
                     }
                 }

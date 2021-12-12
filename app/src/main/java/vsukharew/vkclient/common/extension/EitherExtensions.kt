@@ -2,27 +2,27 @@ package vsukharew.vkclient.common.extension
 
 import vsukharew.vkclient.common.domain.model.Either
 
-fun <T, R> Either<T>.map(
-    dataMapper: ((T) -> R),
-): Either<R> {
+fun <L, R, V> Either<L, R>.map(
+    dataMapper: ((L) -> V),
+): Either<V, R> {
     return when (this) {
-        is Either.Success -> Either.Success(dataMapper.invoke(data))
-        is Either.Error -> this
+        is Either.Left -> Either.Left(dataMapper.invoke(data))
+        is Either.Right -> this
     }
 }
 
-suspend fun <T, R> Either<T>.switchMap(
-    dataMapper: suspend ((T) -> Either<R>),
-): Either<R> {
+suspend fun <L, R, V> Either<L, R>.switchMap(
+    dataMapper: suspend ((L) -> Either<V, R>),
+): Either<V, R> {
     return when (this) {
-        is Either.Success -> dataMapper.invoke(data)
-        is Either.Error -> this
+        is Either.Left -> dataMapper.invoke(data)
+        is Either.Right -> this
     }
 }
 
-fun <T> Either<T>.ifSuccess(block: (T) -> Unit): Either<T> {
+fun <L, R> Either<L, R>.ifSuccess(block: (L) -> Unit): Either<L, R> {
     return when (this) {
-        is Either.Success -> this.also { block.invoke(data) }
+        is Either.Left -> this.also { block.invoke(data) }
         else -> this
     }
 }

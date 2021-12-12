@@ -51,11 +51,11 @@ abstract class BaseFragment<V : ViewBinding>(
         }
     }
 
-    protected fun handleError(error: Either.Error) {
+    protected fun <T> handleError(error: Either.Right<T>) {
         errorHandler.handleError(this, error)
     }
 
-    private fun observeError(event: SingleLiveEvent<Either.Error>) {
+    private fun <T> observeError(event: SingleLiveEvent<Either.Right<T>>) {
         event.getContentIfNotHandled()?.let(::handleError)
     }
 }

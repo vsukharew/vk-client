@@ -2,6 +2,7 @@ package vsukharew.vkclient.publishimage.attach.data.network
 
 import okhttp3.MultipartBody
 import retrofit2.http.*
+import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.network.ServerUrls.Image.SAVE_IMAGE_WALL
 import vsukharew.vkclient.common.network.ServerUrls.Image.UPLOAD_ADDRESS_WALL
@@ -13,7 +14,7 @@ import vsukharew.vkclient.publishimage.attach.data.model.WallUploadAddressRespon
 interface ImageApi {
 
     @POST(UPLOAD_ADDRESS_WALL)
-    suspend fun getImageWallUploadAddress(): Either<ResponseWrapper<WallUploadAddressResponse>>
+    suspend fun getImageWallUploadAddress(): Either<ResponseWrapper<WallUploadAddressResponse>, AppError>
 
     @Multipart
     @POST
@@ -24,5 +25,5 @@ interface ImageApi {
         @Query("photo") photo: String,
         @Query("server") server: Int,
         @Query("hash") hash: String,
-    ): Either<ResponseWrapper<List<SavedWallImageResponse>>>
+    ): Either<ResponseWrapper<List<SavedWallImageResponse>>, AppError>
 }

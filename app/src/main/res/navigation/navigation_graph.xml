@@ -15,10 +15,6 @@
             app:destination="@id/features_fragment"
             app:popUpTo="@id/splashFragment"
             app:popUpToInclusive="true" />
-        <deepLink
-            android:id="@+id/deepLink"
-            app:action="ACTION_VIEW"
-            app:uri="https://oauth.vk.com/blank.html.*" />
     </fragment>
 
     <fragment

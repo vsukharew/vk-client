@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 import java.net.HttpURLConnection
 
 /**
- * This wrapper needs to combine the data and error because the server always sends
+ * This wrapper is needed to combine the data and error because the server always sends
  * [HttpURLConnection.HTTP_OK] but different JSONs
  */
 data class ResponseWrapper<T>(

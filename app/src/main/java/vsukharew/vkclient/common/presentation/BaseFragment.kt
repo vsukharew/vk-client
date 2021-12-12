@@ -17,6 +17,7 @@ import vsukharew.vkclient.R
 import vsukharew.vkclient.common.di.ScopeCreator
 import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
+import vsukharew.vkclient.common.navigation.DeepLinkEndPoint
 
 abstract class BaseFragment<V : ViewBinding>(
     @LayoutRes private val layoutResId: Int
@@ -51,6 +52,10 @@ abstract class BaseFragment<V : ViewBinding>(
         if (requireActivity().isFinishing) {
             errorHandler.cancelCoroutineScope()
         }
+    }
+
+    protected fun addDeepLinkPoint(point: DeepLinkEndPoint) {
+        (activity as? BaseActivity)?.deepLinkEndPoints?.add(point)
     }
 
     protected fun handleError(error: Result.Error) {

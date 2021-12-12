@@ -2,6 +2,7 @@ package vsukharew.vkclient.auth.presentation
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.ActivityResult
@@ -16,6 +17,7 @@ import vsukharew.vkclient.auth.domain.model.AuthType
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.di.ScopeCreator
 import vsukharew.vkclient.common.extension.toast
+import vsukharew.vkclient.common.navigation.DeepLinkEndPoint
 import vsukharew.vkclient.common.network.ServerUrls
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.databinding.FragmentAuthBinding
@@ -38,10 +40,9 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
         super.onViewCreated(view, savedInstanceState)
         setListeners()
         observeData()
-        activity?.intent?.let(::handleBrowserRedirect)
     }
 
-    private fun handleBrowserRedirect(intent: Intent) {
+    fun handleBrowserRedirect(intent: Intent) {
         intent.dataString
             ?.takeIf { it.startsWith(ServerUrls.Auth.REDIRECT_URL) }
             ?.split((Regex("[#&]"))) // break url into the host and query parts

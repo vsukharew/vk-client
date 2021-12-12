@@ -1,6 +1,7 @@
 package vsukharew.vkclient.features.presentation
 
 import androidx.lifecycle.*
+import com.github.terrakok.cicerone.Router
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -9,6 +10,7 @@ import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.auth.domain.interactor.AuthInteractor
 import vsukharew.vkclient.auth.domain.model.AuthType.APP
 import vsukharew.vkclient.auth.domain.model.AuthType.BROWSER
+import vsukharew.vkclient.auth.navigation.AuthScreen
 import vsukharew.vkclient.common.domain.interactor.SessionInteractor
 import vsukharew.vkclient.common.domain.model.Result
 import vsukharew.vkclient.common.extension.EMPTY
@@ -25,6 +27,7 @@ class FeaturesViewModel(
     private val authInteractor: AuthInteractor,
     private val sessionInteractor: SessionInteractor,
     private val savedState: SavedStateHandle,
+    private val router: Router,
     imageInteractor: ImageInteractor
 ) : BaseViewModel() {
 
@@ -65,7 +68,7 @@ class FeaturesViewModel(
     fun onSignOutDialogClosed() {
         viewModelScope.launch {
             sessionInteractor.clearSessionData()
-            signOutDialogClosedEvent.value = SingleLiveEvent(Unit)
+            router.newRootScreen(AuthScreen())
         }
     }
 

@@ -10,6 +10,7 @@ import vsukharew.vkclient.auth.di.authDataModule
 import vsukharew.vkclient.auth.di.authScreenModule
 import vsukharew.vkclient.common.di.appModule
 import vsukharew.vkclient.common.network.networkModule
+import vsukharew.vkclient.features.di.featuresFlowModule
 import vsukharew.vkclient.features.di.featuresScreenModule
 import vsukharew.vkclient.publishimage.attach.di.attachImageScreenModule
 import vsukharew.vkclient.publishimage.attach.di.chooseImageSourceDialogModule
@@ -31,6 +32,7 @@ class VkClientApp : Application() {
                     authScreenModule,
                     splashModule,
                     accountDataModule,
+                    featuresFlowModule,
                     featuresScreenModule,
                     publishImageFlowModule,
                     attachImageScreenModule,

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.CallSuper
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
@@ -30,7 +31,7 @@ abstract class BaseFragment<V : ViewBinding>(
 
     open val navController by lazy {
         (requireActivity().supportFragmentManager
-            .findFragmentById(R.id.fragment_container_view) as NavHostFragment).navController
+            .findFragmentById(R.id.fragment_container) as NavHostFragment).navController
     }
 
     override fun onCreateView(
@@ -39,6 +40,7 @@ abstract class BaseFragment<V : ViewBinding>(
         savedInstanceState: Bundle?
     ): View = inflater.inflate(layoutResId, container, false)
 
+    @CallSuper
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.errorLiveData.observe(viewLifecycleOwner, ::observeError)

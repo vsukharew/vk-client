@@ -2,6 +2,7 @@ package vsukharew.vkclient.splash.presentation
 
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.CallSuper
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
@@ -15,6 +16,7 @@ class SplashFragment : BaseFragment<FragmentSplashBinding>(R.layout.fragment_spl
     override val scopeCreator: ScopeCreator = SplashScopeCreator
     override val binding by fragmentViewBinding(FragmentSplashBinding::bind)
 
+    @CallSuper
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.openNextScreen()

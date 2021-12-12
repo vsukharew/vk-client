@@ -112,11 +112,8 @@ class ImageRepository(
                 }
                 val multipartBody =
                     MultipartBody.Part.createFormData("photo", fileName, requestBody)
-                with(imageApi.uploadImage(url, multipartBody)) {
-                    when {
-                        isDataReceived() -> { saveImage(photo!!, server!!, hash!!) }
-                        else -> domainError!!
-                    }
+                imageApi.uploadImage(url, multipartBody).switchMap {
+                    saveImage(it.photo!!, it.server!!, it.hash!!)
                 }
             }
             else -> Result.Error.UnknownError(streamResult.exceptionOrNull()!!)

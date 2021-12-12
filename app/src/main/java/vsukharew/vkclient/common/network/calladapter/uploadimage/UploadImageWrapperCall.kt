@@ -13,15 +13,15 @@ import java.net.HttpURLConnection.*
 
 class UploadImageWrapperCall(
     private val delegate: Call<UploadedImageWrapper>
-) : Call<UploadedImageWrapper> {
+) : Call<Result<UploadedImageWrapper>> {
 
-    override fun clone(): Call<UploadedImageWrapper> = UploadImageWrapperCall(delegate.clone())
+    override fun clone(): Call<Result<UploadedImageWrapper>> = UploadImageWrapperCall(delegate.clone())
 
-    override fun execute(): Response<UploadedImageWrapper> {
+    override fun execute(): Response<Result<UploadedImageWrapper>> {
         TODO("Not supported")
     }
 
-    override fun enqueue(callback: Callback<UploadedImageWrapper>) {
+    override fun enqueue(callback: Callback<Result<UploadedImageWrapper>>) {
         delegate.enqueue(ResponseConverter(this, callback))
     }
 
@@ -37,7 +37,7 @@ class UploadImageWrapperCall(
 
     private class ResponseConverter(
         private val resultCall: UploadImageWrapperCall,
-        private val callback: Callback<UploadedImageWrapper>
+        private val callback: Callback<Result<UploadedImageWrapper>>
     ) : Callback<UploadedImageWrapper> {
 
         override fun onResponse(
@@ -58,33 +58,30 @@ class UploadImageWrapperCall(
         }
 
         private fun handleSuccessfulResponse(
-            callback: Callback<UploadedImageWrapper>,
+            callback: Callback<Result<UploadedImageWrapper>>,
             wrapper: UploadedImageWrapper
         ) {
             callback.onResponse(
                 resultCall,
-                Response.success(wrapper)
+                Response.success(Result.Success(wrapper))
             )
         }
 
         private fun handleUnsuccessfulResponse(
-            callback: Callback<UploadedImageWrapper>,
+            callback: Callback<Result<UploadedImageWrapper>>,
             responseCode: Int,
             wrapper: UploadedImageWrapper
         ) {
-            wrapper.apply {
-                domainError = HttpErrorMapper.mapError(responseCode, wrapper.errorResponse)
-                this.responseCode = responseCode
-            }
-            callback.onResponse(resultCall, Response.success(wrapper))
+            val error = HttpErrorMapper.mapError(responseCode, wrapper.errorResponse)
+            callback.onResponse(resultCall, Response.success(error))
         }
 
-        private fun handleOnFailure(callback: Callback<UploadedImageWrapper>, e: Throwable) {
-            val wrapper = when (e) {
+        private fun handleOnFailure(callback: Callback<Result<UploadedImageWrapper>>, e: Throwable) {
+            val error = when (e) {
                 is IOException -> Result.Error.NetworkError(e)
                 else -> Result.Error.UnknownError(e)
-            }.let { error -> UploadedImageWrapper.EMPTY.also { it.domainError = error } }
-            callback.onResponse(resultCall, Response.success(wrapper))
+            }//.let { error -> UploadedImageWrapper.EMPTY.also { it.domainError = error } }
+            callback.onResponse(resultCall, Response.success(error))
         }
     }
 

@@ -5,23 +5,23 @@ import okio.Timeout
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import vsukharew.vkclient.common.domain.model.Result
-import vsukharew.vkclient.common.network.calladapter.utils.HttpErrorMapper
+import vsukharew.vkclient.common.domain.model.AppError
+import vsukharew.vkclient.common.domain.model.Either
+import vsukharew.vkclient.common.network.calladapter.utils.NetworkErrorMapper
 import vsukharew.vkclient.publishimage.attach.data.model.UploadedImageWrapper
 import java.io.IOException
-import java.net.HttpURLConnection.*
 
 class UploadImageWrapperCall(
     private val delegate: Call<UploadedImageWrapper>
-) : Call<Result<UploadedImageWrapper>> {
+) : Call<Either<UploadedImageWrapper, AppError>> {
 
-    override fun clone(): Call<Result<UploadedImageWrapper>> = UploadImageWrapperCall(delegate.clone())
+    override fun clone(): Call<Either<UploadedImageWrapper, AppError>> = UploadImageWrapperCall(delegate.clone())
 
-    override fun execute(): Response<Result<UploadedImageWrapper>> {
+    override fun execute(): Response<Either<UploadedImageWrapper, AppError>> {
         TODO("Not supported")
     }
 
-    override fun enqueue(callback: Callback<Result<UploadedImageWrapper>>) {
+    override fun enqueue(callback: Callback<Either<UploadedImageWrapper, AppError>>) {
         delegate.enqueue(ResponseConverter(this, callback))
     }
 
@@ -37,7 +37,7 @@ class UploadImageWrapperCall(
 
     private class ResponseConverter(
         private val resultCall: UploadImageWrapperCall,
-        private val callback: Callback<Result<UploadedImageWrapper>>
+        private val callback: Callback<Either<UploadedImageWrapper, AppError>>
     ) : Callback<UploadedImageWrapper> {
 
         override fun onResponse(
@@ -58,36 +58,30 @@ class UploadImageWrapperCall(
         }
 
         private fun handleSuccessfulResponse(
-            callback: Callback<Result<UploadedImageWrapper>>,
+            callback: Callback<Either<UploadedImageWrapper, AppError>>,
             wrapper: UploadedImageWrapper
         ) {
             callback.onResponse(
                 resultCall,
-                Response.success(Result.Success(wrapper))
+                Response.success(Either.Left(wrapper))
             )
         }
 
         private fun handleUnsuccessfulResponse(
-            callback: Callback<Result<UploadedImageWrapper>>,
+            callback: Callback<Either<UploadedImageWrapper, AppError>>,
             responseCode: Int,
             wrapper: UploadedImageWrapper
         ) {
-            val error = HttpErrorMapper.mapError(responseCode, wrapper.errorResponse)
-            callback.onResponse(resultCall, Response.success(error))
+            val error = NetworkErrorMapper.mapError(responseCode, wrapper.errorResponse)
+            callback.onResponse(resultCall, Response.success(Either.Right(error)))
         }
 
-        private fun handleOnFailure(callback: Callback<Result<UploadedImageWrapper>>, e: Throwable) {
+        private fun handleOnFailure(callback: Callback<Either<UploadedImageWrapper, AppError>>, e: Throwable) {
             val error = when (e) {
-                is IOException -> Result.Error.NetworkError(e)
-                else -> Result.Error.UnknownError(e)
-            }//.let { error -> UploadedImageWrapper.EMPTY.also { it.domainError = error } }
-            callback.onResponse(resultCall, Response.success(error))
+                is IOException -> AppError.NetworkError(e)
+                else -> AppError.UnknownError(e)
+            }
+            callback.onResponse(resultCall, Response.success(Either.Right(error)))
         }
-    }
-
-    private companion object {
-        private val successfulResponseCodesRange = HTTP_OK until HTTP_MULT_CHOICE
-        private val clientErrorCodesRange = HTTP_BAD_REQUEST until HTTP_INTERNAL_ERROR
-        private val serverErrorCodesRange = HTTP_INTERNAL_ERROR..526
     }
 }

@@ -3,7 +3,8 @@ package vsukharew.vkclient.common.network.calladapter.responsewrapper
 import retrofit2.Call
 import retrofit2.CallAdapter
 import vsukharew.vkclient.common.network.response.ResponseWrapper
-import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.domain.model.Either
+import vsukharew.vkclient.common.domain.model.AppError
 import java.lang.reflect.Type
 
 /**
@@ -12,15 +13,15 @@ import java.lang.reflect.Type
  *  Result<ResponseWrapper<T>>
  * ```
  *
- * @see [Result]
+ * @see [Either]
  * @see [ResponseWrapper]
  */
-class ResultResponseWrapperAdapter<T>(
+class ResultResponseWrapperAdapter<S>(
     private val type: Type
-) : CallAdapter<ResponseWrapper<T>, Call<Result<ResponseWrapper<T>>>> {
+) : CallAdapter<ResponseWrapper<S>, Call<Either<ResponseWrapper<S>, AppError>>> {
 
     override fun responseType(): Type = type
 
-    override fun adapt(call: Call<ResponseWrapper<T>>): Call<Result<ResponseWrapper<T>>> =
+    override fun adapt(call: Call<ResponseWrapper<S>>): Call<Either<ResponseWrapper<S>, AppError>> =
         ResultResponseWrapperCall(call)
 }

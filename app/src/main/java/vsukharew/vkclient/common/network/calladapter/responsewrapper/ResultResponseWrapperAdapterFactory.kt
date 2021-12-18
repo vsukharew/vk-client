@@ -28,8 +28,6 @@ class ResultResponseWrapperAdapterFactory : CallAdapter.Factory() {
         }
 
         check(innerResponseType is ParameterizedType) { "response type must be parameterized" }
-        // type of the data that is inside response type
-        val dataType = getParameterUpperBound(0, innerResponseType)
-        return ResultResponseWrapperAdapter<Any>(dataType)
+        return ResultResponseWrapperAdapter<ResponseWrapper<Any>>(innerResponseType)
     }
 }

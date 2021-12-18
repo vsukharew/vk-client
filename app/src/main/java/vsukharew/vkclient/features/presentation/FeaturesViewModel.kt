@@ -10,7 +10,8 @@ import vsukharew.vkclient.auth.domain.model.AuthType.APP
 import vsukharew.vkclient.auth.domain.model.AuthType.BROWSER
 import vsukharew.vkclient.common.DispatchersProvider
 import vsukharew.vkclient.common.domain.interactor.SessionInteractor
-import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.domain.model.AppError
+import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.extension.EMPTY
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseViewModel
@@ -127,19 +128,19 @@ class FeaturesViewModel(
 
     private suspend fun handleProfileInfoResult(
         scope: LiveDataScope<ProfileInfoUiState>,
-        info: Result<ProfileInfo>,
+        info: Either<ProfileInfo, AppError>,
         action: FeaturesScreenAction
     ) {
         withContext(dispatchers.main) {
             scope.emit(
                 when (info) {
-                    is Result.Success -> {
+                    is Either.Left -> {
                         currentShortName = info.data.screenName.also { savedState[KEY_SHORT_NAME] = it }
                         val data = info.data.copy(screenName = currentShortName)
                         savedState[KEY_PROFILE_INFO] = data
                         ProfileInfoUiState.Success(data)
                     }
-                    is Result.Error -> {
+                    is Either.Right -> {
                         val errorEvent = SingleLiveEvent(info)
                         errorLiveData.value = errorEvent
                         when (action) {
@@ -176,14 +177,14 @@ class FeaturesViewModel(
             withContext(dispatchers.main) {
                 emit(
                     when (doesExist) {
-                        is Result.Success -> {
+                        is Either.Left -> {
                             val availability = when {
                                 doesExist.data -> UNAVAILABLE
                                 else -> AVAILABLE
                             }
                             ShortNameAvailabilityState.Success(availability)
                         }
-                        is Result.Error -> {
+                        is Either.Right -> {
                             val error = SingleLiveEvent(doesExist)
                             ShortNameAvailabilityState.Error(error)
                         }

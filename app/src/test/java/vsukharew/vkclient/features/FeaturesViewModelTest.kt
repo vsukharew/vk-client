@@ -11,7 +11,7 @@ import vsukharew.vkclient.account.domain.interactor.AccountInteractor
 import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.auth.domain.interactor.AuthInteractor
 import vsukharew.vkclient.common.domain.interactor.SessionInteractor
-import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.extension.findAndCast
 import vsukharew.vkclient.common.presentation.loadstate.ProfileInfoUiState
 import vsukharew.vkclient.features.presentation.FeaturesViewModel
@@ -31,7 +31,7 @@ class FeaturesViewModelTest() {
         stub {
             onBlocking { getProfileInfo() }
                 .doReturn(
-                    Result.Success(
+                    Either.Left(
                         ProfileInfo("Vadim", "Sukharev", "vsukharew")
                     )
                 )
@@ -112,15 +112,15 @@ class FeaturesViewModelTest() {
         val observer = mock<Observer<ProfileInfoUiState>>()
         viewModel.profileUiState.observeForTesting(observer) {
             verify(observer, times(2)).onChanged(captor.capture())
-            val state =
-                captor.allValues.findAndCast<ProfileInfoUiState, ProfileInfoUiState.Success>()
-            assert(state.isPublishImageVisible)
-            assert(!state.isRetryVisible)
-            assert(state.isShortNameHintVisible)
-            assert(state.isSignOutVisible)
-            assert(state.swipeRefreshState.isEnabled)
-            assert(!state.swipeRefreshState.isRefreshing)
-            assert(state.data == ProfileInfo("Vadim", "Sukharev", "vsukharew"))
+            captor.allValues.findAndCast<ProfileInfoUiState, ProfileInfoUiState.Success>()?.apply {
+                assert(isPublishImageVisible)
+                assert(!isRetryVisible)
+                assert(isShortNameHintVisible)
+                assert(isSignOutVisible)
+                assert(swipeRefreshState.isEnabled)
+                assert(!swipeRefreshState.isRefreshing)
+                assert(data == ProfileInfo("Vadim", "Sukharev", "vsukharew"))
+            }
         }
     }
 }

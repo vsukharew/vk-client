@@ -1,7 +1,8 @@
 package vsukharew.vkclient.common.presentation.loadstate
 
 import vsukharew.vkclient.account.domain.model.ProfileInfo
-import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.domain.model.AppError
+import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.screenname.model.ScreenNameAvailability
 
@@ -47,7 +48,7 @@ sealed class ProfileInfoUiState {
         )
     }
 
-    data class Error(val error: SingleLiveEvent<Result.Error>) : ProfileInfoUiState() {
+    data class Error(val error: SingleLiveEvent<Either.Right<AppError>>) : ProfileInfoUiState() {
         override val isShortNameHintVisible: Boolean = false
         override val isPublishImageVisible: Boolean = false
         override val isSignOutVisible: Boolean = false
@@ -60,7 +61,7 @@ sealed class ProfileInfoUiState {
 
     data class SwipeRefreshError(
         val currentData: ProfileInfo,
-        val error: SingleLiveEvent<Result.Error>
+        val error: SingleLiveEvent<Either.Right<AppError>>
     ) : ProfileInfoUiState() {
         override val isShortNameHintVisible: Boolean = true
         override val isPublishImageVisible: Boolean = true
@@ -76,5 +77,5 @@ sealed class ProfileInfoUiState {
 sealed class ShortNameAvailabilityState {
     object LoadingProgress : ShortNameAvailabilityState()
     data class Success(val data: ScreenNameAvailability) : ShortNameAvailabilityState()
-    data class Error(val error: SingleLiveEvent<Result.Error>) : ShortNameAvailabilityState()
+    data class Error(val error: SingleLiveEvent<Either.Right<AppError>>) : ShortNameAvailabilityState()
 }

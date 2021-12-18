@@ -3,11 +3,12 @@ package vsukharew.vkclient.common.network.calladapter.responsewrapper
 import retrofit2.Call
 import retrofit2.CallAdapter
 import retrofit2.Retrofit
-import vsukharew.vkclient.common.domain.model.Result
+import vsukharew.vkclient.common.network.response.ResponseWrapper
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
 class ResultResponseWrapperAdapterFactory : CallAdapter.Factory() {
+    private val lazyMessage = { "return type must be parameterized" }
 
     override fun get(
         returnType: Type,
@@ -18,19 +19,15 @@ class ResultResponseWrapperAdapterFactory : CallAdapter.Factory() {
             return null
         }
 
-        check(returnType is ParameterizedType) {
-            "return type must be parameterized"
-        }
-
-        val responseType = getParameterUpperBound(0, returnType)
-        if (getRawType(responseType) != Result::class.java) {
+        check(returnType is ParameterizedType, lazyMessage)
+        val outerResponseType = getParameterUpperBound(0, returnType)
+        check(outerResponseType is ParameterizedType, lazyMessage)
+        val innerResponseType = getParameterUpperBound(0, outerResponseType)
+        if (getRawType(innerResponseType) != ResponseWrapper::class.java) {
             return null
         }
 
-        check(responseType is ParameterizedType) { "response type must be parameterized" }
-
-        // type of the data that is inside response type
-        val dataType = getParameterUpperBound(0, responseType)
-        return ResultResponseWrapperAdapter<Any>(dataType)
+        check(innerResponseType is ParameterizedType) { "response type must be parameterized" }
+        return ResultResponseWrapperAdapter<ResponseWrapper<Any>>(innerResponseType)
     }
 }

@@ -1,5 +1,6 @@
 package vsukharew.vkclient.publishimage.flow.di
 
+import androidx.navigation.NavController
 import org.koin.androidx.experimental.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -16,10 +17,11 @@ import vsukharew.vkclient.publishimage.attach.domain.infrastructure.ContentResol
 import vsukharew.vkclient.publishimage.attach.domain.infrastructure.DomainContentResolver
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractorImpl
+import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog
+import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.ImageSourceListener
 import vsukharew.vkclient.publishimage.flow.PublishImageFragment
 import vsukharew.vkclient.publishimage.flow.PublishImageViewModel
 import vsukharew.vkclient.publishimage.navigation.PublishImageCoordinator
-import vsukharew.vkclient.publishimage.navigation.PublishImageNavigator
 
 private fun provideImageApi(retrofit: Retrofit): ImageApi {
     return retrofit.create(ImageApi::class.java)
@@ -41,8 +43,9 @@ val publishImageFlowModule = module {
     }
 
     scope<PublishImageFragment> {
-        scoped { PublishImageNavigator() }
-        scoped { PublishImageCoordinator(get()) }
+        scoped { (rootNavController: NavController, flowNavController: NavController) ->
+            PublishImageCoordinator(rootNavController, flowNavController)
+        }
         viewModel<PublishImageViewModel>()
     }
 }

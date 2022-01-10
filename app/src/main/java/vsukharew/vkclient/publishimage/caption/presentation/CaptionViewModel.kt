@@ -16,8 +16,7 @@ import vsukharew.vkclient.publishimage.navigation.PublishImageFlowStage
 
 class CaptionViewModel(
     private val imageInteractor: ImageInteractor,
-    private val locationProvider: LocationProvider,
-    private val flowStage: PublishImageFlowStage
+    private val locationProvider: LocationProvider
 ) : BaseViewModel() {
 
     private val captionLiveData = MutableLiveData<String>()
@@ -28,6 +27,9 @@ class CaptionViewModel(
     val requestLocationPermissionEvent = MutableLiveData<SingleLiveEvent<Unit>>()
     val locationNotReceivedEvent = MutableLiveData<Unit>()
     val askToReloadPhotosEvent = MutableLiveData<Unit>()
+    val navigationEvent = MutableLiveData<SingleLiveEvent<Unit>>()
+
+    var flowStage: PublishImageFlowStage? = null
 
     init {
         restorePossiblePhotosLoss()
@@ -122,7 +124,6 @@ class CaptionViewModel(
                                 }
                                 else -> {
                                     val event = SingleLiveEvent(result)
-
                                     emit(CaptionUIState.Error(event))
                                     errorLiveData.value = event
                                 }

@@ -11,9 +11,10 @@ import androidx.viewbinding.ViewBinding
 import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.android.inject
 import org.koin.android.scope.AndroidScopeComponent
+import org.koin.androidx.scope.fragmentScope
 import org.koin.core.scope.Scope
 import vsukharew.vkclient.R
-import vsukharew.vkclient.common.di.ScopeCreator
+import vsukharew.vkclient.common.di.ScopeManager
 import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 
@@ -21,16 +22,23 @@ abstract class BaseFragment<V : ViewBinding>(
     @LayoutRes private val layoutResId: Int
 ) : Fragment(), AndroidScopeComponent {
 
-    protected abstract val scopeCreator: ScopeCreator
+//    protected abstract val scopeCreator: ScopeCreator
+    private val scopeManager by lazy { ScopeManager(getKoin()) }
     protected abstract val binding: ViewBinding
     protected abstract val viewModel: BaseViewModel
-    override val scope: Scope by lazy { scopeCreator.getScope(this, getKoin()).value }
+    protected abstract val parentScopes: ScopeManager.() -> Array<Scope>
+    override val scope: Scope by fragmentScope()
 
     private val errorHandler: ErrorHandler by inject()
 
     open val navController by lazy {
         (requireActivity().supportFragmentManager
             .findFragmentById(R.id.fragment_container_view) as NavHostFragment).navController
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        scope.linkTo(*parentScopes.invoke(scopeManager))
     }
 
     override fun onCreateView(

@@ -9,6 +9,7 @@ import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.scope.ScopeHandlerViewModel
 import org.koin.androidx.scope.activityRetainedScope
 import org.koin.androidx.scope.createScope
+import org.koin.core.scope.Scope
 
 fun Fragment.toast(@StringRes text: Int) = Toast.makeText(requireContext(), text, Toast.LENGTH_SHORT).show()
 fun Fragment.toast(text: String) = Toast.makeText(requireContext(), text, Toast.LENGTH_SHORT).show()

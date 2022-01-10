@@ -9,16 +9,23 @@ import androidx.viewbinding.ViewBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.koin.android.ext.android.getKoin
 import org.koin.android.scope.AndroidScopeComponent
+import org.koin.androidx.scope.fragmentScope
 import org.koin.core.scope.Scope
-import vsukharew.vkclient.common.di.ScopeCreator
+import vsukharew.vkclient.common.di.ScopeManager
 
 abstract class BaseBottomSheetDialog : BottomSheetDialogFragment(), AndroidScopeComponent {
 
     @get:LayoutRes
     protected abstract val layoutResId: Int
     protected abstract val binding: ViewBinding
-    protected abstract val scopeCreator: ScopeCreator
-    override val scope: Scope by lazy { scopeCreator.getScope(this, getKoin()).value }
+    private val scopeManager by lazy { ScopeManager(getKoin()) }
+    protected abstract val parentScopes: ScopeManager.() -> Array<Scope>
+    override val scope: Scope by fragmentScope()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        scope.linkTo(*parentScopes.invoke(scopeManager))
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

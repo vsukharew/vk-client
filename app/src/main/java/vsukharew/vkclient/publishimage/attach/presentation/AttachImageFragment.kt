@@ -10,15 +10,15 @@ import androidx.recyclerview.widget.RecyclerView.Adapter.StateRestorationPolicy.
 import androidx.recyclerview.widget.SimpleItemAnimator
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.stateViewModel
+import org.koin.core.scope.Scope
 import vsukharev.anytypeadapter.adapter.AnyTypeAdapter
 import vsukharev.anytypeadapter.adapter.AnyTypeCollection
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
-import vsukharew.vkclient.common.di.ScopeCreator
+import vsukharew.vkclient.common.di.ScopeManager
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.databinding.FragmentAttachImageBinding
-import vsukharew.vkclient.publishimage.attach.di.AttachImageScopeCreator
 import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource
 import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource.CAMERA
 import vsukharew.vkclient.publishimage.attach.domain.model.ImageSource.GALLERY
@@ -33,11 +33,10 @@ class AttachImageFragment :
     BaseFragment<FragmentAttachImageBinding>(R.layout.fragment_attach_image) {
 
     private lateinit var uri: Uri
-    private val anyTypeAdapter =
-        AnyTypeAdapter().apply {
-            diffStrategy = AnyTypeAdapter.DiffStrategy.Queue
-            stateRestorationPolicy = PREVENT_WHEN_EMPTY
-        }
+    private val anyTypeAdapter = AnyTypeAdapter().apply {
+        diffStrategy = AnyTypeAdapter.DiffStrategy.Queue
+        stateRestorationPolicy = PREVENT_WHEN_EMPTY
+    }
     private val addNewImageDelegate = AddNewImageDelegate {
         viewModel.chooseImageSource()
     }
@@ -49,8 +48,8 @@ class AttachImageFragment :
     private lateinit var cameraResultLauncher: ActivityResultLauncher<Uri>
     private lateinit var galleryResultLauncher: ActivityResultLauncher<String>
 
-    override val scopeCreator: ScopeCreator by lazy {
-        AttachImageScopeCreator(requireParentFragment().requireParentFragment())
+    override val parentScopes: ScopeManager.() -> Array<Scope> = {
+        arrayOf((requireParentFragment().requireParentFragment() as BaseFragment<*>).scope)
     }
     override val viewModel: AttachImageViewModel by stateViewModel()
     override val binding by fragmentViewBinding(FragmentAttachImageBinding::bind)
@@ -61,6 +60,11 @@ class AttachImageFragment :
         initRecycler()
         setListeners()
         observeData()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.flowStage = null
     }
 
     private fun registerCallbacks() {

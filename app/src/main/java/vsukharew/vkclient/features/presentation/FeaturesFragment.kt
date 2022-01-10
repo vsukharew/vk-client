@@ -13,10 +13,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.stateViewModel
+import org.koin.core.parameter.parametersOf
+import org.koin.core.scope.Scope
 import vsukharew.vkclient.R
 import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
-import vsukharew.vkclient.common.di.ScopeCreator
+import vsukharew.vkclient.common.di.ScopeManager
 import vsukharew.vkclient.common.extension.EMPTY
 import vsukharew.vkclient.common.extension.snackBar
 import vsukharew.vkclient.common.extension.textChangesSkipFirst
@@ -24,24 +26,28 @@ import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.common.presentation.loadstate.UIState
 import vsukharew.vkclient.databinding.FragmentFeaturesBinding
-import vsukharew.vkclient.features.di.FeaturesScopeCreator
 import vsukharew.vkclient.features.navigation.FeaturesCoordinator
 import vsukharew.vkclient.screenname.model.ScreenNameAvailability
 import vsukharew.vkclient.screenname.model.ScreenNameAvailability.*
 
 @FlowPreview
 class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment_features) {
-    private val featuresCoordinator: FeaturesCoordinator by inject()
+    private val featuresCoordinator: FeaturesCoordinator by inject { parametersOf(navController) }
     private var signOutDialog: AlertDialog? = null
 
     override val viewModel: FeaturesViewModel by stateViewModel()
     override val binding by fragmentViewBinding(FragmentFeaturesBinding::bind)
-    override val scopeCreator: ScopeCreator = FeaturesScopeCreator
+    override val parentScopes: ScopeManager.() -> Array<Scope> = {
+        arrayOf(
+            createAuthDataScope(),
+            createAccountScope(),
+            createPublishingPostScope()
+        )
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setListeners()
-        setProperties()
         observeData()
         observeUiEvents()
     }
@@ -53,7 +59,6 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
 
     override fun onDestroy() {
         super.onDestroy()
-        nullifyProperties()
         signOutDialog?.dismiss()
     }
 
@@ -85,14 +90,6 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
             publishImage.setOnClickListener { featuresCoordinator.onPublishImageClick() }
             refreshLayout.setOnRefreshListener { viewModel.refreshProfileInfo() }
         }
-    }
-
-    private fun setProperties() {
-        featuresCoordinator.navController = navController
-    }
-
-    private fun nullifyProperties() {
-        featuresCoordinator.navController = null
     }
 
     private fun observeProfileUiState(state: UIState<ProfileInfo>) {

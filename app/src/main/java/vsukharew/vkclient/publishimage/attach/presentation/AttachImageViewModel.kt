@@ -20,10 +20,8 @@ import vsukharew.vkclient.publishimage.navigation.PublishImageFlowStage
 class AttachImageViewModel(
     private val imageInteractor: ImageInteractor,
     private val contentResolver: DomainContentResolver,
-    private val flowStage: PublishImageFlowStage,
     private val savedState: SavedStateHandle
 ) : BaseViewModel() {
-
     private val isNextButtonAvailableFlow = MutableStateFlow(false)
     private val imagesStates = mutableMapOf<UIImage, ImageUIState>()
     private val imageAction = savedState.get<List<String>>(KEY_IMAGES_URIS)?.let {
@@ -31,6 +29,8 @@ class AttachImageViewModel(
     } ?: MutableLiveData<ImageEvent>(ImageEvent.SuccessfulLoading(UIImage.AddNewImagePlaceholder))
     val imagesStatesLiveData = Transformations.switchMap(imageAction, ::refreshImagesState)
     val isNextButtonAvailable = MutableLiveData<Boolean>()
+
+    var flowStage: PublishImageFlowStage? = null
 
     init {
         isNextButtonAvailableFlow.debounce(500L)
@@ -89,7 +89,8 @@ class AttachImageViewModel(
 
     fun removeImage(item: Pair<UIImage.RealImage, ImageUIState>) {
         val (image, state) = item
-        val isDomainError = state is ImageUIState.Error && state.error.peekContent.data is DomainError
+        val isDomainError =
+            state is ImageUIState.Error && state.error.peekContent.data is DomainError
         if (!isDomainError) {
             imageInteractor.removeUploadedImage(image.image)
         }
@@ -102,7 +103,7 @@ class AttachImageViewModel(
     }
 
     fun goToNextStage() {
-        flowStage.onForwardClick()
+        flowStage?.onForwardClick()
     }
 
     private fun startLoadingInternal(

@@ -2,20 +2,24 @@ package vsukharew.vkclient.splash.presentation
 
 import androidx.navigation.NavController
 
-class SplashCoordinator(private val splashNavigator: SplashNavigator) {
-    var navController: NavController? = null
-        set(value) {
-            field = value
-            splashNavigator.navController = value
-        }
-
+class SplashCoordinator(private val navController: NavController) {
     fun openNextScreen(isAuthorized: Boolean) {
-        with(splashNavigator) {
-            if (isAuthorized) {
-                openFeaturesScreen()
-            } else {
-                openSignInScreen()
-            }
+        if (isAuthorized) {
+            openFeaturesScreen()
+        } else {
+            openSignInScreen()
         }
+    }
+
+    private fun openSignInScreen() {
+        navController.navigate(
+            SplashFragmentDirections.actionSplashFragmentToAuthFragment()
+        )
+    }
+
+    private fun openFeaturesScreen() {
+        navController.navigate(
+            SplashFragmentDirections.actionSplashFragmentToFeaturesGraph()
+        )
     }
 }

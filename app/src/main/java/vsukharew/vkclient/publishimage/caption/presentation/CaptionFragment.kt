@@ -12,16 +12,16 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.scope.Scope
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
-import vsukharew.vkclient.common.di.ScopeCreator
+import vsukharew.vkclient.common.di.ScopeManager
 import vsukharew.vkclient.common.extension.snackBarIndefinite
 import vsukharew.vkclient.common.extension.snackBarLong
 import vsukharew.vkclient.common.extension.systemSettings
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.databinding.FragmentCaptionBinding
-import vsukharew.vkclient.publishimage.caption.di.CaptionScopeCreator
 import vsukharew.vkclient.publishimage.caption.presentation.state.CaptionUIState
 import vsukharew.vkclient.publishimage.navigation.PublishImageCoordinator
 
@@ -35,8 +35,10 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
     private var locationNotReceivedDialog: AlertDialog? = null
 
     override val binding: FragmentCaptionBinding by fragmentViewBinding(FragmentCaptionBinding::bind)
-    override val scopeCreator: ScopeCreator by lazy {
-        CaptionScopeCreator(requireParentFragment().requireParentFragment())
+    override val parentScopes: ScopeManager.() -> Array<Scope> = {
+        arrayOf(
+            (requireParentFragment().requireParentFragment() as BaseFragment<*>).scope,
+        )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -91,7 +93,9 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
                 viewLifecycleOwner,
                 ::observeRequestLocationPermission
             )
-            locationNotReceivedEvent.observe(viewLifecycleOwner, { showLocationNotReceivedDialog() })
+            locationNotReceivedEvent.observe(
+                viewLifecycleOwner,
+                { showLocationNotReceivedDialog() })
             askToReloadPhotosEvent.observe(viewLifecycleOwner, { showReloadPhotosDialog() })
         }
     }
@@ -131,7 +135,8 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
         AlertDialog.Builder(requireContext())
             .setMessage(R.string.caption_fragment_failed_to_receive_location_text)
             .setNegativeButton(
-                R.string.caption_fragment_location_dialog_publish_without_location_text) { _, _ ->
+                R.string.caption_fragment_location_dialog_publish_without_location_text
+            ) { _, _ ->
                 viewModel.publishPost()
             }
             .setPositiveButton(R.string.retry_btn) { _, _ -> viewModel.requestLocationPermission() }
@@ -142,7 +147,7 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
     private fun showReloadPhotosDialog() {
         AlertDialog.Builder(requireContext())
             .setMessage(R.string.caption_fragment_get_back_to_previous_screen_text)
-            .setPositiveButton(R.string.ok_text) { dialog, _ ->  dialog.dismiss() }
+            .setPositiveButton(R.string.ok_text) { dialog, _ -> dialog.dismiss() }
             .create().also { reloadPhotosDialog = it }
             .show()
     }

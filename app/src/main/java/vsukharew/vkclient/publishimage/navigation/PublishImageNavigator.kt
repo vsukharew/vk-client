@@ -25,10 +25,4 @@ class PublishImageNavigator : BaseNavigator() {
     fun openImageSourceScreen() {
         flowNavController?.navigate(R.id.imageSourceBottomSheetDialog)
     }
-
-    fun onSourceChoose(source: ImageSource) {
-        flowNavController?.getBackStackEntry(R.id.attachImageFragment)
-            ?.savedStateHandle
-            ?.set(KEY_IMAGE_SOURCE, source)
-    }
 }

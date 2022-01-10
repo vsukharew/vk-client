@@ -12,9 +12,10 @@ val attachImageScreenModule = module {
             AttachImageViewModel(
                 get(),
                 get(),
-                (get() as PublishImageCoordinator).attachImageStage,
                 get()
-            )
+            ).apply {
+                flowStage = get<PublishImageCoordinator>().attachImageStage
+            }
         }
     }
 }

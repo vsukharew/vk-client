@@ -9,12 +9,12 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.scope.Scope
 import vsukharew.vkclient.R
-import vsukharew.vkclient.auth.di.AuthScopeCreator
 import vsukharew.vkclient.auth.domain.model.AuthType
 import vsukharew.vkclient.auth.navigation.AuthCoordinator
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
-import vsukharew.vkclient.common.di.ScopeCreator
+import vsukharew.vkclient.common.di.ScopeManager
 import vsukharew.vkclient.common.extension.toast
 import vsukharew.vkclient.common.network.ServerUrls
 import vsukharew.vkclient.common.presentation.BaseFragment
@@ -25,7 +25,7 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
     private val coordinator: AuthCoordinator by inject()
 
     override val viewModel: AuthViewModel by viewModel()
-    override val scopeCreator: ScopeCreator = AuthScopeCreator
+    override val parentScopes: ScopeManager.() -> Array<Scope> = { arrayOf(createAuthDataScope()) }
     override val binding by fragmentViewBinding(FragmentAuthBinding::bind)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,10 +57,10 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(R.layout.fragment_auth) {
     }
 
     private fun nullifyProperties() {
-        coordinator.apply {
-            vkActivityLauncher = null
-            navController = null
-        }
+//        coordinator.apply {
+//            vkActivityLauncher = null
+//            navController = null
+//        }
     }
 
     private fun handleBrowserRedirect(intent: Intent) {

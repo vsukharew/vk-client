@@ -17,7 +17,7 @@ import vsukharew.vkclient.common.presentation.loadstate.ProfileInfoUiState
 import vsukharew.vkclient.features.presentation.FeaturesViewModel
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
 
-class FeaturesViewModelTest() {
+class FeaturesViewModelTest {
 
     @get:Rule
     val rule = CoroutineDispatcherRule()

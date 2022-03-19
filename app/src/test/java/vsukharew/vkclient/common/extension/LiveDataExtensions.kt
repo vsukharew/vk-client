@@ -1,10 +1,7 @@
-package vsukharew.vkclient.features
+package vsukharew.vkclient.common.extension
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 
 fun <T> LiveData<T>.observeForTesting(
     observer: Observer<T>,

@@ -16,7 +16,7 @@ import java.lang.reflect.Type
  * @see [Either]
  * @see [ResponseWrapper]
  */
-class ResultResponseWrapperAdapter<S>(
+class EitherResponseWrapperAdapter<S>(
     private val type: Type
 ) : CallAdapter<ResponseWrapper<S>, Call<Either<ResponseWrapper<S>, AppError>>> {
 

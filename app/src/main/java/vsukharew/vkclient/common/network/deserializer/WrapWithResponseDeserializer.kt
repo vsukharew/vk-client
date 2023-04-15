@@ -7,12 +7,12 @@ import com.google.gson.JsonObject
 import vsukharew.vkclient.common.network.response.ErrorResponse
 import vsukharew.vkclient.common.network.response.ResponseWrapper
 import vsukharew.vkclient.publishimage.attach.data.model.UploadImageResponse
-import vsukharew.vkclient.common.network.calladapter.responsewrapper.ResultResponseWrapperAdapter
+import vsukharew.vkclient.common.network.calladapter.responsewrapper.EitherResponseWrapperAdapter
 import java.lang.reflect.Type
 
 /**
  * Wraps response json with [ResponseWrapper]
- * so that it is converted correctly with [ResultResponseWrapperAdapter]
+ * so that it is converted correctly with [EitherResponseWrapperAdapter]
  */
 class WrapWithResponseDeserializer : JsonDeserializer<ResponseWrapper<UploadImageResponse>> {
 

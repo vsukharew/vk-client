@@ -7,7 +7,7 @@ import vsukharew.vkclient.common.network.response.ResponseWrapper
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
-class ResultResponseWrapperAdapterFactory : CallAdapter.Factory() {
+class EitherResponseWrapperAdapterFactory : CallAdapter.Factory() {
     private val lazyMessage = { "return type must be parameterized" }
 
     override fun get(
@@ -28,6 +28,6 @@ class ResultResponseWrapperAdapterFactory : CallAdapter.Factory() {
         }
 
         check(innerResponseType is ParameterizedType) { "response type must be parameterized" }
-        return ResultResponseWrapperAdapter<ResponseWrapper<Any>>(innerResponseType)
+        return EitherResponseWrapperAdapter<ResponseWrapper<Any>>(innerResponseType)
     }
 }

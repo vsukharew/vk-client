@@ -27,6 +27,6 @@ class UploadImageWrapperAdapterFactory : CallAdapter.Factory() {
             return null
         }
 
-        return UploadImageWrapperAdapter(innerResponseType)
+        return EitherUploadImageWrapperAdapter(innerResponseType)
     }
 }

@@ -17,7 +17,7 @@ import java.lang.reflect.Type
  * @see [Either]
  * @see [ResponseWrapper]
  */
-class UploadImageWrapperAdapter(
+class EitherUploadImageWrapperAdapter(
     private val type: Type
 ) : CallAdapter<UploadedImageWrapper, Call<Either<UploadedImageWrapper, AppError>>> {
 

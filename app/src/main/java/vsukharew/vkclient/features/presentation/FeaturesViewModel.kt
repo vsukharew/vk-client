@@ -1,7 +1,6 @@
 package vsukharew.vkclient.features.presentation
 
 import androidx.lifecycle.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import vsukharew.vkclient.account.domain.interactor.AccountInteractor
@@ -9,16 +8,17 @@ import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.auth.domain.interactor.AuthInteractor
 import vsukharew.vkclient.auth.domain.model.AuthType.APP
 import vsukharew.vkclient.auth.domain.model.AuthType.BROWSER
+import vsukharew.vkclient.common.DispatchersProvider
 import vsukharew.vkclient.common.domain.interactor.SessionInteractor
 import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.extension.EMPTY
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseViewModel
-import vsukharew.vkclient.common.presentation.loadstate.UIAction
-import vsukharew.vkclient.common.presentation.loadstate.UIState
+import vsukharew.vkclient.common.presentation.loadstate.ProfileInfoUiState
+import vsukharew.vkclient.common.presentation.loadstate.FeaturesScreenAction
+import vsukharew.vkclient.common.presentation.loadstate.ShortNameAvailabilityState
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
-import vsukharew.vkclient.screenname.model.ScreenNameAvailability
 import vsukharew.vkclient.screenname.model.ScreenNameAvailability.*
 
 class FeaturesViewModel(
@@ -26,13 +26,14 @@ class FeaturesViewModel(
     private val authInteractor: AuthInteractor,
     private val sessionInteractor: SessionInteractor,
     private val savedState: SavedStateHandle,
+    private val dispatchers: DispatchersProvider,
     imageInteractor: ImageInteractor
 ) : BaseViewModel() {
 
-    private val profileInfoAction = MutableLiveData<UIAction>(UIAction.InitialLoading)
+    private val profileInfoAction = MutableLiveData<FeaturesScreenAction>(FeaturesScreenAction.InitialLoading)
     val profileUiState = Transformations.switchMap(profileInfoAction, ::loadProfileInfo)
 
-    private val shortNameAction = MutableLiveData<UIAction.Text>()
+    private val shortNameAction = MutableLiveData<FeaturesScreenAction.Text>()
     val shortNameUiState = Transformations.switchMap(shortNameAction, ::checkShortNameAvailability)
 
     private var currentShortName: String? = savedState[KEY_SHORT_NAME]
@@ -71,11 +72,11 @@ class FeaturesViewModel(
     }
 
     fun retryLoadProfileInfo() {
-        profileInfoAction.value = UIAction.Retry
+        profileInfoAction.value = FeaturesScreenAction.Retry
     }
 
     fun refreshProfileInfo() {
-        profileInfoAction.value = UIAction.SwipeRefresh
+        profileInfoAction.value = FeaturesScreenAction.SwipeRefresh
     }
 
     fun onShortNameChanged(shortName: String) {
@@ -87,7 +88,7 @@ class FeaturesViewModel(
                     return
                 }
                 else -> {
-                    shortNameAction.value = UIAction.Text(shortName)
+                    shortNameAction.value = FeaturesScreenAction.Text(shortName)
                 }
             }
         }
@@ -97,87 +98,99 @@ class FeaturesViewModel(
         savedState[KEY_SELECTION_STATE_INFO] = position
     }
 
-    private fun loadProfileInfo(action: UIAction): LiveData<UIState<ProfileInfo>> {
+    private fun loadProfileInfo(action: FeaturesScreenAction): LiveData<ProfileInfoUiState> {
         return liveData {
+            val scope = this
             val loadingState = when (action) {
-                UIAction.Retry, UIAction.InitialLoading -> UIState.LoadingProgress
-                UIAction.SwipeRefresh -> UIState.SwipeRefreshProgress
+                FeaturesScreenAction.Retry, FeaturesScreenAction.InitialLoading -> ProfileInfoUiState.LoadingProgress
+                FeaturesScreenAction.SwipeRefresh -> ProfileInfoUiState.SwipeRefreshProgress
                 else -> return@liveData
             }
             emit(loadingState)
             when (action) {
-                UIAction.SwipeRefresh, UIAction.Retry -> {
-                    handleProfileInfoResult(this, accountInteractor.getProfileInfo(), action)
+                FeaturesScreenAction.SwipeRefresh, FeaturesScreenAction.Retry -> {
+                    withContext(dispatchers.io) {
+                        handleProfileInfoResult(scope, accountInteractor.getProfileInfo(), action)
+                    }
                 }
                 else -> {
                     savedState.get<ProfileInfo>(KEY_PROFILE_INFO)?.let {
-                        emit(UIState.Success(it))
-                    } ?: handleProfileInfoResult(this, accountInteractor.getProfileInfo(), action)
+                        emit(ProfileInfoUiState.Success(it))
+                    } ?: run {
+                        withContext(dispatchers.io) {
+                            handleProfileInfoResult(scope, accountInteractor.getProfileInfo(), action)
+                        }
+                    }
                 }
             }
         }
     }
 
     private suspend fun handleProfileInfoResult(
-        scope: LiveDataScope<UIState<ProfileInfo>>,
+        scope: LiveDataScope<ProfileInfoUiState>,
         info: Either<ProfileInfo, AppError>,
-        action: UIAction
+        action: FeaturesScreenAction
     ) {
-        when (info) {
-            is Either.Left -> {
-                currentShortName = info.data.screenName.also { savedState[KEY_SHORT_NAME] = it }
-                val data = info.data.copy(screenName = currentShortName)
-                savedState[KEY_PROFILE_INFO] = data
-                scope.emit(UIState.Success(data))
-            }
-            is Either.Right -> {
-                val errorEvent = SingleLiveEvent(info)
-                errorLiveData.value = errorEvent
-                val state = when (action) {
-                    is UIAction.SwipeRefresh -> {
-                        val currentData = savedState.get<ProfileInfo>(KEY_PROFILE_INFO)!!
-                        UIState.SwipeRefreshError(currentData, errorEvent)
+        withContext(dispatchers.main) {
+            scope.emit(
+                when (info) {
+                    is Either.Left -> {
+                        currentShortName = info.data.screenName.also { savedState[KEY_SHORT_NAME] = it }
+                        val data = info.data.copy(screenName = currentShortName)
+                        savedState[KEY_PROFILE_INFO] = data
+                        ProfileInfoUiState.Success(data)
                     }
-                    else -> UIState.Error(errorEvent)
+                    is Either.Right -> {
+                        val errorEvent = SingleLiveEvent(info)
+                        errorLiveData.value = errorEvent
+                        when (action) {
+                            is FeaturesScreenAction.SwipeRefresh -> {
+                                val currentData = savedState.get<ProfileInfo>(KEY_PROFILE_INFO)!!
+                                ProfileInfoUiState.SwipeRefreshError(currentData, errorEvent)
+                            }
+                            else -> ProfileInfoUiState.Error(errorEvent)
+                        }
+                    }
                 }
-                scope.emit(state)
-            }
+            )
         }
     }
 
     private fun checkShortNameAvailability(
-        action: UIAction.Text
-    ): LiveData<UIState<ScreenNameAvailability>> {
+        action: FeaturesScreenAction.Text
+    ): LiveData<ShortNameAvailabilityState> {
         return liveData {
             when (action.text) {
                 currentShortName -> {
-                    emit(UIState.Success(CURRENT_USER_NAME))
+                    emit(ShortNameAvailabilityState.Success(CURRENT_USER_NAME))
                     return@liveData
                 }
                 String.EMPTY -> {
-                    emit(UIState.Success(EMPTY))
+                    emit(ShortNameAvailabilityState.Success(EMPTY))
                     return@liveData
                 }
-                else -> emit(UIState.LoadingProgress)
+                else -> emit(ShortNameAvailabilityState.LoadingProgress)
             }
-            val doesExist = withContext(Dispatchers.IO) {
+            val doesExist = withContext(dispatchers.io) {
                 accountInteractor.doesShortNameExist(action.text)
             }
-            emit(
-                when (doesExist) {
-                    is Either.Left -> {
-                        val availability = when {
-                            doesExist.data -> UNAVAILABLE
-                            else -> AVAILABLE
+            withContext(dispatchers.main) {
+                emit(
+                    when (doesExist) {
+                        is Either.Left -> {
+                            val availability = when {
+                                doesExist.data -> UNAVAILABLE
+                                else -> AVAILABLE
+                            }
+                            ShortNameAvailabilityState.Success(availability)
                         }
-                        UIState.Success(availability)
+                        is Either.Right -> {
+                            val error = SingleLiveEvent(doesExist)
+                            ShortNameAvailabilityState.Error(error)
+                        }
                     }
-                    is Either.Right -> {
-                        val error = SingleLiveEvent(doesExist)
-                        UIState.Error(error)
-                    }
-                }
-            )
+                )
+            }
         }
     }
 

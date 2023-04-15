@@ -62,6 +62,7 @@ dependencies {
     implementation kotlin.language
     implementation kotlin.coroutines
     implementation kotlin.coroutinesAndroid
+    testImplementation kotlin.coroutinesUnitTest
 
     implementation androidx.appCompat
     implementation androidx.ktx
@@ -73,9 +74,11 @@ dependencies {
     implementation androidx.livedata
     implementation androidx.navigation.fragmentKtx
     implementation androidx.navigation.uiKtx
+    testImplementation androidx.arch
     androidTestImplementation androidx.testRunner
     androidTestImplementation androidx.espresso
-    testImplementation junit
+    testImplementation junit4
+    testImplementation mockito
 
     implementation glide.glide
     kapt glide.compiler

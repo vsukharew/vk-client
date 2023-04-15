@@ -23,5 +23,5 @@ class ResultResponseWrapperAdapter<S>(
     override fun responseType(): Type = type
 
     override fun adapt(call: Call<ResponseWrapper<S>>): Call<Either<ResponseWrapper<S>, AppError>> =
-        ResultResponseWrapperCall(call)
+        EitherCall(call)
 }

@@ -12,6 +12,10 @@ import org.koin.androidx.scope.createScope
 
 fun Fragment.toast(@StringRes text: Int) = Toast.makeText(requireContext(), text, Toast.LENGTH_SHORT).show()
 fun Fragment.toast(text: String) = Toast.makeText(requireContext(), text, Toast.LENGTH_SHORT).show()
+fun Fragment.snackBar(text: String) {
+    val view = activity?.findViewById<View>(android.R.id.content)
+    view?.let { Snackbar.make(it, text, Snackbar.LENGTH_SHORT).show() }
+}
 fun Fragment.snackBar(@StringRes text: Int) {
     val view = activity?.findViewById<View>(android.R.id.content)
     view?.let { Snackbar.make(it, text, Snackbar.LENGTH_SHORT).show() }

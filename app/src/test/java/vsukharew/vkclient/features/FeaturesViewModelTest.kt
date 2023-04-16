@@ -11,7 +11,7 @@ import vsukharew.vkclient.account.domain.interactor.AccountInteractor
 import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.auth.domain.interactor.AuthInteractor
 import vsukharew.vkclient.common.domain.interactor.SessionInteractor
-import vsukharew.vkclient.common.domain.model.Either
+import vsukharew.vkclient.common.domain.model.Right
 import vsukharew.vkclient.common.extension.findAndCast
 import vsukharew.vkclient.common.extension.observeForTesting
 import vsukharew.vkclient.common.presentation.loadstate.ProfileInfoUiState
@@ -32,7 +32,7 @@ class FeaturesViewModelTest {
         stub {
             onBlocking { getProfileInfo() }
                 .doReturn(
-                    Either.Left(
+                    Right(
                         ProfileInfo("Vadim", "Sukharev", "vsukharew")
                     )
                 )

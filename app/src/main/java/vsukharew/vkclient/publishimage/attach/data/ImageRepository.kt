@@ -6,6 +6,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.AttachmentType
 import vsukharew.vkclient.common.domain.model.Either
+import vsukharew.vkclient.common.domain.model.Left
 import vsukharew.vkclient.common.extension.ifSuccess
 import vsukharew.vkclient.common.extension.map
 import vsukharew.vkclient.common.extension.switchMap
@@ -72,7 +73,7 @@ class ImageRepository(
         longitude: Double?
     ): Either<AppError, Int> {
         if (savedImages.isEmpty()) {
-            return Either.Left(AppError.DomainError.NoPhotosToPostError)
+            return Left(AppError.DomainError.NoPhotosToPostError)
         }
         val attachments = savedImages.joinToString {
             "${AttachmentType.PHOTO.name.toLowerCase(Locale.getDefault())}${it.ownerId}_${it.id}>"
@@ -116,7 +117,7 @@ class ImageRepository(
                     saveImage(it.photo!!, it.server!!, it.hash!!)
                 }
             }
-            else -> Either.Left(AppError.UnknownError(streamResult.exceptionOrNull()!!))
+            else -> Left(AppError.UnknownError(streamResult.exceptionOrNull()!!))
         }
     }
 

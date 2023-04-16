@@ -5,7 +5,6 @@ package vsukharew.vkclient.common.domain.model
  * Instances of [Either] are either an instance of [Left] or [Right].
  * If it's used as server response, [Left] represents an error and [Right] a successful response
  */
-sealed class Either<out L, out R> {
-    data class Left<T>(val data: T) : Either<T, Nothing>()
-    data class Right<T>(val data: T) : Either<Nothing, T>()
-}
+sealed class Either<out L, out R>
+data class Left<T>(val data: T) : Either<T, Nothing>()
+data class Right<T>(val data: T) : Either<Nothing, T>()

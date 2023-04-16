@@ -7,6 +7,8 @@ import retrofit2.Callback
 import retrofit2.Response
 import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
+import vsukharew.vkclient.common.domain.model.Left
+import vsukharew.vkclient.common.domain.model.Right
 import vsukharew.vkclient.common.network.calladapter.utils.responseErrorToDomainError
 import vsukharew.vkclient.common.network.response.ErrorResponse
 import vsukharew.vkclient.common.network.response.ResponseWrapper
@@ -68,7 +70,7 @@ class EitherCall<T>(
             callback.onResponse(
                 resultCall,
                 Response.success(
-                    Either.Right(
+                    Right(
                         ResponseWrapper(responseBody, null)
                     )
                 )
@@ -80,21 +82,21 @@ class EitherCall<T>(
             errorBody: ErrorResponse
         ) {
             val error = responseErrorToDomainError(errorBody)
-            callback.onResponse(resultCall, Response.success(Either.Left(error)))
+            callback.onResponse(resultCall, Response.success(Left(error)))
         }
 
         private fun handleEmptyResponse(
             callback: Callback<Either<AppError, ResponseWrapper<T>>>
         ) {
             val error = AppError.RemoteError.UnknownError
-            callback.onResponse(resultCall, Response.success(Either.Left(error)))
+            callback.onResponse(resultCall, Response.success(Left(error)))
         }
 
         private fun handleOnFailure(
             callback: Callback<Either<AppError, ResponseWrapper<T>>>,
             e: Throwable
         ) {
-            val error = Either.Left(
+            val error = Left(
                 when (e) {
                     is IOException -> AppError.NetworkError(e)
                     else -> AppError.UnknownError(e)

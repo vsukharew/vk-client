@@ -14,7 +14,7 @@ import org.koin.android.scope.AndroidScopeComponent
 import org.koin.core.scope.Scope
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.di.ScopeCreator
-import vsukharew.vkclient.common.domain.model.Either
+import vsukharew.vkclient.common.domain.model.Left
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 
 abstract class BaseFragment<V : ViewBinding>(
@@ -51,11 +51,11 @@ abstract class BaseFragment<V : ViewBinding>(
         }
     }
 
-    protected fun <T> handleError(error: Either.Left<T>) {
+    protected fun <T> handleError(error: Left<T>) {
         errorHandler.handleError(this, error)
     }
 
-    private fun <T> observeError(event: SingleLiveEvent<Either.Left<T>>) {
+    private fun <T> observeError(event: SingleLiveEvent<Left<T>>) {
         event.getContentIfNotHandled()?.let(::handleError)
     }
 }

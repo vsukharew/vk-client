@@ -5,6 +5,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.domain.model.AppError.DomainError
+import vsukharew.vkclient.common.domain.model.Left
+import vsukharew.vkclient.common.domain.model.Right
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseViewModel
 import vsukharew.vkclient.publishimage.attach.domain.infrastructure.DomainContentResolver
@@ -132,10 +134,10 @@ class AttachImageViewModel(
                             }
                         }
                     }) {
-                    is Either.Left -> {
+                    is Right -> {
                         ImageEvent.SuccessfulLoading(image)
                     }
-                    is Either.Right -> {
+                    is Left -> {
                         ImageEvent.ErrorLoading(image, uploadResult)
                     }
                 }

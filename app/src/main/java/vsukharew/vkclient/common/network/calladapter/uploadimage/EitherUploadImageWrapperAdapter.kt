@@ -19,10 +19,10 @@ import java.lang.reflect.Type
  */
 class EitherUploadImageWrapperAdapter(
     private val type: Type
-) : CallAdapter<UploadedImageWrapper, Call<Either<UploadedImageWrapper, AppError>>> {
+) : CallAdapter<UploadedImageWrapper, Call<Either<AppError, UploadedImageWrapper>>> {
 
     override fun responseType(): Type = type
 
-    override fun adapt(call: Call<UploadedImageWrapper>): Call<Either<UploadedImageWrapper, AppError>> =
+    override fun adapt(call: Call<UploadedImageWrapper>): Call<Either<AppError, UploadedImageWrapper>> =
         UploadImageWrapperCall(call)
 }

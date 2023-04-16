@@ -12,7 +12,7 @@ import vsukharew.vkclient.R
 import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.AppError.DomainError.FileTooLargeError
 import vsukharew.vkclient.common.domain.model.AppError.DomainError.ImageResolutionTooLargeError
-import vsukharew.vkclient.common.domain.model.Either
+import vsukharew.vkclient.common.domain.model.Left
 import vsukharew.vkclient.databinding.DelegateImageBinding
 import vsukharew.vkclient.publishimage.attach.presentation.delegate.ImageDelegate.Holder
 import vsukharew.vkclient.publishimage.attach.presentation.model.UIImage
@@ -135,7 +135,7 @@ class ImageDelegate(
             }
         }
 
-        private fun getErrorMessage(error: Either.Right<AppError>): Int {
+        private fun getErrorMessage(error: Left<AppError>): Int {
             return when (error.data) {
                 FileTooLargeError -> R.string.attach_image_fragment_file_too_large
                 ImageResolutionTooLargeError -> R.string.attach_image_fragment_image_resolution_too_large

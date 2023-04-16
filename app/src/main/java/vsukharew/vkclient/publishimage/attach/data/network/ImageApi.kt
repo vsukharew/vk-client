@@ -14,16 +14,16 @@ import vsukharew.vkclient.publishimage.attach.data.model.WallUploadAddressRespon
 interface ImageApi {
 
     @POST(UPLOAD_ADDRESS_WALL)
-    suspend fun getImageWallUploadAddress(): Either<ResponseWrapper<WallUploadAddressResponse>, AppError>
+    suspend fun getImageWallUploadAddress(): Either<AppError, ResponseWrapper<WallUploadAddressResponse>>
 
     @Multipart
     @POST
-    suspend fun uploadImage(@Url url: String, @Part image: MultipartBody.Part): Either<UploadedImageWrapper, AppError>
+    suspend fun uploadImage(@Url url: String, @Part image: MultipartBody.Part): Either<AppError, UploadedImageWrapper>
 
     @POST(SAVE_IMAGE_WALL)
     suspend fun saveImage(
         @Query("photo") photo: String,
         @Query("server") server: Int,
         @Query("hash") hash: String,
-    ): Either<ResponseWrapper<List<SavedWallImageResponse>>, AppError>
+    ): Either<AppError, ResponseWrapper<List<SavedWallImageResponse>>>
 }

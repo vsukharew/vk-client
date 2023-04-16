@@ -6,6 +6,8 @@ import kotlinx.coroutines.withContext
 import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.domain.model.AppError.DomainError.LocationNotReceivedError
+import vsukharew.vkclient.common.domain.model.Left
+import vsukharew.vkclient.common.domain.model.Right
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.location.LocationProvider
 import vsukharew.vkclient.common.presentation.BaseViewModel
@@ -92,7 +94,7 @@ class CaptionViewModel(
                     emit(
                         CaptionUIState.Error(
                             SingleLiveEvent(
-                                Either.Right(
+                                Left(
                                     LocationNotReceivedError(
                                         action.e
                                     )
@@ -111,11 +113,11 @@ class CaptionViewModel(
                                 action.longitude
                             )
                         }) {
-                        is Either.Left -> {
+                        is Right -> {
                             emit(CaptionUIState.Success(result.data))
                             flowStage.onForwardClick()
                         }
-                        is Either.Right -> {
+                        is Left -> {
                             when (result.data) {
                                 AppError.DomainError.NoPhotosToPostError -> {
                                     askToReloadPhotosEvent.value = Unit

@@ -9,14 +9,14 @@ import vsukharew.vkclient.common.domain.interactor.SessionInteractor
 import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.AppError.*
 import vsukharew.vkclient.common.domain.model.AppError.RemoteError.ServerError
-import vsukharew.vkclient.common.domain.model.Either
+import vsukharew.vkclient.common.domain.model.Left
 import vsukharew.vkclient.common.extension.snackBar
 
 class ErrorHandler(
     private val sessionInteractor: SessionInteractor
 ) : CoroutineScope by CoroutineScope(Dispatchers.Main) {
 
-    fun <T> handleError(fragment: BaseFragment<*>, error: Either.Right<T>) {
+    fun <T> handleError(fragment: BaseFragment<*>, error: Left<T>) {
         with(fragment) {
             when (error.data) {
                 is AppError -> {

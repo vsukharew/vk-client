@@ -7,24 +7,25 @@ import retrofit2.Callback
 import retrofit2.Response
 import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
+import vsukharew.vkclient.common.domain.model.Left
+import vsukharew.vkclient.common.domain.model.Right
 import vsukharew.vkclient.common.network.calladapter.utils.responseErrorToDomainError
 import vsukharew.vkclient.common.network.response.ErrorResponse
 import vsukharew.vkclient.common.network.response.ResponseWrapper
 import java.io.IOException
-import java.net.HttpURLConnection.HTTP_OK
 
-class EitherCall<S>(
-    private val delegate: Call<ResponseWrapper<S>>
-) : Call<Either<ResponseWrapper<S>, AppError>> {
+class EitherCall<T>(
+    private val delegate: Call<ResponseWrapper<T>>
+) : Call<Either<AppError, ResponseWrapper<T>>> {
 
-    override fun clone(): Call<Either<ResponseWrapper<S>, AppError>> =
+    override fun clone(): Call<Either<AppError, ResponseWrapper<T>>> =
         EitherCall(delegate.clone())
 
-    override fun execute(): Response<Either<ResponseWrapper<S>, AppError>> {
+    override fun execute(): Response<Either<AppError, ResponseWrapper<T>>> {
         TODO("Not supported")
     }
 
-    override fun enqueue(callback: Callback<Either<ResponseWrapper<S>, AppError>>) {
+    override fun enqueue(callback: Callback<Either<AppError, ResponseWrapper<T>>>) {
         delegate.enqueue(ResponseConverter(this, callback))
     }
 
@@ -38,35 +39,13 @@ class EitherCall<S>(
 
     override fun timeout(): Timeout = delegate.timeout()
 
-    /**
-     * This class contains converting server responses logic to the client [Either]
-     * Server sends [HTTP_OK] in response to each request even if an error occurred ¯\_(ツ)_/¯
-     * So one need to use a model kind of [ResponseWrapper] in order to be ready for both successful
-     * and unsuccessful server responses.
-     *
-     * This class, in case of error, takes into account the data from the [ErrorResponse] model
-     * and wraps responses in the [Either] model which can represent the concrete HTTP error with
-     * the appropriate code and other data
-     *
-     * What had occurred, success or error, can be determined by type checking the [Either] instance
-     *
-     * Example:
-     * ```
-     *      ErrorResponse(
-     *              errorCode = [ServerErrorCodes.AUTHORIZATION_FAILED],
-     *              errorMsg = "authorization failed",
-     *              requestParams = [ ... ]
-     *          )
-     * ```
-     * will be converted to [Either.Right.HttpError.ClientError.UnauthorizedError]
-     */
-    private class ResponseConverter<S>(
-        private val resultCall: EitherCall<S>,
-        private val callback: Callback<Either<ResponseWrapper<S>, AppError>>
-    ) : Callback<ResponseWrapper<S>> {
+    private class ResponseConverter<T>(
+        private val resultCall: EitherCall<T>,
+        private val callback: Callback<Either<AppError, ResponseWrapper<T>>>
+    ) : Callback<ResponseWrapper<T>> {
         override fun onResponse(
-            call: Call<ResponseWrapper<S>>,
-            response: Response<ResponseWrapper<S>>
+            call: Call<ResponseWrapper<T>>,
+            response: Response<ResponseWrapper<T>>
         ) {
             val body = response.body()
             when {
@@ -80,18 +59,18 @@ class EitherCall<S>(
             }
         }
 
-        override fun onFailure(call: Call<ResponseWrapper<S>>, t: Throwable) {
+        override fun onFailure(call: Call<ResponseWrapper<T>>, t: Throwable) {
             handleOnFailure(callback, t)
         }
 
         private fun handleSuccessfulResponse(
-            callback: Callback<Either<ResponseWrapper<S>, AppError>>,
-            responseBody: S
+            callback: Callback<Either<AppError, ResponseWrapper<T>>>,
+            responseBody: T
         ) {
             callback.onResponse(
                 resultCall,
                 Response.success(
-                    Either.Left(
+                    Right(
                         ResponseWrapper(responseBody, null)
                     )
                 )
@@ -99,25 +78,25 @@ class EitherCall<S>(
         }
 
         private fun handleUnsuccessfulResponse(
-            callback: Callback<Either<ResponseWrapper<S>, AppError>>,
+            callback: Callback<Either<AppError, ResponseWrapper<T>>>,
             errorBody: ErrorResponse
         ) {
             val error = responseErrorToDomainError(errorBody)
-            callback.onResponse(resultCall, Response.success(Either.Right(error)))
+            callback.onResponse(resultCall, Response.success(Left(error)))
         }
 
         private fun handleEmptyResponse(
-            callback: Callback<Either<ResponseWrapper<S>, AppError>>
+            callback: Callback<Either<AppError, ResponseWrapper<T>>>
         ) {
             val error = AppError.RemoteError.UnknownError
-            callback.onResponse(resultCall, Response.success(Either.Right(error)))
+            callback.onResponse(resultCall, Response.success(Left(error)))
         }
 
         private fun handleOnFailure(
-            callback: Callback<Either<ResponseWrapper<S>, AppError>>,
+            callback: Callback<Either<AppError, ResponseWrapper<T>>>,
             e: Throwable
         ) {
-            val error = Either.Right(
+            val error = Left(
                 when (e) {
                     is IOException -> AppError.NetworkError(e)
                     else -> AppError.UnknownError(e)
@@ -125,18 +104,5 @@ class EitherCall<S>(
             )
             callback.onResponse(resultCall, Response.success(error))
         }
-
-        private val errorBodyResponseToDomain: (response: ErrorResponse) -> AppError.RemoteError.ErrorBody =
-            { response ->
-                response.run {
-                    AppError.RemoteError.ErrorBody(
-                        errorCode,
-                        errorMsg,
-                        requestParams.map {
-                            it.run { AppError.RemoteError.ErrorBody.RequestParam(key, value) }
-                        }
-                    )
-                }
-            }
     }
 }

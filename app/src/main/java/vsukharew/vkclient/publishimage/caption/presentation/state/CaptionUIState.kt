@@ -7,5 +7,5 @@ import vsukharew.vkclient.common.livedata.SingleLiveEvent
 sealed class CaptionUIState {
     object LoadingProgress : CaptionUIState()
     data class Success(val postId: Int) : CaptionUIState()
-    data class Error(val error: SingleLiveEvent<Either.Right<AppError>>) : CaptionUIState()
+    data class Error(val error: SingleLiveEvent<Either.Left<AppError>>) : CaptionUIState()
 }

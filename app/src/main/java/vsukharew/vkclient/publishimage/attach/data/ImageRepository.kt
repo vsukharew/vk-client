@@ -34,7 +34,7 @@ class ImageRepository(
         image: Image,
         isRetryLoading: Boolean,
         onProgressUpdated: (Double) -> Unit
-    ): Either<SavedWallImage, AppError> {
+    ): Either<AppError, SavedWallImage> {
         if (!isRetryLoading) rawImages.add(image)
         return imageApi.getImageWallUploadAddress()
             .switchMap { uploadImageInternal(it.response!!.uploadUrl, image, onProgressUpdated) }
@@ -70,9 +70,9 @@ class ImageRepository(
         message: String,
         latitude: Double?,
         longitude: Double?
-    ): Either<Int, AppError> {
+    ): Either<AppError, Int> {
         if (savedImages.isEmpty()) {
-            return Either.Right(AppError.DomainError.NoPhotosToPostError)
+            return Either.Left(AppError.DomainError.NoPhotosToPostError)
         }
         val attachments = savedImages.joinToString {
             "${AttachmentType.PHOTO.name.toLowerCase(Locale.getDefault())}${it.ownerId}_${it.id}>"
@@ -89,7 +89,7 @@ class ImageRepository(
         url: String,
         image: Image,
         onProgressUpdated: (Double) -> Unit
-    ): Either<SavedWallImageResponse, AppError> {
+    ): Either<AppError, SavedWallImageResponse> {
         val streamResult = runCatching {
             contentResolver.openInputStream(image.uri)
                 .use { it!!.readBytes() }
@@ -116,7 +116,7 @@ class ImageRepository(
                     saveImage(it.photo!!, it.server!!, it.hash!!)
                 }
             }
-            else -> Either.Right(AppError.UnknownError(streamResult.exceptionOrNull()!!))
+            else -> Either.Left(AppError.UnknownError(streamResult.exceptionOrNull()!!))
         }
     }
 
@@ -124,7 +124,7 @@ class ImageRepository(
         photo: String,
         server: Int,
         hash: String
-    ): Either<SavedWallImageResponse, AppError> {
+    ): Either<AppError, SavedWallImageResponse> {
         return imageApi.saveImage(photo, server, hash).map { it.response!!.first() }
     }
 }

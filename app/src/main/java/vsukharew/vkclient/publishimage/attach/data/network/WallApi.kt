@@ -15,5 +15,5 @@ interface WallApi {
         @Query("attachments") attachments: String,
         @Query("lat") latitude: Double? = null,
         @Query("long") longitude: Double? = null
-    ): Either<ResponseWrapper<PublishedPostResponse>, AppError>
+    ): Either<AppError, ResponseWrapper<PublishedPostResponse>>
 }

@@ -12,7 +12,7 @@ interface ImageInteractor {
         image: Image,
         isRetryLoading: Boolean,
         onProgressUpdated: (Double) -> Unit
-    ): Either<SavedWallImage, AppError>
+    ): Either<AppError, SavedWallImage>
 
     fun removeUploadedImage(image: Image)
     fun removeAllImages()
@@ -20,7 +20,7 @@ interface ImageInteractor {
         message: String,
         latitude: Double? = null,
         longitude: Double? = null
-    ): Either<Int, AppError>
+    ): Either<AppError, Int>
 
     fun observePublishedPosts(): Flow<Int?>
 }

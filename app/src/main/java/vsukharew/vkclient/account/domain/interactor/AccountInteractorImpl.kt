@@ -11,11 +11,11 @@ class AccountInteractorImpl(
     private val accountRepo: AccountRepo
 ) : AccountInteractor {
 
-    override suspend fun getProfileInfo(): Either<ProfileInfo, AppError> {
+    override suspend fun getProfileInfo(): Either<AppError, ProfileInfo> {
         return accountRepo.getProfileInfo()
     }
 
-    override suspend fun doesShortNameExist(name: String): Either<Boolean, AppError> {
+    override suspend fun doesShortNameExist(name: String): Either<AppError, Boolean> {
         // todo check profile info and return ScreenNameAvailability
         return accountRepo.resolveScreenName(name).map { it is ScreenName.ResolvedScreenName  }
     }

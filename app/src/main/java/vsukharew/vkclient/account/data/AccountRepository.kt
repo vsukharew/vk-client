@@ -8,25 +8,24 @@ import vsukharew.vkclient.account.domain.model.ScreenName.ResolvedScreenName
 import vsukharew.vkclient.account.domain.model.ScreenName.UnresolvedScreenName
 import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
-import vsukharew.vkclient.common.extension.EMPTY
-import vsukharew.vkclient.common.extension.map
+import vsukharew.vkclient.common.extension.*
 
 class AccountRepository(private val accountApi: AccountApi) : AccountRepo {
 
-    override suspend fun getProfileInfo(): Either<ProfileInfo, AppError> {
+    override suspend fun getProfileInfo(): Either<AppError, ProfileInfo> {
         return accountApi.getProfileInfo()
             .map { wrapper ->
-                wrapper.response?.let {
+                wrapper.response?.run {
                     ProfileInfo(
-                        it.firstName,
-                        it.lastName,
-                        it.screen_name,
+                        firstName,
+                        lastName,
+                        screen_name,
                     )
                 } ?: ProfileInfo.EMPTY
             }
     }
 
-    override suspend fun resolveScreenName(name: String): Either<ScreenName, AppError> {
+    override suspend fun resolveScreenName(name: String): Either<AppError, ScreenName> {
         return accountApi.resolveScreenName(name)
             .map { wrapper ->
                 wrapper.response?.let {

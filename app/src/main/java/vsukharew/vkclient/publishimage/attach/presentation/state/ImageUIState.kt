@@ -9,5 +9,5 @@ sealed class ImageUIState {
     data class Pending(val isAfterRetry: Boolean) : ImageUIState()
     data class LoadingProgress(val progress: Int = 0) : ImageUIState()
     data class Success (val data: UIImage): ImageUIState()
-    data class Error(val error: SingleLiveEvent<Either.Right<AppError>>): ImageUIState()
+    data class Error(val error: SingleLiveEvent<Either.Left<AppError>>): ImageUIState()
 }

@@ -13,12 +13,13 @@ interface ImageRepo {
         image: Image,
         isRetryLoading: Boolean,
         onProgressUpdated: (Double) -> Unit
-    ): Either<SavedWallImage, AppError>
+    ): Either<AppError, SavedWallImage>
+
     fun removeUploadedImage(image: Image)
     fun removeAllImages()
     suspend fun postImagesOnWall(
         message: String,
         latitude: Double? = null,
         longitude: Double? = null
-    ): Either<Int, AppError>
+    ): Either<AppError, Int>
 }

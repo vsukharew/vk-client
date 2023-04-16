@@ -132,10 +132,10 @@ class AttachImageViewModel(
                             }
                         }
                     }) {
-                    is Either.Left -> {
+                    is Either.Right -> {
                         ImageEvent.SuccessfulLoading(image)
                     }
-                    is Either.Right -> {
+                    is Either.Left -> {
                         ImageEvent.ErrorLoading(image, uploadResult)
                     }
                 }

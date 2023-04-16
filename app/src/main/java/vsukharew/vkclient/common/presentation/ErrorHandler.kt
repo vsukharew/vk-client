@@ -16,7 +16,7 @@ class ErrorHandler(
     private val sessionInteractor: SessionInteractor
 ) : CoroutineScope by CoroutineScope(Dispatchers.Main) {
 
-    fun <T> handleError(fragment: BaseFragment<*>, error: Either.Right<T>) {
+    fun <T> handleError(fragment: BaseFragment<*>, error: Either.Left<T>) {
         with(fragment) {
             when (error.data) {
                 is AppError -> {

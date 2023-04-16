@@ -6,6 +6,6 @@ import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
 
 interface AccountRepo {
-    suspend fun getProfileInfo(): Either<ProfileInfo, AppError>
-    suspend fun resolveScreenName(name: String): Either<ScreenName, AppError>
+    suspend fun getProfileInfo(): Either<AppError, ProfileInfo>
+    suspend fun resolveScreenName(name: String): Either<AppError, ScreenName>
 }

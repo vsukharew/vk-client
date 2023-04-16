@@ -7,5 +7,5 @@ import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 
 abstract class BaseViewModel : ViewModel() {
-    val errorLiveData = MutableLiveData<SingleLiveEvent<Either.Right<AppError>>>()
+    val errorLiveData = MutableLiveData<SingleLiveEvent<Either.Left<AppError>>>()
 }

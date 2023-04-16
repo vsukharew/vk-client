@@ -5,6 +5,6 @@ import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
 
 interface AccountInteractor {
-    suspend fun getProfileInfo(): Either<ProfileInfo, AppError>
-    suspend fun doesShortNameExist(name: String): Either<Boolean, AppError>
+    suspend fun getProfileInfo(): Either<AppError, ProfileInfo>
+    suspend fun doesShortNameExist(name: String): Either<AppError, Boolean>
 }

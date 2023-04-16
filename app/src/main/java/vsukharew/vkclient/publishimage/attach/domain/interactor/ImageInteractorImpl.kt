@@ -25,7 +25,7 @@ class ImageInteractorImpl(
         image: Image,
         isRetryLoading: Boolean,
         onProgressUpdated: (Double) -> Unit
-    ): Either<SavedWallImage, AppError> {
+    ): Either<AppError, SavedWallImage> {
         return checkSizeEntity.checkUploadedImageSize(image)
             .switchMap { checkResolutionEntity.checkUploadedImageResolution(image) }
             .switchMap { with(imageRepo) {
@@ -50,7 +50,7 @@ class ImageInteractorImpl(
         message: String,
         latitude: Double?,
         longitude: Double?
-    ): Either<Int, AppError> {
+    ): Either<AppError, Int> {
         return imageRepo.postImagesOnWall(message, latitude, longitude)
             .ifSuccess { publishingPostFlow.value = it }
     }

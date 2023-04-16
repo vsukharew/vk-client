@@ -128,19 +128,19 @@ class FeaturesViewModel(
 
     private suspend fun handleProfileInfoResult(
         scope: LiveDataScope<ProfileInfoUiState>,
-        info: Either<ProfileInfo, AppError>,
+        info: Either<AppError, ProfileInfo>,
         action: FeaturesScreenAction
     ) {
         withContext(dispatchers.main) {
             scope.emit(
                 when (info) {
-                    is Either.Left -> {
+                    is Either.Right -> {
                         currentShortName = info.data.screenName.also { savedState[KEY_SHORT_NAME] = it }
                         val data = info.data.copy(screenName = currentShortName)
                         savedState[KEY_PROFILE_INFO] = data
                         ProfileInfoUiState.Success(data)
                     }
-                    is Either.Right -> {
+                    is Either.Left -> {
                         val errorEvent = SingleLiveEvent(info)
                         errorLiveData.value = errorEvent
                         when (action) {
@@ -177,14 +177,14 @@ class FeaturesViewModel(
             withContext(dispatchers.main) {
                 emit(
                     when (doesExist) {
-                        is Either.Left -> {
+                        is Either.Right -> {
                             val availability = when {
                                 doesExist.data -> UNAVAILABLE
                                 else -> AVAILABLE
                             }
                             ShortNameAvailabilityState.Success(availability)
                         }
-                        is Either.Right -> {
+                        is Either.Left -> {
                             val error = SingleLiveEvent(doesExist)
                             ShortNameAvailabilityState.Error(error)
                         }

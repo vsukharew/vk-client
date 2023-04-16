@@ -135,7 +135,7 @@ class ImageDelegate(
             }
         }
 
-        private fun getErrorMessage(error: Either.Right<AppError>): Int {
+        private fun getErrorMessage(error: Either.Left<AppError>): Int {
             return when (error.data) {
                 FileTooLargeError -> R.string.attach_image_fragment_file_too_large
                 ImageResolutionTooLargeError -> R.string.attach_image_fragment_image_resolution_too_large

@@ -92,7 +92,7 @@ class CaptionViewModel(
                     emit(
                         CaptionUIState.Error(
                             SingleLiveEvent(
-                                Either.Right(
+                                Either.Left(
                                     LocationNotReceivedError(
                                         action.e
                                     )
@@ -111,11 +111,11 @@ class CaptionViewModel(
                                 action.longitude
                             )
                         }) {
-                        is Either.Left -> {
+                        is Either.Right -> {
                             emit(CaptionUIState.Success(result.data))
                             flowStage.onForwardClick()
                         }
-                        is Either.Right -> {
+                        is Either.Left -> {
                             when (result.data) {
                                 AppError.DomainError.NoPhotosToPostError -> {
                                     askToReloadPhotosEvent.value = Unit

@@ -13,10 +13,10 @@ import vsukharew.vkclient.common.network.response.ResponseWrapper
 interface AccountApi {
 
     @GET(GET_PROFILE)
-    suspend fun getProfileInfo(): Either<ResponseWrapper<ProfileInfoResponse>, AppError>
+    suspend fun getProfileInfo(): Either<AppError, ResponseWrapper<ProfileInfoResponse>>
 
     @GET(RESOLVE_SCREEN_NAME)
     suspend fun resolveScreenName(
         @Query("screen_name") name: String
-    ): Either<ResponseWrapper<ScreenNameResponse>, AppError>
+    ): Either<AppError, ResponseWrapper<ScreenNameResponse>>
 }

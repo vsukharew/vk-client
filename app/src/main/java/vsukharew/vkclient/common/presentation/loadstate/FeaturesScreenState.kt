@@ -48,7 +48,7 @@ sealed class ProfileInfoUiState {
         )
     }
 
-    data class Error(val error: SingleLiveEvent<Either.Right<AppError>>) : ProfileInfoUiState() {
+    data class Error(val error: SingleLiveEvent<Either.Left<AppError>>) : ProfileInfoUiState() {
         override val isShortNameHintVisible: Boolean = false
         override val isPublishImageVisible: Boolean = false
         override val isSignOutVisible: Boolean = false
@@ -61,7 +61,7 @@ sealed class ProfileInfoUiState {
 
     data class SwipeRefreshError(
         val currentData: ProfileInfo,
-        val error: SingleLiveEvent<Either.Right<AppError>>
+        val error: SingleLiveEvent<Either.Left<AppError>>
     ) : ProfileInfoUiState() {
         override val isShortNameHintVisible: Boolean = true
         override val isPublishImageVisible: Boolean = true
@@ -77,5 +77,5 @@ sealed class ProfileInfoUiState {
 sealed class ShortNameAvailabilityState {
     object LoadingProgress : ShortNameAvailabilityState()
     data class Success(val data: ScreenNameAvailability) : ShortNameAvailabilityState()
-    data class Error(val error: SingleLiveEvent<Either.Right<AppError>>) : ShortNameAvailabilityState()
+    data class Error(val error: SingleLiveEvent<Either.Left<AppError>>) : ShortNameAvailabilityState()
 }

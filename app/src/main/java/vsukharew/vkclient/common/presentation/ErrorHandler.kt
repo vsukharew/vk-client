@@ -8,10 +8,7 @@ import vsukharew.vkclient.R
 import vsukharew.vkclient.common.domain.interactor.SessionInteractor
 import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.AppError.*
-import vsukharew.vkclient.common.domain.model.AppError.HttpError.ClientError.OtherClientError
-import vsukharew.vkclient.common.domain.model.AppError.HttpError.ClientError.UnauthorizedError
-import vsukharew.vkclient.common.domain.model.AppError.HttpError.OtherHttpError
-import vsukharew.vkclient.common.domain.model.AppError.HttpError.ServerError
+import vsukharew.vkclient.common.domain.model.AppError.RemoteError.ServerError
 import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.extension.snackBar
 
@@ -24,18 +21,20 @@ class ErrorHandler(
             when (error.data) {
                 is AppError -> {
                     when (error.data) {
-                        UnauthorizedError -> {
+                        RemoteError.Unauthorized -> {
                             launch {
                                 sessionInteractor.clearSessionData()
                                 navController.navigate(R.id.global_action_to_authFragment)
                             }
                         }
+                        is RemoteError.TooMuchRequestsPerSecond -> {
+                            snackBar(error.data.errorBody.errorMsg)
+                        }
                         is ServerError -> snackBar(R.string.unknown_server_error_text)
                         is NetworkError -> snackBar(R.string.network_error_text)
                         is UnknownError,
-                        is OtherClientError,
-                        is OtherHttpError,
                         is DomainError -> fragment.snackBar(R.string.unknown_error_text)
+                        RemoteError.UnknownError -> TODO()
                     }
                 }
                 else -> {

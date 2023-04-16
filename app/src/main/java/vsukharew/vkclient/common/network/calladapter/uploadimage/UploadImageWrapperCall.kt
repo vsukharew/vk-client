@@ -7,7 +7,8 @@ import retrofit2.Callback
 import retrofit2.Response
 import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
-import vsukharew.vkclient.common.network.calladapter.utils.NetworkErrorMapper
+import vsukharew.vkclient.common.network.calladapter.utils.responseErrorToDomainError
+import vsukharew.vkclient.common.network.response.ErrorResponse
 import vsukharew.vkclient.publishimage.attach.data.model.UploadedImageWrapper
 import java.io.IOException
 
@@ -46,10 +47,10 @@ class UploadImageWrapperCall(
         ) {
             val body = response.body()
             // When request had completed successfully response is always non-null
-            body?.let {
-                body.server?.let {
-                    handleSuccessfulResponse(callback, body)
-                } ?: handleUnsuccessfulResponse(callback, response.code(), body)
+            when {
+                body?.server != null -> handleSuccessfulResponse(callback, body)
+                body?.errorResponse != null -> handleUnsuccessfulResponse(callback, body.errorResponse)
+                else -> handleEmptyResponse(callback)
             }
         }
 
@@ -69,10 +70,16 @@ class UploadImageWrapperCall(
 
         private fun handleUnsuccessfulResponse(
             callback: Callback<Either<UploadedImageWrapper, AppError>>,
-            responseCode: Int,
-            wrapper: UploadedImageWrapper
+            response: ErrorResponse
         ) {
-            val error = NetworkErrorMapper.mapError(responseCode, wrapper.errorResponse)
+            val error = responseErrorToDomainError(response)
+            callback.onResponse(resultCall, Response.success(Either.Right(error)))
+        }
+
+        private fun handleEmptyResponse(
+            callback: Callback<Either<UploadedImageWrapper, AppError>>,
+        ) {
+            val error = AppError.RemoteError.UnknownError
             callback.onResponse(resultCall, Response.success(Either.Right(error)))
         }
 

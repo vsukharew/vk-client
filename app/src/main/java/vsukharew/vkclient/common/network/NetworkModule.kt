@@ -1,18 +1,16 @@
 package vsukharew.vkclient.common.network
 
-import android.os.Build
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import vsukharew.vkclient.BuildConfig
 import vsukharew.vkclient.account.data.model.ScreenNameResponse
 import vsukharew.vkclient.auth.data.AuthRepo
-import vsukharew.vkclient.common.network.calladapter.responsewrapper.ResultResponseWrapperAdapterFactory
+import vsukharew.vkclient.common.network.calladapter.responsewrapper.EitherResponseWrapperAdapterFactory
 import vsukharew.vkclient.common.network.calladapter.uploadimage.UploadImageWrapperAdapterFactory
 import vsukharew.vkclient.common.network.deserializer.ResolvedScreenNameDeserializer
 import vsukharew.vkclient.common.network.interceptor.AddTokenInterceptor
@@ -43,7 +41,7 @@ private fun provideRetrofit(authRepo: AuthRepo): Retrofit {
     return Retrofit.Builder()
         .baseUrl(ServerUrls.BASE_URL)
         .client(provideOkHttpClient(authRepo))
-        .addCallAdapterFactory(ResultResponseWrapperAdapterFactory())
+        .addCallAdapterFactory(EitherResponseWrapperAdapterFactory())
         .addCallAdapterFactory(UploadImageWrapperAdapterFactory())
         .addConverterFactory(GsonConverterFactory.create(provideGson()))
         .build()

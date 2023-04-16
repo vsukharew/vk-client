@@ -16,12 +16,12 @@ import java.lang.reflect.Type
  * @see [Either]
  * @see [ResponseWrapper]
  */
-class ResultResponseWrapperAdapter<S>(
+class EitherResponseWrapperAdapter<S>(
     private val type: Type
 ) : CallAdapter<ResponseWrapper<S>, Call<Either<ResponseWrapper<S>, AppError>>> {
 
     override fun responseType(): Type = type
 
     override fun adapt(call: Call<ResponseWrapper<S>>): Call<Either<ResponseWrapper<S>, AppError>> =
-        ResultResponseWrapperCall(call)
+        EitherCall(call)
 }

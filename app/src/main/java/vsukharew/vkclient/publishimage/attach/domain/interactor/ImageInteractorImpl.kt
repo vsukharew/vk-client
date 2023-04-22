@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.*
 import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.extension.ifSuccess
+import vsukharew.vkclient.common.extension.sideEffect
 import vsukharew.vkclient.common.extension.switchMap
 import vsukharew.vkclient.publishimage.attach.data.ImageRepo
 import vsukharew.vkclient.publishimage.attach.domain.entity.CheckUploadedImageResolution
@@ -26,11 +27,10 @@ class ImageInteractorImpl(
         isRetryLoading: Boolean,
         onProgressUpdated: (Double) -> Unit
     ): Either<AppError, SavedWallImage> {
-        return checkSizeEntity.checkUploadedImageSize(image)
-            .switchMap { checkResolutionEntity.checkUploadedImageResolution(image) }
-            .switchMap { with(imageRepo) {
-                uploadImage(image, isRetryLoading, onProgressUpdated)
-            }
+        return sideEffect {
+            checkSizeEntity.checkUploadedImageSize(image).bind()
+            checkResolutionEntity.checkUploadedImageResolution(image).bind()
+            imageRepo.uploadImage(image, isRetryLoading, onProgressUpdated).bind()
         }
     }
 
@@ -51,7 +51,8 @@ class ImageInteractorImpl(
         latitude: Double?,
         longitude: Double?
     ): Either<AppError, Int> {
-        return imageRepo.postImagesOnWall(message, latitude, longitude)
-            .ifSuccess { publishingPostFlow.value = it }
+        return sideEffect<AppError, Int> {
+            imageRepo.postImagesOnWall(message, latitude, longitude).bind()
+        }.ifSuccess { publishingPostFlow.value = it }
     }
 }

@@ -5,7 +5,7 @@ import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.account.domain.model.ScreenName
 import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
-import vsukharew.vkclient.common.extension.map
+import vsukharew.vkclient.common.extension.sideEffect
 
 class AccountInteractorImpl(
     private val accountRepo: AccountRepo
@@ -17,6 +17,9 @@ class AccountInteractorImpl(
 
     override suspend fun doesShortNameExist(name: String): Either<AppError, Boolean> {
         // todo check profile info and return ScreenNameAvailability
-        return accountRepo.resolveScreenName(name).map { it is ScreenName.ResolvedScreenName  }
+        return sideEffect {
+            val screenName = accountRepo.resolveScreenName(name).bind()
+            screenName is ScreenName.ResolvedScreenName
+        }
     }
 }

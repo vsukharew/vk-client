@@ -7,9 +7,7 @@ import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.AttachmentType
 import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.domain.model.Left
-import vsukharew.vkclient.common.extension.ifSuccess
-import vsukharew.vkclient.common.extension.map
-import vsukharew.vkclient.common.extension.switchMap
+import vsukharew.vkclient.common.extension.*
 import vsukharew.vkclient.common.network.ProgressRequestBody
 import vsukharew.vkclient.common.utils.AppDirectories
 import vsukharew.vkclient.publishimage.attach.data.model.SavedWallImageResponse
@@ -37,17 +35,18 @@ class ImageRepository(
         onProgressUpdated: (Double) -> Unit
     ): Either<AppError, SavedWallImage> {
         if (!isRetryLoading) rawImages.add(image)
-        return imageApi.getImageWallUploadAddress()
-            .switchMap { uploadImageInternal(it.response!!.uploadUrl, image, onProgressUpdated) }
-            .map { response ->
-                with(response) {
-                    SavedWallImage(
-                        id,
-                        albumId,
-                        ownerId
-                    ).also { savedImages.add(it) }
-                }
-            }
+        return sideEffect {
+            val wrapper = imageApi.getImageWallUploadAddress().bind()
+            val address = safeNonNull { wrapper.response.bind() }
+            val response = uploadImage(address.uploadUrl, image, onProgressUpdated).bind()
+            response.run {
+                SavedWallImage(
+                    id,
+                    albumId,
+                    ownerId
+                )
+            }.also { savedImages.add(it) }
+        }
     }
 
     override fun removeUploadedImage(image: Image) {
@@ -72,53 +71,55 @@ class ImageRepository(
         latitude: Double?,
         longitude: Double?
     ): Either<AppError, Int> {
-        if (savedImages.isEmpty()) {
-            return Left(AppError.DomainError.NoPhotosToPostError)
-        }
-        val attachments = savedImages.joinToString {
-            "${AttachmentType.PHOTO.name.toLowerCase(Locale.getDefault())}${it.ownerId}_${it.id}>"
-        }
-        return wallApi.postToWall(message, attachments, latitude, longitude)
-            .map { it.response!!.postId }
-            .ifSuccess {
-                removeAllImages()
-                contentResolver.deleteCacheFiles(AppDirectories.WALL_IMAGES)
+        return sideEffect<AppError, Int> {
+            if (savedImages.isEmpty()) {
+                Left<AppError>(AppError.DomainError.NoPhotosToPostError).bindLeft()
             }
+            val attachments = savedImages.joinToString {
+                "${AttachmentType.PHOTO.name.toLowerCase(Locale.getDefault())}${it.ownerId}_${it.id}>"
+            }
+            val wrapper = wallApi.postToWall(message, attachments, latitude, longitude).bind()
+            safeNonNull { wrapper.response?.postId.bind() }
+        }.ifSuccess {
+            removeAllImages()
+            contentResolver.deleteCacheFiles(AppDirectories.WALL_IMAGES)
+        }
     }
 
-    private suspend fun uploadImageInternal(
+    private suspend fun uploadImage(
         url: String,
         image: Image,
         onProgressUpdated: (Double) -> Unit
     ): Either<AppError, SavedWallImageResponse> {
-        val streamResult = runCatching {
+        return runCatching {
             contentResolver.openInputStream(image.uri)
                 .use { it!!.readBytes() }
-        }
-        return when (streamResult.isSuccess) {
-            true -> {
+        }.mapCatching { bytes ->
+            sideEffect<AppError, SavedWallImageResponse> {
                 val mediaType = "image/*".toMediaType()
                 val requestBody = ProgressRequestBody(
-                    streamResult.getOrThrow().toRequestBody(mediaType),
+                    bytes.toRequestBody(mediaType),
                     image,
                     contentResolver,
                     onProgressUpdated,
                 )
-                val fileName = when (image.source) {
-                    CAMERA -> image.uri
-                    GALLERY -> {
-                        val extension = contentResolver.getExtensionFromContentUri(image.uri)
-                        "${image.uri}.$extension"
-                    }
-                }
+                val fileName = filename(image)
                 val multipartBody =
                     MultipartBody.Part.createFormData("photo", fileName, requestBody)
-                imageApi.uploadImage(url, multipartBody).switchMap {
-                    saveImage(it.photo!!, it.server!!, it.hash!!)
+                val wrapper = imageApi.uploadImage(url, multipartBody).bind()
+                val (photo, server, hash) = safeNonNull {
+                    wrapper.run {
+                        Triple(
+                            photo.bind(),
+                            server.bind(),
+                            hash.bind()
+                        )
+                    }
                 }
+                val response = saveImage(photo, server, hash)
+                response.bind()
             }
-            else -> Left(AppError.UnknownError(streamResult.exceptionOrNull()!!))
-        }
+        }.getOrElse { Left(AppError.UnknownError(it)) }
     }
 
     private suspend fun saveImage(
@@ -126,6 +127,21 @@ class ImageRepository(
         server: Int,
         hash: String
     ): Either<AppError, SavedWallImageResponse> {
-        return imageApi.saveImage(photo, server, hash).map { it.response!!.first() }
+        return sideEffect {
+            val wrapper = imageApi.saveImage(photo, server, hash).bind()
+            safeNonNull {
+                val response = wrapper.response.bind()
+                response.firstOrNull().bind()
+            }
+        }
     }
+
+    private fun filename(image: Image) =
+        when (image.source) {
+            CAMERA -> image.uri
+            GALLERY -> {
+                val extension = contentResolver.getExtensionFromContentUri(image.uri)
+                "${image.uri}.$extension"
+            }
+        }
 }

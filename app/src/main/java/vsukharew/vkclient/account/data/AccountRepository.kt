@@ -13,30 +13,33 @@ import vsukharew.vkclient.common.extension.*
 class AccountRepository(private val accountApi: AccountApi) : AccountRepo {
 
     override suspend fun getProfileInfo(): Either<AppError, ProfileInfo> {
-        return accountApi.getProfileInfo()
-            .map { wrapper ->
-                wrapper.response?.run {
+        return sideEffect {
+            val wrapper = accountApi.getProfileInfo().bind()
+            safeNonNull {
+                val profileResponse = wrapper.response.bind()
+                profileResponse.run {
                     ProfileInfo(
                         firstName,
                         lastName,
                         screen_name,
                     )
-                } ?: ProfileInfo.EMPTY
+                }
             }
+        }
     }
 
     override suspend fun resolveScreenName(name: String): Either<AppError, ScreenName> {
-        return accountApi.resolveScreenName(name)
-            .map { wrapper ->
-                wrapper.response?.let {
-                    when (it) {
-                        is ResolvedScreenNameResponse -> ResolvedScreenName(
-                            it.objectId,
-                            it.type
-                        )
+        return sideEffect {
+            val wrapper = accountApi.resolveScreenName(name).bind()
+            safeNonNull {
+                val response = wrapper.response.bind()
+                response.run {
+                    when (this) {
+                        is ResolvedScreenNameResponse -> ResolvedScreenName(objectId, type)
                         else -> UnresolvedScreenName
                     }
-                } ?: ResolvedScreenName(-1, String.EMPTY)
+                }
             }
+        }
     }
 }

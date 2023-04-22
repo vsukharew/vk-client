@@ -14,9 +14,14 @@ class EitherScope<L> {
             is Right -> data
             is Left -> {
                 error = this
-                throw EitherBindingException()
+                bindLeft()
             }
         }
+    }
+
+    fun Left<L>.bindLeft(): Nothing {
+        error = this
+        throw EitherBindingException()
     }
 
     operator fun <R> Either<L, R>.not() = bind()

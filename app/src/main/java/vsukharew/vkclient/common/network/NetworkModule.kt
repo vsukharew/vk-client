@@ -22,7 +22,17 @@ private fun provideGson(): Gson {
         .create()
 }
 
-private fun provideOkHttpClient(authRepo: AuthRepo): OkHttpClient {
+private fun provideRetrofit(baseUrl: String, client: OkHttpClient): Retrofit {
+    return Retrofit.Builder()
+        .baseUrl(baseUrl)
+        .client(client)
+        .addCallAdapterFactory(EitherResponseWrapperAdapterFactory())
+        .addCallAdapterFactory(UploadImageWrapperAdapterFactory())
+        .addConverterFactory(GsonConverterFactory.create(provideGson()))
+        .build()
+}
+
+fun provideOkHttpClient(authRepo: AuthRepo): OkHttpClient {
     return OkHttpClient.Builder()
         .apply {
             addInterceptor(AddTokenInterceptor(authRepo))
@@ -37,18 +47,8 @@ private fun provideOkHttpClient(authRepo: AuthRepo): OkHttpClient {
         .build()
 }
 
-private fun provideRetrofit(authRepo: AuthRepo): Retrofit {
-    return Retrofit.Builder()
-        .baseUrl(ServerUrls.BASE_URL)
-        .client(provideOkHttpClient(authRepo))
-        .addCallAdapterFactory(EitherResponseWrapperAdapterFactory())
-        .addCallAdapterFactory(UploadImageWrapperAdapterFactory())
-        .addConverterFactory(GsonConverterFactory.create(provideGson()))
-        .build()
-}
-
-val networkModule = module {
+fun networkModule(baseUrl: String, client: OkHttpClient) = module {
     single {
-        provideRetrofit(get())
+        provideRetrofit(baseUrl, client)
     }
 }

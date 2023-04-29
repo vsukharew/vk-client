@@ -1,13 +1,10 @@
 package vsukharew.vkclient.common.network.response
 
 import com.google.gson.annotations.SerializedName
-import vsukharew.vkclient.common.domain.model.AppError
 import java.net.HttpURLConnection
 
-const val DEFAULT_MESSAGE = ""
-const val DEFAULT_CODE = -1
-const val DEFAULT_KEY = ""
-const val DEFAULT_VALUE = ""
+const val DEFAULT_STRING = ""
+const val DEFAULT_INT = -1
 val DEFAULT_PARAMS = emptyList<ErrorResponse.RequestParam>()
 
 /**
@@ -16,20 +13,16 @@ val DEFAULT_PARAMS = emptyList<ErrorResponse.RequestParam>()
  */
 data class ResponseWrapper<T>(
     @SerializedName("response") val response: T?,
-    @SerializedName("error") val errorResponse: ErrorResponse? = ErrorResponse.DEFAULT
+    @SerializedName("error") val errorResponse: ErrorResponse?
 )
 
 data class ErrorResponse(
-    @SerializedName("error_code") val errorCode: Int = DEFAULT_CODE,
-    @SerializedName("error_msg") val errorMsg: String = DEFAULT_MESSAGE,
+    @SerializedName("error_code") val errorCode: Int = DEFAULT_INT,
+    @SerializedName("error_msg") val errorMsg: String = DEFAULT_STRING,
     @SerializedName("request_params") val requestParams: List<RequestParam> = DEFAULT_PARAMS,
 ) {
     data class RequestParam(
-        @SerializedName("key") val key: String = DEFAULT_KEY,
-        @SerializedName("value") val value: String = DEFAULT_VALUE,
+        @SerializedName("key") val key: String = DEFAULT_STRING,
+        @SerializedName("value") val value: String = DEFAULT_STRING,
     )
-
-    companion object {
-        val DEFAULT = ErrorResponse(DEFAULT_CODE, DEFAULT_MESSAGE, DEFAULT_PARAMS)
-    }
 }

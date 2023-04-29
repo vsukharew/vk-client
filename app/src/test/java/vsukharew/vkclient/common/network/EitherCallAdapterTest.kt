@@ -19,7 +19,7 @@ import vsukharew.vkclient.common.domain.model.Left
 import vsukharew.vkclient.common.domain.model.Right
 import vsukharew.vkclient.common.network.calladapter.utils.INTERNAL_SERVER_ERROR
 import vsukharew.vkclient.common.network.calladapter.utils.TOO_MUCH_REQUESTS_PER_SECOND
-import vsukharew.vkclient.common.network.response.DEFAULT_MESSAGE
+import vsukharew.vkclient.common.network.response.DEFAULT_STRING
 import vsukharew.vkclient.features.CoroutineDispatcherRule
 import java.net.HttpURLConnection.HTTP_OK
 import java.nio.charset.StandardCharsets
@@ -28,11 +28,11 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 @ExperimentalCoroutinesApi
-class EitherCallAdapterTest {
+open class EitherCallAdapterTest {
 
-    private val mockServer = MockWebServer()
     private val httpClient by lazy { OkHttpClient.Builder().build() }
-    private val retrofit by lazy { getKoin().get<Retrofit>() }
+    protected val mockServer = MockWebServer()
+    protected val retrofit by lazy { getKoin().get<Retrofit>() }
 
     @get:Rule
     val rule = CoroutineDispatcherRule()
@@ -222,7 +222,7 @@ class EitherCallAdapterTest {
             ServerError(
                 ErrorBody(
                     10,
-                    DEFAULT_MESSAGE,
+                    DEFAULT_STRING,
                     emptyList()
                 )
             )
@@ -245,7 +245,7 @@ class EitherCallAdapterTest {
     }
     //endregion
 
-    private fun responseBody(jsonResourceName: String): String {
+    protected fun responseBody(jsonResourceName: String): String {
         return javaClass.classLoader
             ?.getResourceAsStream(jsonResourceName)
             ?.source()
@@ -253,7 +253,7 @@ class EitherCallAdapterTest {
             ?.readString(StandardCharsets.UTF_8) ?: fail(BUFFER_IS_NULL_MESSAGE)
     }
 
-    private inline fun <reified T> createApi() = retrofit.create(T::class.java)
+    protected inline fun <reified T> createApi(): T = retrofit.create(T::class.java)
 
     private companion object {
         private const val BUFFER_IS_NULL_MESSAGE = "buffer is null"

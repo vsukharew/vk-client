@@ -1,0 +1,12 @@
+{
+  "error": {
+    "error_code": 10,
+    "error_msg": "unknown error",
+    "request_params": [
+      {
+        "key": "screen_name",
+        "value": "vk_user"
+      }
+    ]
+  }
+}

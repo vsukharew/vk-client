@@ -35,7 +35,7 @@ class AccountRepository(private val accountApi: AccountApi) : AccountRepo {
                 val response = wrapper.response.bind()
                 response.run {
                     when (this) {
-                        is ResolvedScreenNameResponse -> ResolvedScreenName(objectId, type)
+                        is ResolvedScreenNameResponse -> ResolvedScreenName
                         else -> UnresolvedScreenName
                     }
                 }

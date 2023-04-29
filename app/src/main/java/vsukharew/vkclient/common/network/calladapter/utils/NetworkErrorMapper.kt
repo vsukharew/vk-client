@@ -9,8 +9,8 @@ import vsukharew.vkclient.common.network.response.ErrorResponse
  */
 private const val UNKNOWN_ERROR = 1
 private const val UNAUTHORIZED = 5
-private const val TOO_MUCH_REQUESTS_PER_SECOND = 6
-private const val INTERNAL_SERVER_ERROR = 10
+const val TOO_MUCH_REQUESTS_PER_SECOND = 6
+const val INTERNAL_SERVER_ERROR = 10
 
 private val responseErrorBodyToDomain: (response: ErrorResponse) -> ErrorBody =
     { response ->

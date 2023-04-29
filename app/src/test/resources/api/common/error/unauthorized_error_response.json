@@ -1,0 +1,20 @@
+{
+  "error": {
+    "error_code": 5,
+    "error_msg": "unknown error",
+    "request_params": [
+      {
+        "key": "screen_name",
+        "value": "vk_user"
+      },
+      {
+        "key": "v",
+        "value": "5.90"
+      },
+      {
+        "key": "method",
+        "value": "utils.resolveScreenName"
+      }
+    ]
+  }
+}

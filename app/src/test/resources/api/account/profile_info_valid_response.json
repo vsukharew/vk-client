@@ -1,0 +1,33 @@
+{
+  "response": {
+    "id": 15896163,
+    "home_town": "Калуга",
+    "status": "",
+    "is_tinkoff_linked": false,
+    "is_tinkoff_verified": false,
+    "is_sber_verified": false,
+    "oauth_linked": [],
+    "oauth_verification": [],
+    "first_name": "Вадим",
+    "last_name": "Сухарев",
+    "bdate": "29.12.1995",
+    "bdate_visibility": 0,
+    "city": {
+      "id": 62,
+      "title": "Калуга"
+    },
+    "country": {
+      "id": 1,
+      "title": "Россия"
+    },
+    "phone": "+7 *** *** ** 57",
+    "relation": 0,
+    "screen_name": "vsukharew",
+    "sex": 2
+  },
+  "error" : {
+    "error_code": 5,
+    "error_msg": "unknown error",
+    "request_params": []
+  }
+}

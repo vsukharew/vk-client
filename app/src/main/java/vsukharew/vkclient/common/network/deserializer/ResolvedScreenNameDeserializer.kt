@@ -20,10 +20,7 @@ class ResolvedScreenNameDeserializer : JsonDeserializer<ScreenNameResponse> {
             else -> {
                 val jsonObject = json?.asJsonObject
                 if (jsonObject?.has("object_id") == true && jsonObject.has("type")) {
-                    ResolvedScreenNameResponse(
-                        jsonObject.get("object_id").asInt,
-                        jsonObject.get("type").asString
-                    )
+                    ResolvedScreenNameResponse
                 } else {
                     UnresolvedScreenNameResponse
                 }

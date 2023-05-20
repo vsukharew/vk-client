@@ -3,6 +3,7 @@ package vsukharew.vkclient.publishimage.attach.presentation
 import androidx.lifecycle.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import vsukharew.vkclient.common.domain.interactor.SessionInteractor
 import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.domain.model.AppError.DomainError
 import vsukharew.vkclient.common.domain.model.Left
@@ -23,8 +24,9 @@ class AttachImageViewModel(
     private val imageInteractor: ImageInteractor,
     private val contentResolver: DomainContentResolver,
     private val flowStage: PublishImageFlowStage,
-    private val savedState: SavedStateHandle
-) : BaseViewModel() {
+    private val savedState: SavedStateHandle,
+    sessionInteractor: SessionInteractor
+) : BaseViewModel(sessionInteractor) {
 
     private val isNextButtonAvailableFlow = MutableStateFlow(false)
     private val imagesStates = mutableMapOf<UIImage, ImageUIState>()

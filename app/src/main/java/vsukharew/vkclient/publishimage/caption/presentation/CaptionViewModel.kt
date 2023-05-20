@@ -3,6 +3,7 @@ package vsukharew.vkclient.publishimage.caption.presentation
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import vsukharew.vkclient.common.domain.interactor.SessionInteractor
 import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.domain.model.AppError.DomainError.LocationNotReceivedError
@@ -19,8 +20,9 @@ import vsukharew.vkclient.publishimage.navigation.PublishImageFlowStage
 class CaptionViewModel(
     private val imageInteractor: ImageInteractor,
     private val locationProvider: LocationProvider,
-    private val flowStage: PublishImageFlowStage
-) : BaseViewModel() {
+    private val flowStage: PublishImageFlowStage,
+    sessionInteractor: SessionInteractor
+) : BaseViewModel(sessionInteractor) {
 
     private val captionLiveData = MutableLiveData<String>()
     private val publishingAction = MutableLiveData<CaptionUIAction>()

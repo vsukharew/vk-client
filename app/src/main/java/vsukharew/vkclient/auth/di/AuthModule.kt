@@ -22,6 +22,6 @@ val authScreenModule = module {
     scope<AuthFragment> {
         scoped { AuthNavigator() }
         scoped { AuthCoordinator(get()) }
-        viewModel { AuthViewModel(get()) }
+        viewModel { AuthViewModel(get(), get()) }
     }
 }

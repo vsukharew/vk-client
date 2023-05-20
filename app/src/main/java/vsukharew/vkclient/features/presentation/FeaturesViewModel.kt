@@ -30,7 +30,7 @@ class FeaturesViewModel(
     private val savedState: SavedStateHandle,
     private val dispatchers: DispatchersProvider,
     imageInteractor: ImageInteractor
-) : BaseViewModel() {
+) : BaseViewModel(sessionInteractor) {
 
     private val profileInfoAction = MutableLiveData<FeaturesScreenAction>(FeaturesScreenAction.InitialLoading)
     val profileUiState = Transformations.switchMap(profileInfoAction, ::loadProfileInfo)

@@ -10,3 +10,8 @@ sealed class FeaturesScreenAction {
     @Parcelize
     data class Text(val text: String) : FeaturesScreenAction(), Parcelable
 }
+
+enum class FeaturesResetType {
+    MAIN_LOADING,
+    SWIPE_REFRESH
+}

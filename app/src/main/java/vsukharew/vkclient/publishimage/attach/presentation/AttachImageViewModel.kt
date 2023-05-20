@@ -33,7 +33,7 @@ class AttachImageViewModel(
     private val imageAction = savedState.get<List<String>>(KEY_IMAGES_URIS)?.let {
         MutableLiveData<ImageEvent>()
     } ?: MutableLiveData<ImageEvent>(ImageEvent.SuccessfulLoading(UIImage.AddNewImagePlaceholder))
-    val imagesStatesLiveData = Transformations.switchMap(imageAction, ::refreshImagesState)
+    val imagesStatesLiveData = imageAction.switchMap(::refreshImagesState)
     val isNextButtonAvailable = MutableLiveData<Boolean>()
 
     init {

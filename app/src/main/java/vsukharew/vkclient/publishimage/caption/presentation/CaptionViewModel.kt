@@ -26,7 +26,7 @@ class CaptionViewModel(
 
     private val captionLiveData = MutableLiveData<String>()
     private val publishingAction = MutableLiveData<CaptionUIAction>()
-    val publishingState = Transformations.switchMap(publishingAction, ::mapUiAction)
+    val publishingState = publishingAction.switchMap(::mapUiAction)
     val shouldShowAddLocationDialog = MutableLiveData<Boolean>()
     val showReloadImagesDialog = MutableLiveData<Unit>()
     val requestLocationPermissionEvent = MutableLiveData<SingleLiveEvent<Unit>>()

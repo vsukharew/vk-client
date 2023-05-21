@@ -1,8 +1,17 @@
 package vsukharew.vkclient.features.presentation
 
 import androidx.lifecycle.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,6 +28,7 @@ import vsukharew.vkclient.common.domain.model.Left
 import vsukharew.vkclient.common.domain.model.Right
 import vsukharew.vkclient.common.extension.doIfLeft
 import vsukharew.vkclient.common.extension.fold
+import vsukharew.vkclient.common.extension.resolve
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseViewModel
 import vsukharew.vkclient.common.presentation.loadstate.FeaturesResetType
@@ -31,6 +41,8 @@ import vsukharew.vkclient.features.presentation.FeaturesUiState.LoadingState
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
 import vsukharew.vkclient.screenname.model.ScreenNameAvailability.*
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 class FeaturesViewModel(
     private val accountInteractor: AccountInteractor,
     private val authInteractor: AuthInteractor,
@@ -96,9 +108,23 @@ class FeaturesViewModel(
         loadProfileInfo(SWIPE_REFRESH)
     }
 
-    suspend fun onShortNameChanged(shortName: String) {
-        rewriteProfileInfo(shortName)
-        checkShortNameAvailability(shortName)
+    fun onShortNameChanged(shortNameFlow: Flow<String>) {
+        shortNameFlow.debounce(DELAY_MILLIS)
+            .map(::shortNameAndAvailabilityState)
+            .onEach { (shortName, state) ->
+                mutableUiState.update {
+                    it.copy(
+                        currentShortName = shortName,
+                        shortNameAvailabilityState = state
+                    ).save()
+                }
+            }
+            .filter { (_, shortNameState) -> shortNameState is ShortNameAvailabilityState.LoadingProgress }
+            .mapLatest { (shortName, _) -> checkShortNameAvailability(shortName) }
+            .onEach { state ->
+                mutableUiState.update { it.copy(shortNameAvailabilityState = state).save() }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun saveCursorPosition(position: Int) {
@@ -114,35 +140,11 @@ class FeaturesViewModel(
             )
         }.let { state -> mutableUiState.update { it.copy(loadingState = state) } }
         viewModelScope.launch {
-            when (val profileInfo = accountInteractor.getProfileInfo()) {
-                is Right -> {
-                    mutableUiState.update {
-                        val currentShortName = profileInfo.data.screenName
-                        val shortNameAvailability =
-                            (currentShortName?.let { CURRENT_USER_NAME } ?: EMPTY)
-                                .let(ShortNameAvailabilityState::Success)
-                        FeaturesUiState(
-                            LoadingState.Loaded,
-                            profileInfo.data,
-                            currentShortName = currentShortName,
-                            shortNameAvailabilityState = shortNameAvailability,
-                        )
-                    }
-                }
-
-                is Left -> {
-                    when (resetType) {
-                        MAIN_LOADING -> LoadingState.Error
-                        SWIPE_REFRESH -> LoadingState.SwipeRefreshError
-                    }.let { state ->
-                        mutableUiState.update {
-                            it.copy(loadingState = state).save()
-                        }
-                    }
-                    val errorEvent = SingleLiveEvent(profileInfo)
-                    errorLiveData.value = errorEvent
-                }
-            }
+            accountInteractor.getProfileInfo()
+                .resolve(
+                    ifLeft = { error -> profileInfoError(resetType, error) },
+                    ifRight = { profileInfo -> profileInfoSuccess(profileInfo) }
+                )
         }
     }
 
@@ -212,53 +214,63 @@ class FeaturesViewModel(
         }
     }
 
-    private suspend fun checkShortNameAvailability(shortName: String) {
-        with(mutableUiState) {
-            val shortNameAvailabilityState = when {
-                shortName == value.initialShortName -> ShortNameAvailabilityState.Success(
-                    CURRENT_USER_NAME
-                )
-                // restore saved state case
-                shortName == value.currentShortName -> value.shortNameAvailabilityState
-                shortName.isEmpty() -> ShortNameAvailabilityState.Success(EMPTY)
-                else -> ShortNameAvailabilityState.LoadingProgress
-            }
-            update { it.copy(currentShortName = shortName).save() }
-            update {
-                if (shortNameAvailabilityState is ShortNameAvailabilityState.LoadingProgress) {
-                    it.copy(shortNameAvailabilityState = shortNameAvailabilityState)
-                } else {
-                    it.copy(shortNameAvailabilityState = shortNameAvailabilityState).save()
-                }
-            }
-            when (shortNameAvailabilityState) {
-                ShortNameAvailabilityState.LoadingProgress -> {
-                    val state = withContext(dispatchers.io) {
-                        accountInteractor.doesShortNameExist(shortName)
-                    }.doIfLeft(::handleError)
-                        .fold(
-                            ifLeft = { ShortNameAvailabilityState.Error },
-                            ifRight = { doesExist ->
-                                val availability = when {
-                                    doesExist -> UNAVAILABLE
-                                    else -> AVAILABLE
-                                }
-                                ShortNameAvailabilityState.Success(availability)
-                            }
-                        )
-                    update { it.copy(shortNameAvailabilityState = state).save() }
-                }
+    private fun shortNameAndAvailabilityState(shortName: String): Pair<String, ShortNameAvailabilityState> {
+        val state = when {
+            shortName == uiState.value.initialShortName -> ShortNameAvailabilityState.Success(
+                CURRENT_USER_NAME
+            )
+            // restore saved state case
+            shortName == uiState.value.currentShortName -> uiState.value.shortNameAvailabilityState
+            shortName.isEmpty() -> ShortNameAvailabilityState.Success(EMPTY)
+            else -> ShortNameAvailabilityState.LoadingProgress
+        }
+        return shortName to state
+    }
 
-                else -> {
+    private suspend fun checkShortNameAvailability(shortName: String): ShortNameAvailabilityState {
+        return withContext(dispatchers.io) {
+            accountInteractor.doesShortNameExist(shortName)
+        }.doIfLeft(::handleError)
+            .fold(
+                ifLeft = { ShortNameAvailabilityState.Error },
+                ifRight = { doesExist ->
+                    val availability = when {
+                        doesExist -> UNAVAILABLE
+                        else -> AVAILABLE
+                    }
+                    ShortNameAvailabilityState.Success(availability)
                 }
-            }
+            )
+    }
+
+    private fun profileInfoSuccess(profileInfo: ProfileInfo) {
+        mutableUiState.update {
+            val currentShortName = profileInfo.screenName
+            val shortNameAvailability =
+                (currentShortName?.let { CURRENT_USER_NAME } ?: EMPTY)
+                    .let(ShortNameAvailabilityState::Success)
+            FeaturesUiState(
+                LoadingState.Loaded,
+                profileInfo,
+                currentShortName = currentShortName,
+                shortNameAvailabilityState = shortNameAvailability,
+            )
         }
     }
 
-    private fun rewriteProfileInfo(currentShortName: String) {
-        val currentProfileInfo = savedState.get<ProfileInfo>(KEY_PROFILE_INFO)
-            ?.copy(screenName = currentShortName)
-        savedState[KEY_PROFILE_INFO] = currentProfileInfo
+    private fun profileInfoError(
+        resetType: FeaturesResetType,
+        error: AppError
+    ) {
+        when (resetType) {
+            MAIN_LOADING -> LoadingState.Error
+            SWIPE_REFRESH -> LoadingState.SwipeRefreshError
+        }.let { state ->
+            mutableUiState.update {
+                it.copy(loadingState = state).save()
+            }
+        }
+        handleError(error)
     }
 
     private fun FeaturesUiState.save(): FeaturesUiState {
@@ -269,5 +281,6 @@ class FeaturesViewModel(
         private const val KEY_SHORT_NAME = "short_name"
         private const val KEY_PROFILE_INFO = "profile_info"
         private const val KEY_SELECTION_STATE_INFO = "selection_state"
+        private const val DELAY_MILLIS = 500L
     }
 }

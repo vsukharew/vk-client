@@ -7,14 +7,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.stateViewModel
@@ -31,6 +28,7 @@ import vsukharew.vkclient.databinding.FragmentFeaturesBinding
 import vsukharew.vkclient.features.di.FeaturesScopeCreator
 import vsukharew.vkclient.features.navigation.FeaturesCoordinator
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @FlowPreview
 class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment_features) {
     private val featuresCoordinator: FeaturesCoordinator by inject()
@@ -135,7 +133,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
                         .map(FeaturesUiState::shortNameAvailabilityState::get)
                         .filterIsInstance<ShortNameAvailabilityState.Error>()
                         .flowWithLifecycle(viewLifecycleOwner.lifecycle)
-                        .collectLatest {  }
+                        .collectLatest { }
                 }
                 signOutEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
                 signOutDialogEvent.observe(viewLifecycleOwner) { observeSignOutDialogEvent() }
@@ -163,11 +161,7 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
     }
 
     private fun observeUiEvents() {
-        binding.shortNameText
-            .textChangesSkipFirst()
-            .debounce(DELAY_MILLIS)
-            .onEach(viewModel::onShortNameChanged)
-            .launchIn(viewModel.viewModelScope)
+        viewModel.onShortNameChanged(binding.shortNameText.textChangesSkipFirst())
     }
 
     private fun setListeners() {
@@ -215,9 +209,5 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
     private fun observePublishedPosts(event: SingleLiveEvent<Int?>) {
         event.getContentIfNotHandled()
             ?.let { snackBar(R.string.features_fragment_post_published_text) }
-    }
-
-    private companion object {
-        private const val DELAY_MILLIS = 500L
     }
 }

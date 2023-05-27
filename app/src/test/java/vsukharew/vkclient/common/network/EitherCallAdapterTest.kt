@@ -23,6 +23,7 @@ import vsukharew.vkclient.common.network.response.DEFAULT_STRING
 import vsukharew.vkclient.features.CoroutineDispatcherRule
 import java.net.HttpURLConnection.HTTP_OK
 import java.nio.charset.StandardCharsets
+import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail

@@ -37,6 +37,7 @@ import vsukharew.vkclient.common.domain.model.Left
 import vsukharew.vkclient.common.domain.model.Right
 import vsukharew.vkclient.common.extension.doIfLeft
 import vsukharew.vkclient.common.extension.fold
+import vsukharew.vkclient.common.extension.ifSuccess
 import vsukharew.vkclient.common.extension.resolve
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseViewModel
@@ -162,8 +163,9 @@ class FeaturesViewModel(
                 isRefreshing = true
             )
         }.let { state -> mutableUiState.update { it.copy(loadingState = state) } }
-        viewModelScope.launch {
+        viewModelScope.launch(dispatchers.io) {
             accountInteractor.getProfileInfo()
+                .ifSuccess { dispatchers.main }
                 .resolve(
                     ifLeft = { error -> profileInfoError(resetType, error) },
                     ifRight = { profileInfo -> profileInfoSuccess(profileInfo) }

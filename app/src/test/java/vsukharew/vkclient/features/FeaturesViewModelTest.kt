@@ -14,6 +14,7 @@ import vsukharew.vkclient.common.domain.interactor.SessionInteractor
 import vsukharew.vkclient.common.domain.model.Right
 import vsukharew.vkclient.common.extension.findAndCast
 import vsukharew.vkclient.common.extension.observeForTesting
+import vsukharew.vkclient.common.presentation.loadstate.FeaturesScreenAction
 import vsukharew.vkclient.common.presentation.loadstate.ProfileInfoUiState
 import vsukharew.vkclient.features.presentation.FeaturesViewModel
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor

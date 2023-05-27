@@ -13,6 +13,7 @@ import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.domain.model.Left
 import vsukharew.vkclient.common.domain.model.Right
+import vsukharew.vkclient.common.extension.EMPTY
 import vsukharew.vkclient.common.network.EitherCallAdapterTest
 import vsukharew.vkclient.common.network.TestApi
 import vsukharew.vkclient.common.network.response.DEFAULT_STRING
@@ -60,7 +61,7 @@ class AccountApiTest : EitherCallAdapterTest() {
             )
         )
         val api = createApi<AccountApi>()
-        val actual = runBlocking { api.resolveScreenName(anyString()) }
+        val actual = runBlocking { api.resolveScreenName(String.EMPTY) }
         assertEquals(expected, actual)
     }
 
@@ -78,13 +79,13 @@ class AccountApiTest : EitherCallAdapterTest() {
             )
         )
         val api = createApi<AccountApi>()
-        val actual = runBlocking { api.resolveScreenName(anyString()) }
+        val actual = runBlocking { api.resolveScreenName(String.EMPTY) }
         assertEquals(expected, actual)
     }
 
     private companion object {
         private const val PROFILE_INFO_SOME_PROPERTIES_ABSENT =
-            "api/account/profile_info_some_properties_absent.json"
+            "api/account/profile_info_expected_properties_absent.json"
         private const val RESOLVE_SCREEN_NAME_NAME_AVAILABLE_FILENAME =
             "api/account/resolve_screen_name_name_available.json"
         private const val RESOLVE_SCREEN_NAME_NAME_BUSY_FILENAME =

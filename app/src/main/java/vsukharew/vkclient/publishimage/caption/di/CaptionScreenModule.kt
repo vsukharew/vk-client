@@ -12,6 +12,6 @@ import vsukharew.vkclient.publishimage.navigation.PublishImageCoordinator
 val captionScreenModule = module {
     scope<CaptionFragment> {
         scopedBy<LocationProvider, LocationProviderImpl>()
-        viewModel { CaptionViewModel(get(), get(), (get() as PublishImageCoordinator).captionStage) }
+        viewModel { CaptionViewModel(get(), get(), (get() as PublishImageCoordinator).captionStage, get()) }
     }
 }

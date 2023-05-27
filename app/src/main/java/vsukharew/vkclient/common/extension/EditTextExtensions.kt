@@ -13,3 +13,10 @@ fun EditText.textChangesSkipFirst(): Flow<String> {
     }
     return flow.drop(1)
 }
+
+fun EditText.setDistinctText(text: String?) {
+    if (getText()?.toString() != text) {
+        setText(text)
+        setSelection(text?.length ?: 0)
+    }
+}

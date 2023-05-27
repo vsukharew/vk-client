@@ -1,5 +1,7 @@
 package vsukharew.vkclient.common.presentation.loadstate
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Left
@@ -74,8 +76,9 @@ sealed class ProfileInfoUiState {
     }
 }
 
-sealed class ShortNameAvailabilityState {
+@Parcelize
+sealed class ShortNameAvailabilityState : Parcelable {
     object LoadingProgress : ShortNameAvailabilityState()
     data class Success(val data: ScreenNameAvailability) : ShortNameAvailabilityState()
-    data class Error(val error: SingleLiveEvent<Left<AppError>>) : ShortNameAvailabilityState()
+    object Error : ShortNameAvailabilityState()
 }

@@ -28,3 +28,24 @@ fun <L, R> Either<L, R>.ifSuccess(block: (R) -> Unit): Either<L, R> {
         else -> this
     }
 }
+
+inline fun <L, R> Either<L, R>.doIfLeft(ifLeft: (L) -> Unit): Either<L, R> {
+    return when (this) {
+        is Right -> this
+        is Left -> this.apply { ifLeft.invoke(this.data) }
+    }
+}
+
+inline fun <L, R, V> Either<L, R>.fold(ifLeft: (L) -> V, ifRight: (R) -> V): V {
+    return when (this) {
+        is Right -> ifRight.invoke(this.data)
+        is Left -> ifLeft.invoke(this.data)
+    }
+}
+
+inline fun <L, R> Either<L, R>.resolve(ifLeft: (L) -> Unit, ifRight: (R) -> Unit) {
+    when (this) {
+        is Right -> ifRight.invoke(this.data)
+        is Left -> ifLeft.invoke(this.data)
+    }
+}

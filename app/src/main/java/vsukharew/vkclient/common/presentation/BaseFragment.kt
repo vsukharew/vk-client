@@ -6,8 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.viewbinding.ViewBinding
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.android.inject
 import org.koin.android.scope.AndroidScopeComponent
@@ -42,6 +46,12 @@ abstract class BaseFragment<V : ViewBinding>(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.errorLiveData.observe(viewLifecycleOwner, ::observeError)
+
+        lifecycleScope.launch {
+            viewModel.eventsFlow
+                .flowWithLifecycle(viewLifecycleOwner.lifecycle)
+                .collectLatest(::collectEvent)
+        }
     }
 
     override fun onStop() {
@@ -57,5 +67,10 @@ abstract class BaseFragment<V : ViewBinding>(
 
     private fun <T> observeError(event: SingleLiveEvent<Left<T>>) {
         event.getContentIfNotHandled()?.let(::handleError)
+    }
+
+    private fun collectEvent(event: OneTimeEvent) {
+        val viewModel = viewModel as? EventsViewModel ?: return
+        errorHandler.handleEvent(this, viewModel, event)
     }
 }

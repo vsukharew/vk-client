@@ -109,6 +109,7 @@ class AttachImageFragment :
                         GALLERY -> {
                             galleryResultLauncher.launch("image/*")
                         }
+                        else -> {}
                     }
                     removeKey<Int>(KEY_IMAGE_SOURCE)
                 }

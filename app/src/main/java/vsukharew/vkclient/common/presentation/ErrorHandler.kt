@@ -1,5 +1,6 @@
 package vsukharew.vkclient.common.presentation
 
+import androidx.appcompat.app.AlertDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -11,10 +12,51 @@ import vsukharew.vkclient.common.domain.model.AppError.*
 import vsukharew.vkclient.common.domain.model.AppError.RemoteError.ServerError
 import vsukharew.vkclient.common.domain.model.Left
 import vsukharew.vkclient.common.extension.snackBar
+import vsukharew.vkclient.common.extension.toast
 
 class ErrorHandler(
     private val sessionInteractor: SessionInteractor
 ) : CoroutineScope by CoroutineScope(Dispatchers.Main) {
+
+    fun handleEvent(fragment: BaseFragment<*>, viewModel: EventsViewModel, event: OneTimeEvent) {
+        with(fragment) {
+            when (event) {
+                is OneTimeEvent.Perform.SignOut -> {
+                    navController.navigate(R.id.global_action_to_authFragment)
+                    viewModel.signOutCompleted()
+                }
+                is OneTimeEvent.Perform.Alert -> {
+                    AlertDialog.Builder(fragment.requireContext())
+                        .setTitle(event)
+                        .setMessage(event)
+                        .setNegativeButton(event, viewModel)
+                        .setPositiveButton(event, viewModel)
+                        .setCancelable(event.isCancelable)
+                        .create()
+                        .show()
+                }
+                is OneTimeEvent.Perform.SnackBar.Message -> {
+                    snackBar(event.message)
+                    viewModel.snackBarHidden()
+                }
+                is OneTimeEvent.Perform.SnackBar.StringResource -> {
+                    snackBar(event.resId)
+                    viewModel.snackBarHidden()
+                }
+                is OneTimeEvent.Perform.Toast.Message -> {
+                    toast(event.message)
+                    viewModel.toastHidden()
+                }
+                is OneTimeEvent.Perform.Toast.StringResource -> {
+                    snackBar(event.resId)
+                    viewModel.toastHidden()
+                }
+                is OneTimeEvent.Done -> {
+                    return
+                }
+            }
+        }
+    }
 
     fun <T> handleError(fragment: BaseFragment<*>, error: Left<T>) {
         with(fragment) {
@@ -46,5 +88,47 @@ class ErrorHandler(
 
     fun cancelCoroutineScope() {
         cancel()
+    }
+
+    private fun AlertDialog.Builder.setTitle(event: OneTimeEvent.Perform.Alert): AlertDialog.Builder {
+        return event.run { titleRes?.let { setTitle(it) } ?: setTitle(title) }
+    }
+
+    private fun AlertDialog.Builder.setMessage(event: OneTimeEvent.Perform.Alert): AlertDialog.Builder {
+        return event.run { messageRes?.let { setMessage(it) } ?: setMessage(message) }
+    }
+
+    private fun AlertDialog.Builder.setNegativeButton(
+        event: OneTimeEvent.Perform.Alert,
+        viewModel: EventsViewModel
+    ): AlertDialog.Builder {
+        return event.run {
+            negativeButtonRes?.let {
+                setNegativeButton(it) { _, _ ->
+                    viewModel.alertHidden()
+                    negativeButtonListener.invoke()
+                }
+            } ?: setNegativeButton(event.negativeButton) { _, _ ->
+                viewModel.alertHidden()
+                negativeButtonListener.invoke()
+            }
+        }
+    }
+
+    private fun AlertDialog.Builder.setPositiveButton(
+        event: OneTimeEvent.Perform.Alert,
+        viewModel: EventsViewModel
+    ): AlertDialog.Builder {
+        return event.run {
+            positiveButtonRes?.let {
+                setPositiveButton(it) { _, _ ->
+                    viewModel.alertHidden()
+                    positiveButtonListener.invoke()
+                }
+            } ?: setPositiveButton(event.positiveButton) { _, _ ->
+                viewModel.alertHidden()
+                positiveButtonListener.invoke()
+            }
+        }
     }
 }

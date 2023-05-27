@@ -135,9 +135,12 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
                         .flowWithLifecycle(viewLifecycleOwner.lifecycle)
                         .collectLatest { }
                 }
-                signOutEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
-                signOutDialogEvent.observe(viewLifecycleOwner) { observeSignOutDialogEvent() }
-                signOutDialogClosedEvent.observe(viewLifecycleOwner, ::observeSignOutEvent)
+                launch {
+                    uiState
+                        .map(FeaturesUiState::shouldNavigateTo::get)
+                        .flowWithLifecycle(viewLifecycleOwner.lifecycle)
+                        .collectLatest(::collectNavigationEvent)
+                }
                 postPublishedEvent.observe(viewLifecycleOwner, ::observePublishedPosts)
             }
         }
@@ -190,19 +193,15 @@ class FeaturesFragment : BaseFragment<FragmentFeaturesBinding>(R.layout.fragment
         }
     }
 
-    private fun observeSignOutDialogEvent() {
-        AlertDialog.Builder(requireContext())
-            .setMessage(R.string.features_fragment_sign_out_dialog_text)
-            .setPositiveButton(R.string.ok_text) { _, _ ->
-                viewModel.onSignOutDialogClosed()
+    private fun collectNavigationEvent(navigateTo: FeaturesUiState.NavigateTo) {
+        when (navigateTo) {
+            FeaturesUiState.NavigateTo.SignInScreen -> {
+                featuresCoordinator.onSignOutClick()
+                viewModel.onSignOutComplete()
             }
-            .create().also { signOutDialog = it }
-            .show()
-    }
+            FeaturesUiState.NavigateTo.Nothing -> {
 
-    private fun observeSignOutEvent(event: SingleLiveEvent<Unit>) {
-        event.getContentIfNotHandled()?.let {
-            featuresCoordinator.onSignOutClick()
+            }
         }
     }
 

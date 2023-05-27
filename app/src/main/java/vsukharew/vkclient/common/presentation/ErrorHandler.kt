@@ -1,5 +1,6 @@
 package vsukharew.vkclient.common.presentation
 
+import androidx.appcompat.app.AlertDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -23,6 +24,16 @@ class ErrorHandler(
                 is OneTimeEvent.Perform.SignOut -> {
                     navController.navigate(R.id.global_action_to_authFragment)
                     viewModel.signOutCompleted()
+                }
+                is OneTimeEvent.Perform.Alert -> {
+                    AlertDialog.Builder(fragment.requireContext())
+                        .setTitle(event)
+                        .setMessage(event)
+                        .setNegativeButton(event, viewModel)
+                        .setPositiveButton(event, viewModel)
+                        .setCancelable(event.isCancelable)
+                        .create()
+                        .show()
                 }
                 is OneTimeEvent.Perform.SnackBar.Message -> {
                     snackBar(event.message)
@@ -77,5 +88,47 @@ class ErrorHandler(
 
     fun cancelCoroutineScope() {
         cancel()
+    }
+
+    private fun AlertDialog.Builder.setTitle(event: OneTimeEvent.Perform.Alert): AlertDialog.Builder {
+        return event.run { titleRes?.let { setTitle(it) } ?: setTitle(title) }
+    }
+
+    private fun AlertDialog.Builder.setMessage(event: OneTimeEvent.Perform.Alert): AlertDialog.Builder {
+        return event.run { messageRes?.let { setMessage(it) } ?: setMessage(message) }
+    }
+
+    private fun AlertDialog.Builder.setNegativeButton(
+        event: OneTimeEvent.Perform.Alert,
+        viewModel: EventsViewModel
+    ): AlertDialog.Builder {
+        return event.run {
+            negativeButtonRes?.let {
+                setNegativeButton(it) { _, _ ->
+                    viewModel.alertHidden()
+                    negativeButtonListener.invoke()
+                }
+            } ?: setNegativeButton(event.negativeButton) { _, _ ->
+                viewModel.alertHidden()
+                negativeButtonListener.invoke()
+            }
+        }
+    }
+
+    private fun AlertDialog.Builder.setPositiveButton(
+        event: OneTimeEvent.Perform.Alert,
+        viewModel: EventsViewModel
+    ): AlertDialog.Builder {
+        return event.run {
+            positiveButtonRes?.let {
+                setPositiveButton(it) { _, _ ->
+                    viewModel.alertHidden()
+                    positiveButtonListener.invoke()
+                }
+            } ?: setPositiveButton(event.positiveButton) { _, _ ->
+                viewModel.alertHidden()
+                positiveButtonListener.invoke()
+            }
+        }
     }
 }

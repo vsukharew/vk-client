@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
  */
 interface EventsViewModel {
     fun toastHidden()
+    fun alertHidden()
     fun signOutCompleted()
     fun snackBarHidden()
 }

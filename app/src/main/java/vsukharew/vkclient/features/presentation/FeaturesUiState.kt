@@ -16,7 +16,8 @@ data class FeaturesUiState(
     val loadingState: LoadingState,
     val profileInfo: ProfileInfo?,
     val currentShortName: String?,
-    val shortNameAvailabilityState: ShortNameAvailabilityState
+    val shortNameAvailabilityState: ShortNameAvailabilityState,
+    val shouldNavigateTo: NavigateTo
 ): Parcelable {
 
     val initialShortName = profileInfo?.screenName.orEmpty()
@@ -89,12 +90,19 @@ data class FeaturesUiState(
         object SwipeRefreshError : LoadingState()
     }
 
+    @Parcelize
+    sealed class NavigateTo : Parcelable {
+        object Nothing : NavigateTo()
+        object SignInScreen : NavigateTo()
+    }
+
     companion object {
         val DEFAULT = FeaturesUiState(
             loadingState = MainLoading,
             profileInfo = null,
             currentShortName = null,
-            shortNameAvailabilityState = ShortNameAvailabilityState.Success(ScreenNameAvailability.EMPTY)
+            shortNameAvailabilityState = ShortNameAvailabilityState.Success(ScreenNameAvailability.EMPTY),
+            shouldNavigateTo = NavigateTo.Nothing
         )
         const val KEY_SAVED_STATE = "saved_state"
     }

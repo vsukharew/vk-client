@@ -1,6 +1,14 @@
 package vsukharew.vkclient.features.presentation
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.LiveDataScope
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.liveData
+import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -15,6 +23,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import vsukharew.vkclient.R
 import vsukharew.vkclient.account.domain.interactor.AccountInteractor
 import vsukharew.vkclient.account.domain.model.ProfileInfo
 import vsukharew.vkclient.auth.domain.interactor.AuthInteractor
@@ -31,15 +40,20 @@ import vsukharew.vkclient.common.extension.fold
 import vsukharew.vkclient.common.extension.resolve
 import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseViewModel
+import vsukharew.vkclient.common.presentation.OneTimeEvent
 import vsukharew.vkclient.common.presentation.loadstate.FeaturesResetType
 import vsukharew.vkclient.common.presentation.loadstate.FeaturesResetType.MAIN_LOADING
 import vsukharew.vkclient.common.presentation.loadstate.FeaturesResetType.SWIPE_REFRESH
-import vsukharew.vkclient.common.presentation.loadstate.ProfileInfoUiState
 import vsukharew.vkclient.common.presentation.loadstate.FeaturesScreenAction
+import vsukharew.vkclient.common.presentation.loadstate.ProfileInfoUiState
 import vsukharew.vkclient.common.presentation.loadstate.ShortNameAvailabilityState
 import vsukharew.vkclient.features.presentation.FeaturesUiState.LoadingState
+import vsukharew.vkclient.features.presentation.FeaturesUiState.NavigateTo.SignInScreen
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
-import vsukharew.vkclient.screenname.model.ScreenNameAvailability.*
+import vsukharew.vkclient.screenname.model.ScreenNameAvailability.AVAILABLE
+import vsukharew.vkclient.screenname.model.ScreenNameAvailability.CURRENT_USER_NAME
+import vsukharew.vkclient.screenname.model.ScreenNameAvailability.EMPTY
+import vsukharew.vkclient.screenname.model.ScreenNameAvailability.UNAVAILABLE
 
 @FlowPreview
 @ExperimentalCoroutinesApi
@@ -62,9 +76,6 @@ class FeaturesViewModel(
 
     private var currentShortName: String? = savedState[KEY_SHORT_NAME]
 
-    val signOutEvent = MutableLiveData<SingleLiveEvent<Unit>>()
-    val signOutDialogEvent = MutableLiveData<Unit>()
-    val signOutDialogClosedEvent = MutableLiveData<SingleLiveEvent<Unit>>()
     val postPublishedEvent = imageInteractor.observePublishedPosts()
         .asLiveData(context = viewModelScope.coroutineContext)
         .map { SingleLiveEvent(it) }
@@ -79,11 +90,19 @@ class FeaturesViewModel(
             when (authInteractor.getAuthType()) {
                 APP -> {
                     sessionInteractor.clearSessionData()
-                    signOutEvent.value = SingleLiveEvent(Unit)
+                    mutableEventsFlow.emit(OneTimeEvent.Perform.Alert(
+                        messageRes = R.string.features_fragment_sign_out_dialog_text,
+                        positiveButtonRes = R.string.ok_text,
+                        positiveButtonListener = { onSignOutDialogClosed() }
+                    ))
                 }
 
                 BROWSER -> {
-                    signOutDialogEvent.value = Unit
+                    mutableEventsFlow.emit(OneTimeEvent.Perform.Alert(
+                        messageRes = R.string.features_fragment_sign_out_dialog_text,
+                        positiveButtonRes = R.string.ok_text,
+                        positiveButtonListener = { onSignOutDialogClosed() }
+                    ))
                 }
 
                 else -> {
@@ -96,8 +115,12 @@ class FeaturesViewModel(
     fun onSignOutDialogClosed() {
         viewModelScope.launch {
             sessionInteractor.clearSessionData()
-            signOutDialogClosedEvent.value = SingleLiveEvent(Unit)
+            mutableUiState.update { it.copy(shouldNavigateTo = SignInScreen) }
         }
+    }
+
+    fun onSignOutComplete() {
+        mutableUiState.update { it.copy(shouldNavigateTo = FeaturesUiState.NavigateTo.Nothing) }
     }
 
     fun retryLoadProfileInfo() {
@@ -254,6 +277,7 @@ class FeaturesViewModel(
                 profileInfo,
                 currentShortName = currentShortName,
                 shortNameAvailabilityState = shortNameAvailability,
+                it.shouldNavigateTo
             )
         }
     }

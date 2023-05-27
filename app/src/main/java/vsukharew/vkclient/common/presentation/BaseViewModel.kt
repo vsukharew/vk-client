@@ -3,7 +3,6 @@ package vsukharew.vkclient.common.presentation
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -44,6 +43,10 @@ abstract class BaseViewModel(
 
     override fun toastHidden() {
         viewModelScope.launch { mutableEventsFlow.emit(OneTimeEvent.Done.Toast) }
+    }
+
+    override fun alertHidden() {
+        viewModelScope.launch { mutableEventsFlow.emit(OneTimeEvent.Done.Alert) }
     }
 
     override fun signOutCompleted() {

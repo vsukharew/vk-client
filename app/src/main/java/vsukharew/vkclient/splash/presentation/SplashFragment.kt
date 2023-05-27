@@ -2,6 +2,10 @@ package vsukharew.vkclient.splash.presentation
 
 import android.os.Bundle
 import android.view.View
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import vsukharew.vkclient.R
@@ -25,7 +29,11 @@ class SplashFragment : BaseFragment<FragmentSplashBinding>(R.layout.fragment_spl
     }
 
     private fun observeData() {
-        viewModel.isAuthorized.observe(viewLifecycleOwner, coordinator::openNextScreen)
+        lifecycleScope.launch {
+            viewModel.isAuthorized
+                .flowWithLifecycle(viewLifecycleOwner.lifecycle)
+                .collectLatest(coordinator::openNextScreen)
+        }
     }
 
     override fun onDestroy() {

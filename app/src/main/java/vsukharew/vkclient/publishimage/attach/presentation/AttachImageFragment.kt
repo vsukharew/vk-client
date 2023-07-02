@@ -6,8 +6,13 @@ import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 import androidx.recyclerview.widget.SimpleItemAnimator
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.stateViewModel
 import vsukharev.anytypeadapter.adapter.AnyTypeAdapter
@@ -15,7 +20,6 @@ import vsukharev.anytypeadapter.adapter.AnyTypeCollection
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.di.ScopeCreator
-import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.databinding.FragmentAttachImageBinding
 import vsukharew.vkclient.publishimage.attach.di.AttachImageScopeCreator
@@ -26,7 +30,7 @@ import vsukharew.vkclient.publishimage.attach.presentation.delegate.AddNewImageD
 import vsukharew.vkclient.publishimage.attach.presentation.delegate.ImageDelegate
 import vsukharew.vkclient.publishimage.attach.presentation.dialog.ImageSourceBottomSheetDialog.Companion.KEY_IMAGE_SOURCE
 import vsukharew.vkclient.publishimage.attach.presentation.model.UIImage
-import vsukharew.vkclient.publishimage.attach.presentation.state.ImageUIState
+import vsukharew.vkclient.publishimage.attach.presentation.state.AttachImageUIState
 import vsukharew.vkclient.publishimage.navigation.PublishImageCoordinator
 
 class AttachImageFragment :
@@ -39,15 +43,14 @@ class AttachImageFragment :
             stateRestorationPolicy = PREVENT_WHEN_EMPTY
         }
     private val addNewImageDelegate = AddNewImageDelegate {
-        viewModel.chooseImageSource()
+        flowCoordinator.openImageSourceScreen()
     }
-    private val imageDelegate = ImageDelegate(
-        { viewModel.startLoading(it, true) },
-        { viewModel.removeImage(it) }
-    )
+    private val imageDelegate by lazy {
+        ImageDelegate(viewModel::retryLoadingNew, viewModel::removeImage)
+    }
     private val flowCoordinator: PublishImageCoordinator by inject()
-    private lateinit var cameraResultLauncher: ActivityResultLauncher<Uri>
-    private lateinit var galleryResultLauncher: ActivityResultLauncher<String>
+    private var cameraResultLauncher: ActivityResultLauncher<Uri>? = null
+    private var galleryResultLauncher: ActivityResultLauncher<String>? = null
 
     override val scopeCreator: ScopeCreator by lazy {
         AttachImageScopeCreator(requireParentFragment().requireParentFragment())
@@ -94,20 +97,29 @@ class AttachImageFragment :
 
     private fun observeData() {
         viewModel.apply {
-            imagesStatesLiveData.observe(viewLifecycleOwner, ::observeImagesStates)
-            isNextButtonAvailable.observe(viewLifecycleOwner, ::observeNextButtonAvailability)
-            imageSourceChoice.observe(viewLifecycleOwner, ::observeImageSourceChoice)
-            openCameraAction.observe(viewLifecycleOwner, ::observeOpenCameraAction)
+            viewLifecycleOwner.lifecycle.apply {
+                lifecycleScope.launch {
+                    uiState.flowWithLifecycle(lifecycle)
+                        .map(AttachImageUIState::isNextButtonAvailable::get)
+                        .collectLatest(::collectNextButtonAvailability)
+                }
+                lifecycleScope.launch {
+                    uiState.flowWithLifecycle(lifecycle)
+                        .map(AttachImageUIState::allImages::get)
+                        .collectLatest(::observeImagesStates)
+                }
+            }
         }
         flowCoordinator.apply {
             addObserverToBackStackEntry(R.id.attachImageFragment) {
                 doIfKeyExists<ImageSource>(KEY_IMAGE_SOURCE) {
                     when (it) {
                         CAMERA -> {
-                            viewModel.openCamera()
+                            uri = Uri.parse(viewModel.getUriForFutureImage())
+                            cameraResultLauncher?.launch(uri)
                         }
                         GALLERY -> {
-                            galleryResultLauncher.launch("image/*")
+                            galleryResultLauncher?.launch("image/*")
                         }
                         else -> {}
                     }
@@ -117,46 +129,35 @@ class AttachImageFragment :
         }
     }
 
-    private fun observeImagesStates(imagesStates: Map<UIImage, ImageUIState>) {
+    private fun observeImagesStates(images: List<UIImage>) {
         AnyTypeCollection.Builder()
             .apply {
-                imagesStates.forEach {
-                    when (it.key) {
+                images.forEach {
+                    when (it) {
                         UIImage.AddNewImagePlaceholder -> {
                             add(addNewImageDelegate)
                         }
                         is UIImage.RealImage -> {
-                            add((it.key as UIImage.RealImage) to it.value, imageDelegate)
+                            add(it, imageDelegate)
                         }
                     }
                 }
             }
             .build()
-            .let { anyTypeAdapter.setCollection(it) }
+            .let(anyTypeAdapter::setCollection)
     }
 
-    private fun observeNextButtonAvailability(isEnabled: Boolean) {
+    private fun collectNextButtonAvailability(isEnabled: Boolean) {
         binding.nextBtn.isEnabled = isEnabled
-    }
-
-    private fun observeImageSourceChoice(event: SingleLiveEvent<Unit>) {
-        event.getContentIfNotHandled()?.let { flowCoordinator.openImageSourceScreen() }
-    }
-
-    private fun observeOpenCameraAction(event: SingleLiveEvent<Unit>) {
-        event.getContentIfNotHandled()?.let {
-            uri = Uri.parse(viewModel.getUriForFutureImage())
-            cameraResultLauncher.launch(uri)
-        }
     }
 
     private fun handleResult(isSuccess: Boolean) {
         if (isSuccess) {
-            viewModel.startLoading(uri.toString(), false)
+            viewModel.loadCameraImage(uri.toString())
         }
     }
 
     private fun handleGalleryResult(uris: List<Uri>) {
-        viewModel.startLoading(uris.map { it.toString() })
+        viewModel.loadGalleryImages(uris.map { it.toString() })
     }
 }

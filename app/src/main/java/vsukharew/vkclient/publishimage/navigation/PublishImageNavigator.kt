@@ -1,5 +1,6 @@
 package vsukharew.vkclient.publishimage.navigation
 
+import android.content.Intent
 import androidx.navigation.NavController
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.navigation.BaseNavigator

@@ -51,7 +51,7 @@ class ImageInteractorImpl(
         latitude: Double?,
         longitude: Double?
     ): Either<AppError, Int> {
-        return sideEffect<AppError, Int> {
+        return sideEffect {
             imageRepo.postImagesOnWall(message, latitude, longitude).bind()
         }.ifSuccess { publishingPostFlow.value = it }
     }

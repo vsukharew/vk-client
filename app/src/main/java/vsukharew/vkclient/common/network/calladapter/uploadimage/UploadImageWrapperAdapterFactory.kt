@@ -22,7 +22,7 @@ class UploadImageWrapperAdapterFactory : CallAdapter.Factory() {
         check(returnType is ParameterizedType, lazyMessage)
         val outerResponseType = getParameterUpperBound(0, returnType)
         check(outerResponseType is ParameterizedType, lazyMessage)
-        val innerResponseType = getParameterUpperBound(0, outerResponseType)
+        val innerResponseType = getParameterUpperBound(1, outerResponseType)
         if (getRawType(innerResponseType) != UploadedImageWrapper::class.java) {
             return null
         }

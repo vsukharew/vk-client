@@ -5,7 +5,6 @@ import vsukharew.vkclient.common.domain.model.AppError
 import vsukharew.vkclient.common.domain.model.Either
 import vsukharew.vkclient.common.extension.ifSuccess
 import vsukharew.vkclient.common.extension.sideEffect
-import vsukharew.vkclient.common.extension.switchMap
 import vsukharew.vkclient.publishimage.attach.data.ImageRepo
 import vsukharew.vkclient.publishimage.attach.domain.entity.CheckUploadedImageResolution
 import vsukharew.vkclient.publishimage.attach.domain.entity.CheckUploadedImageSize
@@ -20,8 +19,6 @@ class ImageInteractorImpl(
 
     private val publishingPostFlow = MutableStateFlow<Int?>(null)
 
-    override fun doSavedImagesExist(): Boolean = imageRepo.savedImages.isNotEmpty()
-
     override suspend fun uploadImage(
         image: Image,
         isRetryLoading: Boolean,
@@ -34,16 +31,8 @@ class ImageInteractorImpl(
         }
     }
 
-    override fun removeAllImages() {
-        imageRepo.removeAllImages()
-    }
-
     override fun observePublishedPosts(): Flow<Int?> {
         return publishingPostFlow
-    }
-
-    override fun removeUploadedImage(image: Image) {
-        imageRepo.removeUploadedImage(image)
     }
 
     override suspend fun postImagesOnWall(

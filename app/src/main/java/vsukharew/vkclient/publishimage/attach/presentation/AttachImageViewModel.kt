@@ -37,11 +37,6 @@ class AttachImageViewModel(
         MutableStateFlow(savedState[KEY_STATE] ?: AttachImageUIState.DEFAULT)
     val uiState = mutableUiState.asStateFlow()
 
-    override fun onCleared() {
-        super.onCleared()
-        imageInteractor.removeAllImages()
-    }
-
     private suspend fun startLoadingNew(uri: String, imageSource: ImageSource) {
         val newImage = UIImage.RealImage(Image(uri, imageSource), ImageLoadingState.Pending)
         mutableUiState.update {

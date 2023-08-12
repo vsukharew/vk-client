@@ -7,15 +7,12 @@ import vsukharew.vkclient.publishimage.attach.domain.model.Image
 import vsukharew.vkclient.publishimage.attach.domain.model.SavedWallImage
 
 interface ImageInteractor {
-    fun doSavedImagesExist(): Boolean
     suspend fun uploadImage(
         image: Image,
         isRetryLoading: Boolean,
         onProgressUpdated: (Double) -> Unit
     ): Either<AppError, SavedWallImage>
 
-    fun removeUploadedImage(image: Image)
-    fun removeAllImages()
     suspend fun postImagesOnWall(
         message: String,
         latitude: Double? = null,

@@ -26,15 +26,13 @@ class ImageRepository(
     private val contentResolver: DomainContentResolver
 ) : ImageRepo {
 
-    override val rawImages: MutableList<Image> = mutableListOf()
-    override val savedImages: MutableList<SavedWallImage> = mutableListOf()
+    private val savedImages: MutableList<SavedWallImage> = mutableListOf()
 
     override suspend fun uploadImage(
         image: Image,
         isRetryLoading: Boolean,
         onProgressUpdated: (Double) -> Unit
     ): Either<AppError, SavedWallImage> {
-        if (!isRetryLoading) rawImages.add(image)
         return sideEffect {
             val wrapper = imageApi.getImageWallUploadAddress().bind()
             val address = safeNonNull { wrapper.response.bind() }
@@ -49,39 +47,21 @@ class ImageRepository(
         }
     }
 
-    override fun removeUploadedImage(image: Image) {
-        val imageToRemove = rawImages.indexOf(image)
-        if (rawImages.size == savedImages.size) {
-            // image was uploaded and saved.
-            // In this case, collections are synced and it's safe to delete items by the same index
-            savedImages.removeAt(imageToRemove)
-            // If there was no step into this 'if'
-            // image was uploaded but not saved due to and error happened
-        }
-        rawImages.removeAt(imageToRemove)
-    }
-
-    override fun removeAllImages() {
-        rawImages.clear()
-        savedImages.clear()
-    }
-
     override suspend fun postImagesOnWall(
         message: String,
         latitude: Double?,
         longitude: Double?
     ): Either<AppError, Int> {
-        return sideEffect<AppError, Int> {
+        return sideEffect {
             if (savedImages.isEmpty()) {
                 Left<AppError>(AppError.DomainError.NoPhotosToPostError).bindLeft()
             }
             val attachments = savedImages.joinToString {
-                "${AttachmentType.PHOTO.name.toLowerCase(Locale.getDefault())}${it.ownerId}_${it.id}>"
+                "${AttachmentType.PHOTO.name.lowercase(Locale.getDefault())}${it.ownerId}_${it.id}>"
             }
             val wrapper = wallApi.postToWall(message, attachments, latitude, longitude).bind()
             safeNonNull { wrapper.response?.postId.bind() }
         }.ifSuccess {
-            removeAllImages()
             contentResolver.deleteCacheFiles(AppDirectories.WALL_IMAGES)
         }
     }
@@ -95,7 +75,7 @@ class ImageRepository(
             contentResolver.openInputStream(image.uri)
                 .use { it!!.readBytes() }
         }.mapCatching { bytes ->
-            sideEffect<AppError, SavedWallImageResponse> {
+            sideEffect {
                 val mediaType = "image/*".toMediaType()
                 val requestBody = ProgressRequestBody(
                     bytes.toRequestBody(mediaType),

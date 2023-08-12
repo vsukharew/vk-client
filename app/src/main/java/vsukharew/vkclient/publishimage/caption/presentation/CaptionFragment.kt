@@ -8,32 +8,37 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import vsukharew.vkclient.R
 import vsukharew.vkclient.common.delegation.fragmentViewBinding
 import vsukharew.vkclient.common.di.ScopeCreator
-import vsukharew.vkclient.common.extension.snackBarIndefinite
-import vsukharew.vkclient.common.extension.snackBarLong
+import vsukharew.vkclient.common.extension.locationSettings
+import vsukharew.vkclient.common.extension.setDistinctText
 import vsukharew.vkclient.common.extension.systemSettings
-import vsukharew.vkclient.common.livedata.SingleLiveEvent
 import vsukharew.vkclient.common.presentation.BaseFragment
 import vsukharew.vkclient.databinding.FragmentCaptionBinding
 import vsukharew.vkclient.publishimage.caption.di.CaptionScopeCreator
-import vsukharew.vkclient.publishimage.caption.presentation.state.CaptionUIState
 import vsukharew.vkclient.publishimage.navigation.PublishImageCoordinator
 
 class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_caption) {
     private val flowCoordinator: PublishImageCoordinator by inject()
-    override val viewModel: CaptionViewModel by viewModel()
-    private lateinit var locationPermissionLauncher: ActivityResultLauncher<String>
 
+    private var locationPermissionLauncher: ActivityResultLauncher<String>? = null
     private var reloadPhotosDialog: AlertDialog? = null
     private var attachLocationDialog: AlertDialog? = null
     private var locationNotReceivedDialog: AlertDialog? = null
 
+    override val viewModel: CaptionViewModel by viewModel()
     override val binding: FragmentCaptionBinding by fragmentViewBinding(FragmentCaptionBinding::bind)
     override val scopeCreator: ScopeCreator by lazy {
         CaptionScopeCreator(requireParentFragment().requireParentFragment())
@@ -70,104 +75,90 @@ class CaptionFragment : BaseFragment<FragmentCaptionBinding>(R.layout.fragment_c
     private fun setListeners() {
         binding.apply {
             captionText.doOnTextChanged { text, _, _, _ ->
-                publish.isEnabled = text?.isNotEmpty() ?: false
                 text?.toString()?.let(viewModel::onCaptionChanged)
             }
             publish.setOnClickListener {
-                viewModel.suggestToAddLocationToPost()
+                viewModel.suggestToAddLocationToPostNew()
             }
         }
     }
 
     private fun observeData() {
+        val lifecycle = viewLifecycleOwner.lifecycle
         viewModel.apply {
-            publishingState.observe(viewLifecycleOwner, ::observePublishingState)
-            shouldShowAddLocationDialog.observe(
-                viewLifecycleOwner,
-                ::observeShouldShowAddLocationDialog
-            )
-            showReloadImagesDialog.observe(viewLifecycleOwner, { observeShowReloadImagesDialog() })
-            requestLocationPermissionEvent.observe(
-                viewLifecycleOwner,
-                ::observeRequestLocationPermission
-            )
-            locationNotReceivedEvent.observe(viewLifecycleOwner, { showLocationNotReceivedDialog() })
-            askToReloadPhotosEvent.observe(viewLifecycleOwner, { showReloadPhotosDialog() })
+            lifecycleScope.apply {
+                launch {
+                    uiState.map(CaptionUiState::caption::get)
+                        .flowWithLifecycle(lifecycle)
+                        .collectLatest(binding.captionText::setDistinctText)
+                }
+                launch {
+                    uiState.map(CaptionUiState::isLoadingInProgress::get)
+                        .flowWithLifecycle(lifecycle)
+                        .collectLatest(binding.progressBar::isVisible::set)
+                }
+                launch {
+                    uiState.map(CaptionUiState::isLoadingInProgress::get)
+                        .flowWithLifecycle(lifecycle)
+                        .collectLatest(binding.group::isGone::set)
+                }
+                launch {
+                    uiState.map(CaptionUiState::shouldNavigateTo::get)
+                        .flowWithLifecycle(lifecycle)
+                        .collectLatest(::collectDestination)
+                }
+                launch {
+                    uiState
+                        .map(CaptionUiState::shouldStartPermissionLauncher::get)
+                        .flowWithLifecycle(lifecycle)
+                        .filter { it }
+                        .collectLatest { startLocationPermissionLauncher() }
+                }
+                launch {
+                    uiState.map(CaptionUiState::isPublishButtonEnabled::get)
+                        .flowWithLifecycle(lifecycle)
+                        .collectLatest(::collectPublishButtonAvailability)
+                }
+            }
         }
     }
 
-    private fun observePublishingState(state: CaptionUIState) {
-        binding.apply {
-            progressBar.isVisible = state is CaptionUIState.LoadingProgress
-            publish.isVisible = state !is CaptionUIState.LoadingProgress
+    private fun startLocationPermissionLauncher() {
+        locationPermissionLauncher?.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        viewModel.requestLocationRequested()
+    }
+
+    private fun collectDestination(navigateTo: CaptionUiState.NavigateTo) {
+        when (navigateTo) {
+            CaptionUiState.NavigateTo.SystemSettings -> {
+                startActivity(Intent().systemSettings())
+                viewModel.systemSettingsOpened()
+            }
+            CaptionUiState.NavigateTo.LocationSettings -> {
+                startActivity(Intent().locationSettings())
+                viewModel.locationSettingsOpened()
+            }
+            CaptionUiState.NavigateTo.Nothing -> {
+
+            }
         }
     }
 
-    private fun observeShouldShowAddLocationDialog(shouldShow: Boolean) {
-        if (!shouldShow) return
-        AlertDialog.Builder(requireContext())
-            .setMessage(R.string.caption_fragment_location_dialog_message_text)
-            .setNegativeButton(R.string.caption_fragment_location_dialog_publish_without_location_text) { _, _ ->
-                viewModel.publishPost()
-            }
-            .setPositiveButton(R.string.caption_fragment_location_dialog_add_location_text) { _, _ ->
-                viewModel.requestLocationPermission()
-            }
-            .create().also { attachLocationDialog = it }
-            .show()
-    }
-
-    private fun observeRequestLocationPermission(event: SingleLiveEvent<Unit>) {
-        event.getContentIfNotHandled()?.let {
-            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-    }
-
-    private fun observeShowReloadImagesDialog() {
-        showReloadPhotosDialog()
-    }
-
-    private fun showLocationNotReceivedDialog() {
-        AlertDialog.Builder(requireContext())
-            .setMessage(R.string.caption_fragment_failed_to_receive_location_text)
-            .setNegativeButton(
-                R.string.caption_fragment_location_dialog_publish_without_location_text) { _, _ ->
-                viewModel.publishPost()
-            }
-            .setPositiveButton(R.string.retry_btn) { _, _ -> viewModel.requestLocationPermission() }
-            .create().also { locationNotReceivedDialog = it }
-            .show()
-    }
-
-    private fun showReloadPhotosDialog() {
-        AlertDialog.Builder(requireContext())
-            .setMessage(R.string.caption_fragment_get_back_to_previous_screen_text)
-            .setPositiveButton(R.string.ok_text) { dialog, _ ->  dialog.dismiss() }
-            .create().also { reloadPhotosDialog = it }
-            .show()
+    private fun collectPublishButtonAvailability(isEnabled: Boolean) {
+        binding.publish.isEnabled = isEnabled
     }
 
     private fun handleLocationPermissionResult(isGranted: Boolean) {
         viewModel.apply {
             when {
                 isGranted -> {
-                    if (isGpsEnabled()) {
-                        onLocationRequested()
-                    } else {
-                        snackBarLong(R.string.caption_fragment_turn_on_gps_text)
-                    }
+                    locationPermissionGranted()
                 }
                 shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
-                    snackBarIndefinite(
-                        R.string.caption_fragment_location_dialog_publish_permission_is_required_text,
-                        R.string.got_it_text
-                    )
+                    explainWhyUserIsUnableToAddLocation()
                 }
                 else -> {
-                    snackBarLong(
-                        R.string.caption_fragment_the_app_is_forbidden_location_access_text,
-                        R.string.settings_text
-                    ) { startActivity(Intent().systemSettings()) }
+                    locationPermissionDenied()
                 }
             }
         }

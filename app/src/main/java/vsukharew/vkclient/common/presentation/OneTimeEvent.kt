@@ -28,8 +28,23 @@ sealed class OneTimeEvent {
         }
 
         sealed class SnackBar : OneTimeEvent() {
-            data class StringResource(@StringRes val resId: Int) : SnackBar()
-            data class Message(val message: String) : SnackBar()
+            data class StringResource(
+                @StringRes val resId: Int,
+                @StringRes val actionTextResId: Int? = null,
+                val action: () -> Unit = { },
+                val length: Length = Length.SHORT,
+            ) : SnackBar()
+
+            data class Message(
+                val message: String,
+                val length: Length = Length.SHORT
+            ) : SnackBar()
+
+            enum class Length {
+                SHORT,
+                LONG,
+                INDEFINITE
+            }
         }
 
         object SignOut : OneTimeEvent()

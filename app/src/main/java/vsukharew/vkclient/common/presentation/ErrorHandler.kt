@@ -12,7 +12,12 @@ import vsukharew.vkclient.common.domain.model.AppError.*
 import vsukharew.vkclient.common.domain.model.AppError.RemoteError.ServerError
 import vsukharew.vkclient.common.domain.model.Left
 import vsukharew.vkclient.common.extension.snackBar
+import vsukharew.vkclient.common.extension.snackBarIndefinite
+import vsukharew.vkclient.common.extension.snackBarLong
 import vsukharew.vkclient.common.extension.toast
+import vsukharew.vkclient.common.presentation.OneTimeEvent.Perform.SnackBar.Length.INDEFINITE
+import vsukharew.vkclient.common.presentation.OneTimeEvent.Perform.SnackBar.Length.LONG
+import vsukharew.vkclient.common.presentation.OneTimeEvent.Perform.SnackBar.Length.SHORT
 
 class ErrorHandler(
     private val sessionInteractor: SessionInteractor
@@ -40,7 +45,13 @@ class ErrorHandler(
                     viewModel.snackBarHidden()
                 }
                 is OneTimeEvent.Perform.SnackBar.StringResource -> {
-                    snackBar(event.resId)
+                    event.run {
+                        when (length) {
+                            SHORT -> snackBar(resId)
+                            LONG -> snackBarLong(resId, actionTextResId, action)
+                            INDEFINITE -> snackBarIndefinite(resId, actionTextResId, action)
+                        }
+                    }
                     viewModel.snackBarHidden()
                 }
                 is OneTimeEvent.Perform.Toast.Message -> {
@@ -48,7 +59,7 @@ class ErrorHandler(
                     viewModel.toastHidden()
                 }
                 is OneTimeEvent.Perform.Toast.StringResource -> {
-                    snackBar(event.resId)
+                    toast(event.resId)
                     viewModel.toastHidden()
                 }
                 is OneTimeEvent.Done -> {

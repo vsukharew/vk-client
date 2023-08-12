@@ -16,3 +16,9 @@ fun Intent.systemSettings(): Intent {
     flags = Intent.FLAG_ACTIVITY_NEW_TASK
     return this
 }
+
+fun Intent.locationSettings(): Intent {
+    action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
+    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+    return this
+}

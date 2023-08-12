@@ -37,39 +37,6 @@ class AttachImageViewModel(
         MutableStateFlow(savedState[KEY_STATE] ?: AttachImageUIState.DEFAULT)
     val uiState = mutableUiState.asStateFlow()
 
-    override fun onCleared() {
-        super.onCleared()
-        imageInteractor.removeAllImages()
-    }
-
-    private suspend fun startLoadingNew(uri: String, imageSource: ImageSource) {
-        val newImage = UIImage.RealImage(Image(uri, imageSource), ImageLoadingState.Pending)
-        mutableUiState.update {
-            it.copy(
-                images = it.images + listOf(newImage),
-            ).save()
-        }
-        startLoadingInternal(newImage)
-    }
-
-    private suspend fun startLoadingInternal(
-        newImage: UIImage.RealImage
-    ) {
-        uploadImage(newImage, false)
-            .fold(
-                ifLeft = {
-                    if (it is AppError.RemoteError.Unauthorized) {
-                        handleError(it)
-                    }
-                    ImageLoadingState.Error(it)
-                },
-                ifRight = { ImageLoadingState.Success }
-            )
-            .let { state -> newImage.copy(loadingState = state) }
-            .let { uiState.value.images.replaceByUri(it) }
-            .let { images -> mutableUiState.update { it.copy(images = images).save() } }
-    }
-
     fun loadGalleryImages(uris: List<String>) {
         viewModelScope.launch {
             uris.map {
@@ -126,6 +93,34 @@ class AttachImageViewModel(
 
     fun goToNextStage() {
         flowStage.onForwardClick()
+    }
+
+    private suspend fun startLoadingNew(uri: String, imageSource: ImageSource) {
+        val newImage = UIImage.RealImage(Image(uri, imageSource), ImageLoadingState.Pending)
+        mutableUiState.update {
+            it.copy(
+                images = it.images + listOf(newImage),
+            ).save()
+        }
+        startLoadingInternal(newImage)
+    }
+
+    private suspend fun startLoadingInternal(
+        newImage: UIImage.RealImage
+    ) {
+        uploadImage(newImage, false)
+            .fold(
+                ifLeft = {
+                    if (it is AppError.RemoteError.Unauthorized) {
+                        handleError(it)
+                    }
+                    ImageLoadingState.Error(it)
+                },
+                ifRight = { ImageLoadingState.Success }
+            )
+            .let { state -> newImage.copy(loadingState = state) }
+            .let { uiState.value.images.replaceByUri(it) }
+            .let { images -> mutableUiState.update { it.copy(images = images).save() } }
     }
 
     private suspend fun uploadImage(

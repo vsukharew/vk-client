@@ -6,8 +6,6 @@ import vsukharew.vkclient.publishimage.attach.domain.model.Image
 import vsukharew.vkclient.publishimage.attach.domain.model.SavedWallImage
 
 interface ImageRepo {
-    val rawImages: List<Image>
-    val savedImages: List<SavedWallImage>
 
     suspend fun uploadImage(
         image: Image,
@@ -15,8 +13,6 @@ interface ImageRepo {
         onProgressUpdated: (Double) -> Unit
     ): Either<AppError, SavedWallImage>
 
-    fun removeUploadedImage(image: Image)
-    fun removeAllImages()
     suspend fun postImagesOnWall(
         message: String,
         latitude: Double? = null,

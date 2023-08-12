@@ -12,6 +12,12 @@
         android:gravity="center"
         android:orientation="vertical">
 
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="caption_hint, publish"/>
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/caption_hint"
             android:layout_width="match_parent"

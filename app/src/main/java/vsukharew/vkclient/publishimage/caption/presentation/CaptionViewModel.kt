@@ -1,20 +1,22 @@
 package vsukharew.vkclient.publishimage.caption.presentation
 
 import androidx.lifecycle.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import vsukharew.vkclient.R
 import vsukharew.vkclient.common.domain.interactor.SessionInteractor
-import vsukharew.vkclient.common.domain.model.AppError
-import vsukharew.vkclient.common.domain.model.Either
-import vsukharew.vkclient.common.domain.model.AppError.DomainError.LocationNotReceivedError
-import vsukharew.vkclient.common.domain.model.Left
-import vsukharew.vkclient.common.domain.model.Right
-import vsukharew.vkclient.common.livedata.SingleLiveEvent
+import vsukharew.vkclient.common.extension.doIfLeft
+import vsukharew.vkclient.common.extension.sideEffect
 import vsukharew.vkclient.common.location.LocationProvider
 import vsukharew.vkclient.common.presentation.BaseViewModel
+import vsukharew.vkclient.common.presentation.OneTimeEvent
+import vsukharew.vkclient.common.presentation.OneTimeEvent.Perform.SnackBar
+import vsukharew.vkclient.common.presentation.OneTimeEvent.Perform.SnackBar.Length.INDEFINITE
+import vsukharew.vkclient.common.presentation.OneTimeEvent.Perform.SnackBar.Length.LONG
 import vsukharew.vkclient.publishimage.attach.domain.interactor.ImageInteractor
-import vsukharew.vkclient.publishimage.caption.presentation.state.CaptionUIAction
-import vsukharew.vkclient.publishimage.caption.presentation.state.CaptionUIState
+import vsukharew.vkclient.publishimage.caption.presentation.CaptionUiState.NavigateTo.SystemSettings
 import vsukharew.vkclient.publishimage.navigation.PublishImageFlowStage
 
 class CaptionViewModel(
@@ -24,117 +26,133 @@ class CaptionViewModel(
     sessionInteractor: SessionInteractor
 ) : BaseViewModel(sessionInteractor) {
 
-    private val captionLiveData = MutableLiveData<String>()
-    private val publishingAction = MutableLiveData<CaptionUIAction>()
-    val publishingState = publishingAction.switchMap(::mapUiAction)
-    val shouldShowAddLocationDialog = MutableLiveData<Boolean>()
-    val showReloadImagesDialog = MutableLiveData<Unit>()
-    val requestLocationPermissionEvent = MutableLiveData<SingleLiveEvent<Unit>>()
-    val locationNotReceivedEvent = MutableLiveData<Unit>()
-    val askToReloadPhotosEvent = MutableLiveData<Unit>()
+    private val mutableUiState = MutableStateFlow(CaptionUiState())
+    val uiState = mutableUiState.asStateFlow()
 
-    init {
-        restorePossiblePhotosLoss()
-    }
-
-    fun suggestToAddLocationToPost() {
+    fun suggestToAddLocationToPostNew() {
         if (locationProvider.areGooglePlayServicesEnabled()) {
-            shouldShowAddLocationDialog.value = true
+            viewModelScope.launch {
+                mutableEventsFlow.emit(OneTimeEvent.Perform.Alert(
+                    messageRes = R.string.caption_fragment_location_dialog_message_text,
+                    negativeButtonRes = R.string.caption_fragment_location_dialog_publish_without_location_text,
+                    positiveButtonRes = R.string.caption_fragment_location_dialog_add_location_text,
+                    negativeButtonListener = { publishPostNew() },
+                    positiveButtonListener = { requestLocationPermission() }
+                ))
+            }
         } else {
-            publishPost()
+            publishPostNew()
         }
     }
 
-    fun requestLocationPermission() {
-        shouldShowAddLocationDialog.value = false
-        requestLocationPermissionEvent.value = SingleLiveEvent(Unit)
+    fun requestLocationRequested() {
+        mutableUiState.update { it.copy(shouldStartPermissionLauncher = false) }
     }
 
     fun onCaptionChanged(caption: String) {
-        captionLiveData.value = caption
+        mutableUiState.update { it.copy(caption = caption) }
     }
 
-    fun isGpsEnabled(): Boolean = locationProvider.isGpsEnabled()
-
-    fun onLocationRequested() {
-        publishingAction.value = CaptionUIAction.LocationRequested
-    }
-
-    fun publishPost(latitude: Double? = null, longitude: Double? = null) {
-        captionLiveData.value?.let {
-            publishingAction.value = CaptionUIAction.Publish(it, latitude, longitude)
+    fun locationPermissionGranted() {
+        if (isGpsEnabled()) {
+            mutableUiState.update { it.copy(isLoadingInProgress = true) }
+            locationRequestedNew()
+        } else {
+            viewModelScope.launch {
+                mutableEventsFlow.emit(
+                    SnackBar.StringResource(
+                        actionTextResId = R.string.caption_fragment_turn_on_gps_text,
+                        action = {
+                            mutableUiState.update {
+                                it.copy(shouldNavigateTo = CaptionUiState.NavigateTo.LocationSettings)
+                            }
+                        },
+                        resId = R.string.caption_fragment_location_dialog_publish_permission_is_required_text,
+                        length = LONG
+                ))
+            }
         }
     }
 
-    private fun restorePossiblePhotosLoss() {
-        // Made for simplicity. If there's no saved photos exist at this stage, process got killed
-        // by the system and user need to get back to previous screen in order to reload photos
+    fun explainWhyUserIsUnableToAddLocation() {
+        viewModelScope.launch {
+            SnackBar.StringResource(
+                resId = R.string.caption_fragment_location_dialog_publish_permission_is_required_text,
+                actionTextResId = R.string.got_it_text,
+                length = INDEFINITE
+            )
+        }
+    }
 
-        // Otherwise one have to create database and save all the objects received during the upload
-        // process
-        if (!imageInteractor.doSavedImagesExist()) {
-            showReloadImagesDialog.value = Unit
+    fun locationPermissionDenied() {
+        viewModelScope.launch {
+            mutableEventsFlow.emit(
+                SnackBar.StringResource(
+                    resId = R.string.caption_fragment_the_app_is_forbidden_location_access_text,
+                    actionTextResId = R.string.settings_text,
+                    action = {
+                        mutableUiState.update {
+                            it.copy(shouldNavigateTo = SystemSettings)
+                        }
+                    },
+                    length = LONG
+                )
+            )
+        }
+    }
+
+    fun systemSettingsOpened() {
+        mutableUiState.update {
+            it.copy(shouldNavigateTo = CaptionUiState.NavigateTo.Nothing)
+        }
+    }
+
+    fun locationSettingsOpened() {
+        mutableUiState.update {
+            it.copy(shouldNavigateTo = CaptionUiState.NavigateTo.Nothing)
+        }
+    }
+
+    private fun requestLocationPermission() {
+        mutableUiState.update { it.copy(shouldStartPermissionLauncher = true) }
+    }
+
+    private fun isGpsEnabled(): Boolean = locationProvider.isGpsEnabled()
+
+    private fun locationRequestedNew() {
+        locationProvider.requestCurrentLocation(
+            { publishPostNew(it.latitude, it.longitude) },
+            { onFailedRequestLocation(it) }
+        )
+    }
+
+    private fun publishPostNew(latitude: Double? = null, longitude: Double? = null) {
+        val text = uiState.value.caption ?: return
+        mutableUiState.update { it.copy(isLoadingInProgress = true) }
+        viewModelScope.launch {
+            sideEffect {
+                imageInteractor.postImagesOnWall(
+                    text,
+                    latitude,
+                    longitude
+                ).bind()
+                flowStage.onForwardClick()
+            }.also {
+                mutableUiState.update { it.copy(isLoadingInProgress = false) }
+            }.doIfLeft(::handleError)
         }
     }
 
     private fun onFailedRequestLocation(e: Throwable) {
-        publishingAction.value = CaptionUIAction.FailedToRequestLocation(e)
-    }
-
-    private fun mapUiAction(action: CaptionUIAction): LiveData<CaptionUIState> {
-        return liveData {
-            when (action) {
-                is CaptionUIAction.LocationRequested -> {
-                    emit(CaptionUIState.LoadingProgress)
-                    locationProvider.requestCurrentLocation(
-                        { publishPost(it.latitude, it.longitude) },
-                        { onFailedRequestLocation(it) }
-                    )
-                }
-                is CaptionUIAction.FailedToRequestLocation -> {
-                    locationNotReceivedEvent.value = Unit
-                    emit(
-                        CaptionUIState.Error(
-                            SingleLiveEvent(
-                                Left(
-                                    LocationNotReceivedError(
-                                        action.e
-                                    )
-                                )
-                            )
-                        )
-                    )
-                }
-                is CaptionUIAction.Publish -> {
-                    emit(CaptionUIState.LoadingProgress)
-                    when (val result =
-                        withContext(Dispatchers.IO) {
-                            imageInteractor.postImagesOnWall(
-                                action.message,
-                                action.latitude,
-                                action.longitude
-                            )
-                        }) {
-                        is Right -> {
-                            emit(CaptionUIState.Success(result.data))
-                            flowStage.onForwardClick()
-                        }
-                        is Left -> {
-                            when (result.data) {
-                                AppError.DomainError.NoPhotosToPostError -> {
-                                    askToReloadPhotosEvent.value = Unit
-                                }
-                                else -> {
-                                    val event = SingleLiveEvent(result)
-
-                                    emit(CaptionUIState.Error(event))
-                                    errorLiveData.value = event
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        mutableUiState.update { it.copy(isLoadingInProgress = false) }
+        viewModelScope.launch {
+            OneTimeEvent.Perform.Alert(
+                messageRes = R.string.caption_fragment_failed_to_receive_location_text,
+                negativeButtonRes = R.string.caption_fragment_location_dialog_publish_without_location_text,
+                positiveButtonRes = R.string.retry_btn,
+                negativeButtonListener = { publishPostNew() },
+                positiveButtonListener = { requestLocationPermission() }
+            )
         }
     }
 }
